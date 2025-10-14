@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Brainova - Plateforme unique (global)</title>
+  <style>
+    /* Inline minimal maquette CSS (self-contained) */
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;400;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Rajdhani,Segoe UI,Arial;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 50%,#16213e 100%);color:#fff}
+    .header{background:linear-gradient(135deg,rgba(0,0,0,0.95),rgba(26,26,46,0.9));backdrop-filter:blur(10px);border-bottom:2px solid #00d4ff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000}
+    .logo h1{font-family:Orbitron,monospace;font-size:1.6rem;margin:0;background:linear-gradient(45deg,#00d4ff,#ff0096,#00ff88);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+    .nav-btn{background:linear-gradient(45deg,#00d4ff,#ff0096);border:none;border-radius:20px;padding:8px 14px;color:#fff;font-weight:700;cursor:pointer}
+    .main{max-width:1200px;margin:18px auto;padding:0 18px}
+    .hero{padding:28px;background:linear-gradient(135deg,rgba(0,212,255,0.05),rgba(255,0,150,0.03));border-radius:12px;margin-bottom:18px}
+    .hero h2{font-family:Orbitron,monospace;font-size:2rem;margin:0;color:#00d4ff}
+    .games-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:18px}
+    .game-card{background:linear-gradient(135deg,rgba(0,0,0,0.9),rgba(26,26,46,0.8));border:2px solid #00d4ff;padding:14px;border-radius:14px;cursor:pointer;transition:transform .18s,box-shadow .18s}
+    .game-card:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(0,212,255,0.12)}
+    .game-number{font-weight:700;color:#00d4ff}
+    .game-icon{font-size:40px;text-align:center;margin:8px 0}
+    .game-card h3{font-family:Orbitron,monospace;margin:6px 0;color:#fff;text-align:center}
+    /* per-card customizations removed to restore default platform styling */
+  .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.92);z-index:2000}
+  .overlay.active{display:flex}
+  /* Make the iframe frame full-viewport so games render large */
+  .overlay .frame{position:fixed;inset:0;background:#000;border-radius:0;overflow:hidden;display:flex;align-items:stretch;justify-content:stretch}
+  .overlay .frame iframe{width:100vw;height:100vh;border:0}
+    .close-btn{position:absolute;top:8px;right:8px;background:linear-gradient(45deg,#ff0096,#00d4ff);border:none;color:#fff;padding:8px 10px;border-radius:8px;font-weight:700;cursor:pointer;z-index:10}
+    .overlay-title{position:absolute;left:12px;top:10px;color:#fff;font-weight:700;z-index:10}
+    .loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0b1220,#11223a);z-index:9999}
+    .spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,0.12);border-top-color:#00d4ff;border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  @media (max-width:480px){.overlay .frame{position:fixed;inset:0;border-radius:0}}
+  /* Futuristic language picker styles */
+  #langPicker { font-family: Rajdhani, Arial, sans-serif; }
+  #langBtn { display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#061229 0%,#08223a 100%);border:1px solid rgba(0,212,255,0.12);padding:8px 12px;border-radius:14px;color:#cfefff;backdrop-filter:blur(6px);box-shadow:0 6px 24px rgba(0,212,255,0.06); }
+  #langBtn:focus{outline:2px solid rgba(0,212,255,0.18)}
+  #langMenu .lang-item{transition:transform .12s,background .12s;color:#e6f7ff}
+  #langMenu .lang-item:hover{transform:translateX(6px);background:linear-gradient(90deg,rgba(0,212,255,0.04),rgba(255,0,150,0.02));}
+  #langMenu .lang-item.selected{background:linear-gradient(90deg,rgba(0,212,255,0.12),rgba(255,0,150,0.04));box-shadow:0 6px 18px rgba(0,212,255,0.06);}
+  /* Category button color schemes */
+  #catalog-hero .cat[data-filter="memoire"]{ background: linear-gradient(135deg,#7ee8fa 0%,#eec0c6 100%); color:#001 }
+  #catalog-hero .cat[data-filter="memoire"]:hover{ box-shadow:0 8px 28px rgba(126,232,250,0.18); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="societe"]{ background: linear-gradient(135deg,#cfd9df 0%,#e2ebf0 100%); color:#001 }
+  #catalog-hero .cat[data-filter="societe"]:hover{ box-shadow:0 8px 28px rgba(200,217,223,0.12); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="puzzle"]{ background: linear-gradient(135deg,#ffd6a5 0%,#fdffb6 100%); color:#111 }
+  #catalog-hero .cat[data-filter="puzzle"]:hover{ box-shadow:0 8px 28px rgba(255,214,165,0.14); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="arcade"]{ background: linear-gradient(135deg,#a18cd1 0%,#fbc2eb 100%); color:#0b002b }
+  #catalog-hero .cat[data-filter="arcade"]:hover{ box-shadow:0 8px 28px rgba(161,140,209,0.14); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="strategie"]{ background: linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%); color:#001 }
+  #catalog-hero .cat[data-filter="strategie"]:hover{ box-shadow:0 8px 28px rgba(102,166,255,0.14); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="quiz"]{ background: linear-gradient(135deg,#fbc2eb 0%,#a6c1ee 100%); color:#001 }
+  #catalog-hero .cat[data-filter="quiz"]:hover{ box-shadow:0 8px 28px rgba(191,194,238,0.14); transform:translateY(-3px) }
+  </style>
+</head>
+<body>
+  <!-- Auto-redirect removed. Provide explicit links to the available platform variants. -->
+  <div style="padding:18px;background:#021226;color:#dff;border-radius:8px;margin:18px 0">
+    Open platform: <a href="./global_platform_canonical.html">canonical</a> — <a href="./global_platform_correct.html">correct</a>
+  </div>
+  <script>
+      const grid = document.getElementById('gamesGrid');
+      if(!buttons.length || !grid) return;
+      buttons.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const filter = (b.dataset.filter||'').toString().toLowerCase();
+          const cards = grid.querySelectorAll('.game-card');
+          cards.forEach(c=>{
+            const id = Number(c.dataset.gameId);
+            const meta = (window.gameMap && window.gameMap[id]) ? window.gameMap[id] : null;
+            const tags = (meta && meta.tags) ? meta.tags.map(t=>t.toString().toLowerCase()) : [];
+            if(!filter || tags.includes(filter)) c.style.display='block'; else c.style.display='none';
+          });
+        });
+    });
+  </script>
+</body>
+</html>

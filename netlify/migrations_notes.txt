@@ -1,0 +1,16 @@
+Run these migrations in your Supabase SQL editor (or via psql) in sequence:
+
+1) Create webhook_failures table:
+   - Open migrations/001_create_webhook_failures.sql and run in Supabase SQL editor.
+
+2) Add unique constraint on purchases.session_id:
+   - Run migrations/002_add_unique_constraint_purchases.sql.
+   - IMPORTANT: if your purchases table already contains duplicate session_ids, resolve duplicates before applying the UNIQUE constraint (delete or merge duplicates).
+
+After migrations:
+- Confirm the tables exist and indexes are created.
+- Deploy the updated functions to Netlify (or test locally with netlify dev + stripe listen).
+
+Replaying failures:
+- Query webhook_failures for rows and process them manually or with a replay script.
+- The tools/reconcile_stripe.js helps discover sessions missing from purchases.

@@ -1,0 +1,344 @@
+﻿<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Brainova - Plateforme unique (global)</title>
+  <style>
+    /* Inline minimal maquette CSS (self-contained) */
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;400;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Rajdhani,Segoe UI,Arial;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 50%,#16213e 100%);color:#fff}
+    .header{background:linear-gradient(135deg,rgba(0,0,0,0.95),rgba(26,26,46,0.9));backdrop-filter:blur(10px);border-bottom:2px solid #00d4ff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000}
+    .logo h1{font-family:Orbitron,monospace;font-size:1.6rem;margin:0;background:linear-gradient(45deg,#00d4ff,#ff0096,#00ff88);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+    <!doctype html>
+    <html lang="fr">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Redirecting to canonical platform</title>
+        <meta http-equiv="refresh" content="0;url=./global_platform_canonical.html">
+        <script>location.replace('./global_platform_canonical.html');</script>
+      </head>
+      <body>
+        Redirecting to the canonical platform — <a href="./global_platform_canonical.html">open platform</a>
+      </body>
+    </html>
+          27: { title: 'Cyber Pool', desc: 'æªæ¥å°ç â åäºº & å¤äººæ¨¡å¼.' },
+          28: { title: 'Quantum Tiles', desc: 'ç¦çæ¼å¾ â å¹éå¹¶æ¸é¤.' },
+          29: { title: 'Genius Quest', desc: 'å¤è¯­ç§æµéª â æµè¯ä½ çç¥è¯.' },
+          30: { title: 'Space Explorer', desc: 'å¤ªç©ºæ¢é© â æ¢ç´¢è¡æ.' },
+          31: { title: 'NeuroSphere', desc: 'AI æ¡æ¸¸ â åä½æç«äº.' },
+          32: { title: 'Skyjo Futuriste', desc: 'Skyjo çæªæ¥åä½.' },
+          33: { title: 'STELLAR NEXUS', desc: 'äº¤äºå¼å¤ªç©ºæ¸¸æ â ææä¸æ¢ç´¢.' },
+          34: { title: 'Dixit Futuriste', desc: 'æ³è±¡ä¹æ â åäºå¡.' },
+          35: { title: 'Cyber Warrior', desc: 'æªæ¥ RPG â ä»»å¡ä¸åçº§.' },
+          36: { title: 'Crystal Quest', desc: 'æ¶éæ°´æ¶çå¤ªç©ºè°é¢.' }
+        }
+  };
+
+      function getGameMeta(i, lang){
+        const base = gameMap[i] || { file: null, title: `Jeu ${i}`, desc: 'Cliquez pour ouvrir', icon: 'ð®' };
+        const overrides = (gameTranslations[lang] && gameTranslations[lang][i]) ? gameTranslations[lang][i] : {};
+        return Object.assign({}, base, overrides);
+      }
+
+      function makeCard(i){
+        const div = document.createElement('div'); div.className='game-card'; div.dataset.gameId=i;
+        const meta = getGameMeta(i, currentLang);
+        div.dataset.file = (gameMap[i] && gameMap[i].file) ? gameMap[i].file : '';
+        // Apply per-card outer styles if the GamesIndex helper is available.
+        // However, force card 0 (Test QI) to use the platform default so the
+        // local `global_platform.html` looks identical to the served platform.
+        try{
+          if(Number(i) !== 0 && window.GamesIndex && typeof window.GamesIndex.getCardStyle === 'function'){
+            const styleText = window.GamesIndex.getCardStyle(String(i)) || '';
+            if(styleText) div.style.cssText += styleText;
+          }
+        }catch(e){ /* ignore */ }
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div class="game-number">${String(i).padStart(2,'0')}</div>
+            <div class="game-status">--</div>
+          </div>
+          <div class="game-icon">${meta.icon || 'ð®'}</div>
+          <h3>${meta.title}</h3>
+          <p style="text-align:center;color:#cfefff">${meta.desc || 'Cliquez pour ouvrir'}</p>
+        `;
+        div.addEventListener('click', ()=>openGame(i));
+        return div;
+      }
+
+      // Re-render the entire grid (used when language changes)
+      function renderGrid(){
+        grid.innerHTML = '';
+        // include 0..total so Test QI (id 0) appears before the other games
+        for(let i=0;i<=total;i++) grid.appendChild(makeCard(i));
+      }
+
+      // initial render (0..total)
+      for(let i=0;i<=total;i++) grid.appendChild(makeCard(i));
+
+  // Default: enable no-server only when opened via file://; when served over HTTP use iframe overlay by default
+  let noServerMode = (location.protocol === 'file:');
+      const noServerBtn = document.getElementById('noServerBtn');
+      function updateNoServerUI(){
+        noServerBtn.style.background = noServerMode ? 'linear-gradient(45deg,#ffd700,#00ff88)' : '';
+        noServerBtn.textContent = noServerMode ? 'Mode sans serveur (ON)' : 'Mode sans serveur';
+      }
+  updateNoServerUI();
+  // If we are running via file://, keep no-server; if we are running via http and user wants iframe, they can toggle off
+      noServerBtn.addEventListener('click', ()=>{ noServerMode = !noServerMode; updateNoServerUI(); });
+
+      function openGame(id){
+        const meta = gameMap[id] || {};
+        // resolve filename: prefer explicit file, else fallbacks
+        const candidates = [];
+        if(meta.file) candidates.push(meta.file);
+        candidates.push(`./jeux${id}.html`);
+        candidates.push(`./jeux${id}.html.html`);
+        const chosen = (cardFileExists => cardFileExists)();
+        // If no-server or file protocol, open in new tab using first candidate
+        const finalFile = meta.file || `./jeux${id}.html`;
+        if(noServerMode){
+          window.open(finalFile,'_blank');
+          return;
+        }
+        // When running via server, try to load the first candidate that responds
+        titleEl.textContent = meta.title || `Jeu ${id}`;
+        // Try to set iframe src to meta.file first
+          // Resolve relative URL to absolute for clearer logs
+          let resolvedUrl = meta.file || `./jeux${id}.html`;
+          try{
+            resolvedUrl = new URL(resolvedUrl, window.location.href).href;
+            console.debug(`global_platform.openGame id=${id} resolved='${resolvedUrl}'`);
+          }catch(err){
+            console.debug(`global_platform.openGame id=${id} raw='${resolvedUrl}'`);
+          }
+
+          // For games that have standalone pages (notably 1 and 2) prefer loading via iframe.src
+          // This is more robust for complex self-contained pages. Keep fetch+srcdoc as a fallback
+          // in case the src navigation fails for some reason.
+          try{
+            const safeResolved = encodeURI(resolvedUrl);
+            if([1,2].includes(Number(id))){
+              console.debug(`global_platform.openGame id=${id} attempting iframe.src -> ${safeResolved}`);
+              try{
+                iframe.src = safeResolved;
+              }catch(e){
+                console.warn('Setting iframe.src failed, will try fetch+srcdoc fallback', e);
+                // fallback: fetch html and set srcdoc with <base>
+                fetch(safeResolved).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); }).then(html=>{
+                  const base = `<base href="${safeResolved}">`;
+                  iframe.srcdoc = base + html;
+                  console.debug(`global_platform.openGame id=${id} srcdoc fallback set`);
+                }).catch(err=>{
+                  console.error('Failed to fetch game HTML for overlay', safeResolved, err);
+                  showOverlayError('Impossible de charger le jeu dans l\'overlay. Ouvrir dans un nouvel onglet.');
+                });
+              }
+            }else{
+              iframe.src = safeResolved;
+            }
+          }catch(e){
+            try{ iframe.src = resolvedUrl; }catch(_){ }
+          }
+        // If opening game 1 (custom page with its own exit UI), hide the platform close button
+        try{ if(Number(id) === 1){ closeBtn.style.display = 'none'; } else { closeBtn.style.display = ''; } }catch(e){}
+        overlay.classList.add('active');
+        document.addEventListener('keydown', escClose);
+      }
+
+      // Open authentication page (mode = 'login' or 'signup') in overlay
+      async function openAuth(mode){
+        const target = './connexion et profil.html' + (mode ? `?mode=${encodeURIComponent(mode)}` : '');
+        if(noServerMode){ window.open(target, '_blank'); return; }
+        titleEl.textContent = (mode === 'signup') ? 'Inscription' : 'Connexion';
+        // quick HEAD check to ensure reachable
+        try{
+          const r = await fetch(target, { method: 'HEAD' });
+          if(!r.ok) throw new Error('HTTP '+r.status);
+          // reachable -> set iframe.src (percent-encode to handle spaces)
+          try{
+            const tgt = new URL(target, window.location.href).href;
+            iframe.src = encodeURI(tgt);
+          }catch(e){ try{ iframe.src = target; }catch(_){} }
+          overlay.classList.add('active');
+          document.addEventListener('keydown', escClose);
+          return;
+        }catch(err){
+          console.warn('Auth target unreachable in overlay, opening new tab', err);
+          // fallback to new tab
+          window.open(target, '_blank');
+          return;
+        }
+      }
+
+      function closeGame(){
+        overlay.classList.remove('active');
+        try{ iframe.src = 'about:blank'; }catch(e){}
+        try{ closeBtn.style.display = ''; }catch(e){}
+        document.removeEventListener('keydown', escClose);
+      }
+
+      function showOverlayError(msg){
+        try{
+          // show a simple HTML error message in the iframe so user sees why it failed
+          const errHtml = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#fff;background:#111;padding:20px;font-family:Rajdhani,Segoe UI,Arial">
+            <h2>Erreur de chargement</h2>
+            <p style="max-width:800px;text-align:center">${String(msg)}</p>
+            <p style="margin-top:12px"><button onclick="window.parent.postMessage({action:'close'},'*')" style="padding:8px 12px;border-radius:6px;border:0;cursor:pointer;background:#00d4ff;color:#000;font-weight:700">Fermer</button></p>
+          </div>`;
+          iframe.srcdoc = errHtml;
+        }catch(e){/* ignore */}
+      }
+
+      function escClose(e){ if(e.key==="Escape") closeGame(); }
+
+      closeBtn.addEventListener('click', closeGame);
+      overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeGame(); });
+
+      // Iframe load / error logging to help diagnose blank frames
+      iframe.addEventListener('load', ()=>{
+        try{ console.debug('overlay iframe loaded', iframe.src); }catch(e){}
+      });
+      iframe.addEventListener('error', (ev)=>{
+        try{ console.error('overlay iframe error loading', iframe.src, ev); }catch(e){}
+      });
+
+      // show header after load
+      window.addEventListener('load', ()=>{
+        document.getElementById('loader').style.display='none';
+        document.getElementById('header').style.display='flex';
+        // wire auth buttons
+        const b1 = document.getElementById('btnLogin'); if(b1) b1.addEventListener('click', ()=>openAuth('login'));
+        const b2 = document.getElementById('btnSignup'); if(b2) b2.addEventListener('click', ()=>openAuth('signup'));
+  // show saved sigle if user already logged in
+        try{
+          const saved = localStorage.getItem('brainovaUser');
+          if(saved){
+            const u = JSON.parse(saved);
+            const sig = (u.avatar && u.avatar.length>0) ? u.avatar : (u.name?u.name.split(' ').map(n=>n.charAt(0)).join('').toUpperCase():'');
+            const sigEl = document.getElementById('userSigle');
+            if(sigEl && sig){ sigEl.textContent = sig; sigEl.style.display='flex'; }
+          }
+        }catch(e){/* ignore */}
+        // initialize single language select
+        const langSelect = document.getElementById('langSelect');
+        const LangMeta = { fr:{emoji:'ð«ð·', label:'FR'}, en:{emoji:'ð¬ð§', label:'EN'}, ar:{emoji:'ð¸ð¦', label:'AR'}, es:{emoji:'ðªð¸', label:'ES'}, de:{emoji:'ð©ðª', label:'DE'}, zh:{emoji:'ð¨ð³', label:'ä¸­æ'} };
+
+        function updateLangPickerUI(lang){
+          try{
+            if(langSelect) {
+              langSelect.value = lang;
+              // update visible label is already handled by the select's option text
+            }
+          }catch(e){/* ignore */}
+        }
+
+        // handle selection
+        if(langSelect){
+          langSelect.addEventListener('change', function(){ selectLang(this.value); });
+        }
+
+        function selectLang(L){ if(!L) return; applyLanguage(L); updateLangPickerUI(L); localStorage.setItem('brainovaLang', L); 
+          // notify children frames (so embedded games update immediately)
+          try{ window.frames && Array.from(document.getElementsByTagName('iframe')).forEach(f=>{ try{ f.contentWindow.postMessage({ action:'set-language', lang: L }, '*'); }catch(e){} }); }catch(e){}
+        }
+  // set initial label and apply language
+  updateLangPickerUI(currentLang);
+  applyLanguage(currentLang);
+        // settings menu
+        const sBtn = document.getElementById('settingsBtn'); const sMenu = document.getElementById('settingsMenu');
+        if(sBtn && sMenu){ sBtn.addEventListener('click', ()=>{ sMenu.style.display = (sMenu.style.display === 'block') ? 'none' : 'block'; }); }
+        document.getElementById('settingsEditProfile').addEventListener('click', ()=>{ sMenu.style.display='none'; openAuth('profile'); });
+        document.getElementById('settingsHistory').addEventListener('click', ()=>{ sMenu.style.display='none'; openAuth('history'); });
+      });
+
+      // Listen to messages from iframes so games can ask the platform to close the overlay
+      window.addEventListener('message', (e)=>{
+        try{
+          const data = e.data || {};
+          if(data && data.action === 'close'){
+            closeGame();
+          }
+          if(data && data.action === 'login-success'){
+            console.debug('Received login-success from iframe', data.user);
+            // Close overlay then reload or navigate to homepage
+            closeGame();
+            try{
+              // If the platform is a single page, you might refresh to reflect login state
+              // update header sigle from user info then reload
+              try{
+                const u = data.user || {};
+                const sig = (u.avatar && u.avatar.length>0) ? u.avatar : (u.name?u.name.split(' ').map(n=>n.charAt(0)).join('').toUpperCase():'');
+                const sigEl = document.getElementById('userSigle');
+                if(sigEl && sig){ sigEl.textContent = sig; sigEl.style.display='flex'; }
+              }catch(e){}
+              window.location.href = window.location.pathname; // reload the current page (global_platform.html)
+            }catch(err){
+              window.location.reload();
+            }
+          }
+          // Message from embedded game asking to return to platform home
+          if(data && data.action === 'go-home'){
+            console.debug('Received go-home from iframe');
+            try{ closeGame(); window.location.href = window.location.pathname; }catch(err){ window.location.reload(); }
+          }
+        }catch(err){/* ignore */}
+      });
+
+      // Tester tous les jeux : vÃ©rifie chaque jeuxN.html et met Ã  jour le statut
+      const checkBtn = document.getElementById('checkAllBtn');
+      const checkStatus = document.getElementById('checkStatus');
+      checkBtn.addEventListener('click', async ()=>{
+        checkBtn.disabled = true; checkStatus.textContent = 'Test en cours...';
+        let ok = 0, fail = 0;
+        for(let i=0;i<=total;i++){
+          const meta = gameMap[i] || {};
+          const candidates = [];
+          if(meta.file) candidates.push(meta.file);
+          candidates.push(`./jeux${i}.html`);
+          candidates.push(`./jeux${i}.html.html`);
+          const card = grid.querySelector(`.game-card[data-game-id="${i}"]`);
+          const statusEl = card.querySelector('.game-status');
+          let found = false;
+          for(const url of candidates){
+            if(!url) continue;
+            try{
+              const r = await fetch(url, {method:'HEAD'});
+              if(r.ok){ statusEl.textContent = 'OK'; statusEl.style.background = 'linear-gradient(45deg,#00ff88,#ffd700)'; statusEl.style.color = '#000'; ok++; found = true; break; }
+            }catch(e){ /* try next */ }
+          }
+          if(!found){ statusEl.textContent = 'N/D'; statusEl.style.background = 'rgba(255,0,0,0.12)'; fail++; }
+        }
+        checkStatus.textContent = `RÃ©sultat : ${ok} OK / ${fail} FAIL`;
+        checkBtn.disabled = false;
+      });
+
+    })();
+  </script>
+  <script>
+    // Wire category buttons to filter the games grid by meta.tags
+    (function(){
+      const hero = document.getElementById('catalog-hero');
+      if(!hero) return;
+      const buttons = hero.querySelectorAll('.cat');
+      const grid = document.getElementById('gamesGrid');
+      if(!buttons.length || !grid) return;
+      buttons.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const filter = (b.dataset.filter||'').toString().toLowerCase();
+          const cards = grid.querySelectorAll('.game-card');
+          cards.forEach(c=>{
+            const id = Number(c.dataset.gameId);
+            const meta = (window.gameMap && window.gameMap[id]) ? window.gameMap[id] : null;
+            const tags = (meta && meta.tags) ? meta.tags.map(t=>t.toString().toLowerCase()) : [];
+            if(!filter || tags.includes(filter)) c.style.display='block'; else c.style.display='none';
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

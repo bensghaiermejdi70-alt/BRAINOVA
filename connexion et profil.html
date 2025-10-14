@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système Profile Brainova</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Header avec boutons */
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-login, .btn-register {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-login {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-login:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-register {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Profil utilisateur connecté */
+        .user-profile {
+            display: none;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        .user-email {
+            font-size: 0.85rem;
+            color: #666;
+            margin: 0;
+        }
+
+        .user-dropdown {
+            position: relative;
+        }
+
+        .dropdown-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+
+        .dropdown-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+            color: #dc3545;
+        }
+
+        /* Modal de connexion */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px;
+            margin: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .close-btn:hover {
+            opacity: 1;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .auth-button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .auth-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-switch {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .form-switch a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .form-switch a:hover {
+            text-decoration: underline;
+        }
+
+        .success-message, .error-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-nav {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .auth-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .user-profile {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header avec navigation -->
+    <div class="header-nav">
+        <div class="logo">🧠 Brainova</div>
+        
+        <!-- Boutons de connexion (visible quand non connecté) -->
+        <div class="auth-buttons" id="authButtons">
+            <button class="btn-login" onclick="openLoginModal()">Se connecter</button>
+            <button class="btn-register" onclick="openRegisterModal()">S'inscrire</button>
+        </div>
+
+        <!-- Profil utilisateur (visible quand connecté) -->
+        <div class="user-profile" id="userProfile">
+            <div class="user-avatar" id="userAvatar">JD</div>
+            <div class="user-info">
+                <div class="user-name" id="userName">John Doe</div>
+                <div class="user-email" id="userEmail">john@example.com</div>
+            </div>
+            <div class="user-dropdown">
+                <button class="dropdown-btn" onclick="toggleDropdown()">⚙️</button>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <div class="dropdown-item" onclick="editProfile()">✏️ Modifier le profil</div>
+                    <div class="dropdown-item" onclick="viewSettings()">⚙️ Paramètres</div>
+                    <div class="dropdown-item" onclick="viewHistory()">📊 Historique</div>
+                    <div class="dropdown-item" onclick="logout()">🚪 Déconnexion</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu principal de votre plateforme -->
+    <div style="background: white; padding: 40px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+        <h1>Bienvenue sur Brainova</h1>
+        <p>Votre plateforme d'apprentissage intelligente. Connectez-vous pour accéder à vos cours et suivre votre progression.</p>
+        
+        <div id="welcomeMessage" style="display: none; background: #e7f3ff; padding: 20px; border-radius: 10px; margin-top: 20px;">
+            <h3>🎉 Bienvenue <span id="welcomeName"></span> !</h3>
+            <p>Vous êtes maintenant connecté(e) à votre espace Brainova. Explorez vos cours et continuez votre apprentissage.</p>
+        </div>
+    </div>
+
+    <!-- Modal de connexion/inscription -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+                <h2 id="modalTitle">Se connecter</h2>
+            </div>
+            <div class="modal-body">
+                <div id="messageContainer"></div>
+
+                <!-- Formulaire de connexion -->
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" class="form-input" placeholder="votre@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Mot de passe</label>
+                        <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="auth-button">Se connecter</button>
+                    <div class="form-switch">
+                        <span>Pas de compte ? </span>
+                        <a href="#" onclick="switchToRegister()">Créer un compte</a>
+                    </div>
+                </form>
+
+                <!-- Formulaire d'inscription -->
+                <form id="registerForm" style="display: none;">
+                    <div class="form-group">
+                        <label for="registerName">Nom complet</label>
+                        <input type="text" id="registerName" class="form-input" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" class="form-input" placeholder="votre@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Mot de passe</label>
+                        <input type="password" id="registerPassword" class="form-input" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="auth-button">Créer mon compte</button>
+                    <div class="form-switch">
+                        <span>Déjà un compte ? </span>
+                        <a href="#" onclick="switchToLogin()">Se connecter</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // État de l'utilisateur
+        let currentUser = null;
+
+        // Ouvrir les modals
+        function openLoginModal() {
+            document.getElementById('modalTitle').textContent = 'Se connecter';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('authModal').style.display = 'flex';
+        }
+
+        function openRegisterModal() {
+            document.getElementById('modalTitle').textContent = 'Créer un compte';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+            document.getElementById('authModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('authModal').style.display = 'none';
+            clearMessages();
+        }
+
+        // Basculer entre les formulaires
+        function switchToRegister() {
+            openRegisterModal();
+        }
+
+        function switchToLogin() {
+            openLoginModal();
+        }
+
+        // Gestion des messages
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            container.innerHTML = `<div class="${type}-message">${message}</div>`;
+        }
+
+        function clearMessages() {
+            document.getElementById('messageContainer').innerHTML = '';
+        }
+
+        // Connexion
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showMessage('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+
+            // Simulation de connexion
+            showMessage('Connexion en cours...', 'success');
+            
+            setTimeout(() => {
+                // Créer l'utilisateur
+                currentUser = {
+                    name: 'John Doe', // En réalité, récupéré du serveur
+                    email: email,
+                    avatar: email.charAt(0).toUpperCase() + (email.split('@')[0].charAt(1) || 'U').toUpperCase()
+                };
+                
+                loginUser(currentUser);
+                closeModal();
+                showMessage('Connexion réussie !', 'success');
+                // If embedded in an iframe, notify parent that login succeeded
+                try{
+                    // write a temporary shared key so other pages (or parent) can detect login in file:// or cross-origin fallbacks
+                    try{ localStorage.setItem('brainova_temp_user', JSON.stringify({ email: currentUser.email, name: currentUser.name, avatar: currentUser.avatar })); }catch(e){}
+                    if(window.parent && window.parent !== window){
+                        // prefer postMessage
+                        try{ window.parent.postMessage({ action: 'login-success', user: currentUser }, '*'); }catch(e){}
+                        // and also try direct API if available (OverlayManager)
+                        try{ if(window.parent.OverlayManager && typeof window.parent.OverlayManager.close === 'function'){ window.parent.OverlayManager.close(); } }catch(e){}
+                    } else {
+                        // standalone page: redirect to global platform home
+                        window.location.href = './brainova.html';
+                    }
+                }catch(e){ console.warn('postMessage to parent failed', e); }
+            }, 1500);
+        });
+
+        // Inscription
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            
+            if (!name || !email || !password) {
+                showMessage('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('Le mot de passe doit contenir au moins 6 caractères', 'error');
+                return;
+            }
+
+            // Simulation d'inscription
+            showMessage('Création du compte...', 'success');
+            
+            setTimeout(() => {
+                // Créer l'utilisateur
+                currentUser = {
+                    name: name,
+                    email: email,
+                    avatar: name.split(' ').map(n => n.charAt(0)).join('').toUpperCase()
+                };
+                
+                // Persist demo user password in session-scoped registry so login overlay can find it
+                try{
+                    const key = 'brainova_demo_users';
+                    const raw = sessionStorage.getItem(key);
+                    const map = raw ? JSON.parse(raw) : {};
+                    const em = String(email).toLowerCase();
+                    map[em] = { name: name, email: email, avatar: currentUser.avatar || '', id: 'u_'+Date.now(), password: password };
+                    sessionStorage.setItem(key, JSON.stringify(map));
+                }catch(e){}
+                loginUser(currentUser);
+                closeModal();
+                showMessage('Compte créé avec succès !', 'success');
+                    // Notify parent or redirect when standalone
+                    try{
+                        if(window.parent && window.parent !== window){
+                            window.parent.postMessage({ action: 'login-success', user: currentUser, meta: { password: password } }, '*');
+                        } else {
+                            // broadcast a one-time temp user so other tabs/platform pages can pick it up
+                            try{ localStorage.setItem('brainova_temp_user', JSON.stringify({ email: email, name: name, avatar: currentUser.avatar || '', password: password })); }catch(e){}
+                                window.location.href = './brainova.html';
+                        }
+                    }catch(e){ console.warn('postMessage to parent failed', e); }
+            }, 1500);
+        });
+
+        // Connecter l'utilisateur
+        function loginUser(user) {
+            currentUser = user;
+            
+            // Masquer les boutons de connexion
+            document.getElementById('authButtons').style.display = 'none';
+            
+            // Afficher le profil utilisateur
+            document.getElementById('userProfile').style.display = 'flex';
+            document.getElementById('userAvatar').textContent = user.avatar;
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userEmail').textContent = user.email;
+            
+            // Afficher le message de bienvenue
+            document.getElementById('welcomeMessage').style.display = 'block';
+            document.getElementById('welcomeName').textContent = user.name;
+            
+            // Sauvegarder dans sessionStorage (non persistant entre onglets/sessions)
+            try{ sessionStorage.setItem('brainovaSession', JSON.stringify(user)); }catch(e){ /* ignore if unavailable */ }
+        }
+
+        // Déconnexion
+        function logout() {
+            currentUser = null;
+            
+            // Afficher les boutons de connexion
+            document.getElementById('authButtons').style.display = 'flex';
+            
+            // Masquer le profil utilisateur
+            document.getElementById('userProfile').style.display = 'none';
+            
+            // Masquer le message de bienvenue
+            document.getElementById('welcomeMessage').style.display = 'none';
+            
+            // Supprimer de sessionStorage (session-only)
+            try{ sessionStorage.removeItem('brainovaSession'); }catch(e){ /* ignore if unavailable */ }
+            
+            // Fermer le dropdown
+            document.getElementById('dropdownMenu').classList.remove('show');
+            
+            try{ parent.postMessage({ action: 'dialog', dialogType: 'alert', text: 'Vous avez été déconnecté(e)' }, '*'); }catch(e){}
+        }
+
+        // Gestion du dropdown
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.classList.toggle('show');
+        }
+
+        // Fermer le dropdown si on clique ailleurs
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.user-dropdown')) {
+                document.getElementById('dropdownMenu').classList.remove('show');
+            }
+        });
+
+        // Actions du dropdown
+        function editProfile() {
+            try{ parent.postMessage({ action: 'dialog', dialogType: 'alert', text: 'Fonctionnalité "Modifier le profil" - À implémenter' }, '*'); }catch(e){}
+            document.getElementById('dropdownMenu').classList.remove('show');
+        }
+
+        function viewSettings() {
+            try{ parent.postMessage({ action: 'dialog', dialogType: 'alert', text: 'Fonctionnalité "Paramètres" - À implémenter' }, '*'); }catch(e){}
+            document.getElementById('dropdownMenu').classList.remove('show');
+        }
+
+        function viewHistory() {
+            try{ parent.postMessage({ action: 'dialog', dialogType: 'alert', text: 'Fonctionnalité "Historique" - À implémenter' }, '*'); }catch(e){}
+            document.getElementById('dropdownMenu').classList.remove('show');
+        }
+
+        // Vérifier si l'utilisateur est déjà connecté au chargement
+        window.addEventListener('load', function() {
+            // Prefer session-only stored user (do not persist across browser sessions)
+            try{
+                const savedUser = sessionStorage.getItem('brainovaSession');
+                if (savedUser) {
+                    const user = JSON.parse(savedUser);
+                    loginUser(user);
+                }
+            }catch(e){ /* ignore sessionStorage errors */ }
+        });
+
+        // Fermer le modal avec Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a405f666a2e22d',t:'MTc1OTc0MTgwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

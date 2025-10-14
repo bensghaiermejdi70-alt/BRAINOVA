@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Overlay tester - Brainova</title>
+  <style>
+    body{font-family:Segoe UI,Arial;background:#071126;color:#fff;padding:18px}
+    #frameWrap{border:6px solid rgba(0,255,255,0.06);border-radius:12px;overflow:hidden;max-width:980px;margin:18px auto}
+    iframe{width:100%;height:720px;border:0;display:block}
+    #log{background:#001018;border:1px solid #00334d;padding:8px;border-radius:6px;color:#9fe8ff;max-width:980px;margin:12px auto;height:150px;overflow:auto}
+    button{padding:8px 12px;border-radius:8px;border:0;background:#00a3ff;color:#012;cursor:pointer}
+  </style>
+</head>
+<body>
+  <h1>Overlay Tester</h1>
+  <p>Cette page simule la plateforme parent. Elle injecte un <code>OverlayManager.close()</code> et écoute <code>postMessage</code>.</p>
+  <div style="text-align:center;margin:12px 0">
+    <select id="gameSelect" style="padding:8px;border-radius:8px;margin-right:8px">
+      <option value="/jeux3.html">jeux3 (Neural Puzzle)</option>
+  <option value="/jeux2brainova.html">jeux2 (Memory Quantique)</option>
+      <option value="/carte%20qi.html">carte qi (QI Test)</option>
+    </select>
+    <button id="openBtn">Ouvrir jeu</button>
+    <button id="closeBtn">Fermer iframe (parent)</button>
+  </div>
+  <div id="frameWrap"></div>
+  <h2>Log postMessage</h2>
+  <div id="log"></div>
+
+  <script>
+    // Simple OverlayManager stub
+    window.OverlayManager = {
+      close: function(){
+        var fw = document.getElementById('frameWrap');
+        if(fw){ fw.innerHTML = ''; log('OverlayManager.close() called - iframe removed'); }
+      }
+    };
+
+    function log(msg){
+      var el = document.getElementById('log');
+      var time = new Date().toLocaleTimeString();
+      el.innerHTML = '['+time+'] '+(msg||'') + '<br>' + el.innerHTML;
+    }
+
+    window.addEventListener('message', function(ev){
+      var data = ev.data;
+      try{ data = (typeof data === 'string') ? JSON.parse(data) : data; }catch(e){}
+      log('postMessage received: ' + JSON.stringify(data));
+      // If the game asks to close, call OverlayManager.close()
+      if(data && data.action === 'close'){
+        try{ window.OverlayManager.close(); }catch(e){ log('OverlayManager.close() failed: '+e.message); }
+      }
+      // If iframe forwards error objects, display them clearly
+      if(data && data.type === 'frame-error'){
+        log('Frame error: ' + (data.message||'') + ' at ' + (data.src||'') + ':' + (data.line||'') );
+        if(data.err) log('Stack: ' + data.err);
+      }
+    });
+
+    document.getElementById('openBtn').addEventListener('click', function(){
+      var fw = document.getElementById('frameWrap');
+      var target = document.getElementById('gameSelect').value;
+      fw.innerHTML = '<iframe id="gframe" src="'+target+'" title="jeu"></iframe>';
+      var iframe = document.getElementById('gframe');
+      log('iframe opened: ' + target);
+      iframe.addEventListener('load', function(){
+        try{
+          var win = iframe.contentWindow;
+          var doc = win.document;
+          // install a runtime error forwarder inside the iframe (same-origin assumed)
+          try{
+            win.onerror = function(msg, src, line, col, err){
+              try{ window.postMessage({ type:'frame-error', message:msg, src:src, line:line, col:col, err: err && err.stack }, '*'); }catch(e){}
+            };
+          }catch(e){ log('Could not install onerror in iframe: '+e.message); }
+
+          // Basic diagnostics: body length and presence of expected controls
+          var bodyLen = doc.body ? doc.body.innerText.length : 0;
+          log('iframe loaded — body text length: ' + bodyLen);
+          // check for closeToBrainova and fallback link
+          var hasClose = !!(win.closeToBrainova && typeof win.closeToBrainova === 'function');
+          var hasLink = !!doc.getElementById('brainovaLink') || !!doc.getElementById('brainovaLink0') || !!doc.getElementById('brainovaLink2');
+          log('closeToBrainova() present: ' + hasClose + ', fallback link present: ' + hasLink);
+        }catch(e){ log('Onload diagnostic error: ' + e.message); }
+      });
+    });
+    document.getElementById('closeBtn').addEventListener('click', function(){
+      try{ window.OverlayManager.close(); }catch(e){ log('close() error: '+e.message); }
+    });
+  </script>
+</body>
+</html>

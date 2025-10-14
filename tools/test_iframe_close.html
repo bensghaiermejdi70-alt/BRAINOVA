@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Test iframe close - Brainova</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;padding:20px;background:#0b1220;color:#cfefff}
+    .box{background:#061229;padding:16px;border-radius:8px}
+    button{padding:8px 12px;margin-right:8px;border-radius:6px;border:0;background:#00d4ff;color:#001;font-weight:700;cursor:pointer}
+    iframe{width:100%;height:560px;border:1px solid rgba(255,255,255,0.04);margin-top:12px}
+    pre{background:#071423;padding:8px;border-radius:6px;overflow:auto}
+  </style>
+</head>
+<body>
+  <h2>Test de la fermeture depuis l'iframe (jeux1super)</h2>
+  <div class="box">
+    <p>Ceci charge <code>jeux1super.html</code> dans une iframe et propose deux tests :</p>
+    <ol>
+      <li>Appeler directement <code>iframe.contentWindow.closePlatform()</code> (fonctionnera si même origine).</li>
+      <li>Envoyer <code>postMessage({action:'close'})</code> depuis le parent (simule le message envoyé par l'iframe).</li>
+    </ol>
+    <div style="margin-top:12px">
+      <button id="loadBtn">Charger l'iframe</button>
+      <button id="callBtn">Appeler closePlatform() dans l'iframe</button>
+      <button id="postBtn">Envoyer postMessage({action:'close'})</button>
+      <button id="clearLog">Effacer log</button>
+    </div>
+    <div style="margin-top:12px">
+      <strong>Log :</strong>
+      <pre id="log"></pre>
+    </div>
+  </div>
+
+  <iframe id="testFrame" src="" title="test iframe"></iframe>
+
+  <script>
+    const frame = document.getElementById('testFrame');
+    const loadBtn = document.getElementById('loadBtn');
+    const callBtn = document.getElementById('callBtn');
+    const postBtn = document.getElementById('postBtn');
+    const logEl = document.getElementById('log');
+    const clearBtn = document.getElementById('clearLog');
+
+    function log(s){ logEl.textContent += (new Date()).toLocaleTimeString() + ' - ' + s + '\n'; logEl.scrollTop = logEl.scrollHeight; }
+
+    loadBtn.addEventListener('click', ()=>{
+      // adjust path if needed; assumes this file is served from the repo root
+      frame.src = '/jeux1super.html';
+      log('Iframe chargé: ' + frame.src);
+    });
+
+    callBtn.addEventListener('click', ()=>{
+      try{
+        if(frame.contentWindow && typeof frame.contentWindow.closePlatform === 'function'){
+          frame.contentWindow.closePlatform();
+          log('Invoked frame.contentWindow.closePlatform()');
+        } else {
+          log('closePlatform() non disponible (probablement cross-origin). Fall back to postMessage.');
+          frame.contentWindow.postMessage({ action: 'close', source: 'test' }, '*');
+          log('postMessage envoyé depuis parent -> {action:close}');
+        }
+      }catch(e){
+        try{ frame.contentWindow.postMessage({ action: 'close', source: 'test' }, '*'); log('postMessage envoyé depuis parent (catch)'); }catch(err){ log('Erreur: ' + err.message); }
+      }
+    });
+
+    postBtn.addEventListener('click', ()=>{
+      try{ frame.contentWindow.postMessage({ action: 'close', source: 'test' }, '*'); log('postMessage envoyé depuis parent -> {action:close}'); }catch(e){ log('Erreur postMessage: ' + e.message); }
+    });
+
+    clearBtn.addEventListener('click', ()=>{ logEl.textContent = ''; });
+
+    // Listen for messages received by this page (simulate platform listener)
+    window.addEventListener('message', (ev)=>{
+      try{
+        const d = ev.data || {};
+        log('Received message on parent: ' + JSON.stringify(d));
+        if(d && d.action === 'close'){
+          log('Action close reçue — fermerrait overlay (simulation)');
+        }
+      }catch(e){ log('message parse error'); }
+    }, false);
+
+    // Also detect iframe load
+    frame.addEventListener('load', ()=>{ log('Iframe event: load'); });
+  </script>
+</body>
+</html>
