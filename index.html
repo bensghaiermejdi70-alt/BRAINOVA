@@ -1,0 +1,942 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Brainova - Plateforme unique (global)</title>
+  <style>
+    /* Inline minimal maquette CSS (self-contained) */
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;400;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Rajdhani,Segoe UI,Arial;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 50%,#16213e 100%);color:#fff}
+    .header{background:linear-gradient(135deg,rgba(0,0,0,0.95),rgba(26,26,46,0.9));backdrop-filter:blur(10px);border-bottom:2px solid #00d4ff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000}
+    .logo h1{font-family:Orbitron,monospace;font-size:1.6rem;margin:0;background:linear-gradient(45deg,#00d4ff,#ff0096,#00ff88);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+    .nav-btn{background:linear-gradient(45deg,#00d4ff,#ff0096);border:none;border-radius:20px;padding:8px 14px;color:#fff;font-weight:700;cursor:pointer}
+    .main{max-width:1200px;margin:18px auto;padding:0 18px}
+    .hero{padding:28px;background:linear-gradient(135deg,rgba(0,212,255,0.05),rgba(255,0,150,0.03));border-radius:12px;margin-bottom:18px}
+    .hero h2{font-family:Orbitron,monospace;font-size:2rem;margin:0;color:#00d4ff}
+    .games-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:18px}
+    .game-card{background:linear-gradient(135deg,rgba(0,0,0,0.9),rgba(26,26,46,0.8));border:2px solid #00d4ff;padding:14px;border-radius:14px;cursor:pointer;transition:transform .18s,box-shadow .18s}
+    .game-card:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(0,212,255,0.12)}
+    .game-number{font-weight:700;color:#00d4ff}
+  .game-badge{position:absolute;top:8px;right:8px;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#ffd700,#ffbf00);display:flex;align-items:center;justify-content:center;color:#001;font-weight:900;box-shadow:0 6px 18px rgba(255,191,0,0.18);border:2px solid rgba(255,255,255,0.12);z-index:5}
+    .game-icon{font-size:40px;text-align:center;margin:8px 0}
+    .game-card h3{font-family:Orbitron,monospace;margin:6px 0;color:#fff;text-align:center}
+    /* per-card customizations removed to restore default platform styling */
+  .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.92);z-index:2000}
+  .overlay.active{display:flex}
+  /* Make the iframe frame full-viewport so games render large */
+  .overlay .frame{position:fixed;inset:0;background:#000;border-radius:0;overflow:hidden;display:flex;align-items:stretch;justify-content:stretch}
+  .overlay .frame iframe{position:absolute;inset:0;width:100vw;height:100vh;border:0;z-index:1}
+    .close-btn{position:absolute;top:8px;right:8px;background:linear-gradient(45deg,#ff0096,#00d4ff);border:none;color:#fff;padding:8px 10px;border-radius:8px;font-weight:700;cursor:pointer;z-index:1002}
+    .overlay-title{position:absolute;left:12px;top:10px;color:#fff;font-weight:700;z-index:10}
+    .loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0b1220,#11223a);z-index:9999}
+    .spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,0.12);border-top-color:#00d4ff;border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  @media (max-width:480px){.overlay .frame{position:fixed;inset:0;border-radius:0}}
+  /* Futuristic language picker styles */
+  #langPicker { font-family: Rajdhani, Arial, sans-serif; }
+  #langBtn { display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#061229 0%,#08223a 100%);border:1px solid rgba(0,212,255,0.12);padding:8px 12px;border-radius:14px;color:#cfefff;backdrop-filter:blur(6px);box-shadow:0 6px 24px rgba(0,212,255,0.06); }
+  #langBtn:focus{outline:2px solid rgba(0,212,255,0.18)}
+  #langMenu .lang-item{transition:transform .12s,background .12s;color:#e6f7ff}
+  #langMenu .lang-item:hover{transform:translateX(6px);background:linear-gradient(90deg,rgba(0,212,255,0.04),rgba(255,0,150,0.02));}
+  #langMenu .lang-item.selected{background:linear-gradient(90deg,rgba(0,212,255,0.12),rgba(255,0,150,0.04));box-shadow:0 6px 18px rgba(0,212,255,0.06);}
+  /* Ensure the native select dropdown options are readable across platforms */
+  #langSelect{ position:relative; z-index:2001; min-width:130px; color:#cfefff; background:linear-gradient(135deg,#061229,#08223a); }
+  #langSelect option{ color:#001 !important; background:#fff !important; direction:ltr; }
+  /* On some platforms options can't be fully styled; provide an accessible fallback visual hint */
+  #langSelect:focus{ outline:2px solid rgba(0,212,255,0.14); }
+  /* Category button color schemes */
+  #catalog-hero .cat[data-filter="memoire"]{ background: linear-gradient(135deg,#7ee8fa 0%,#eec0c6 100%); color:#001 }
+  #catalog-hero .cat[data-filter="memoire"]:hover{ box-shadow:0 8px 28px rgba(126,232,250,0.18); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="societe"]{ background: linear-gradient(135deg,#cfd9df 0%,#e2ebf0 100%); color:#001 }
+  #catalog-hero .cat[data-filter="societe"]:hover{ box-shadow:0 8px 28px rgba(200,217,223,0.12); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="puzzle"]{ background: linear-gradient(135deg,#ffd6a5 0%,#fdffb6 100%); color:#111 }
+  #catalog-hero .cat[data-filter="puzzle"]:hover{ box-shadow:0 8px 28px rgba(255,214,165,0.14); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="arcade"]{ background: linear-gradient(135deg,#a18cd1 0%,#fbc2eb 100%); color:#0b002b }
+  #catalog-hero .cat[data-filter="arcade"]:hover{ box-shadow:0 8px 28px rgba(161,140,209,0.14); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="strategie"]{ background: linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%); color:#001 }
+  #catalog-hero .cat[data-filter="strategie"]:hover{ box-shadow:0 8px 28px rgba(102,166,255,0.14); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="quiz"]{ background: linear-gradient(135deg,#fbc2eb 0%,#a6c1ee 100%); color:#001 }
+  #catalog-hero .cat[data-filter="quiz"]:hover{ box-shadow:0 8px 28px rgba(191,194,238,0.14); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="reflexe"]{ background: linear-gradient(135deg,#ff9a9e 0%,#fecfef 100%); color:#001 }
+  #catalog-hero .cat[data-filter="reflexe"]:hover{ box-shadow:0 8px 28px rgba(255,154,158,0.14); transform:translateY(-3px) }
+  </style>
+</head>
+<body>
+  <div class="loader" id="loader"><div class="spinner" aria-hidden></div></div>
+  <header class="header" id="header" style="display:none">
+    <div class="logo"><h1>🧠 BRAINOVA</h1></div>
+    <nav class="nav" style="display:flex;gap:8px;align-items:center">
+  <button class="nav-btn" onclick="location.href=new URL('./global_platform_correct.html', location.href).href">Accueil</button>
+      <button id="btnLogin" class="nav-btn">Connexion</button>
+      <button id="btnSignup" class="nav-btn">Inscription</button>
+      <a class="nav-btn" href="https://buy.stripe.com/cNi8wR7IC77o54icy49EI01" target="_blank" rel="noopener noreferrer" style="background:linear-gradient(45deg,#ffd700,#ff7a00);">Pass Premium</a>
+      <div id="userSigle" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#00d4ff,#ff0096);display:flex;align-items:center;justify-content:center;color:#001;font-weight:800;margin-left:8px;display:none">JD</div>
+      <div style="position:relative;margin-left:8px">
+        <button id="settingsBtn" class="nav-btn" style="padding:6px 8px">⚙️</button>
+        <div id="settingsMenu" style="position:absolute;right:0;top:40px;background:#0b1220;border:1px solid rgba(255,255,255,0.04);padding:6px;border-radius:8px;display:none;min-width:160px">
+          <div style="padding:8px;color:#cfefff;cursor:pointer" id="settingsEditProfile">Changer profil</div>
+          <div style="padding:8px;color:#cfefff;cursor:pointer" id="settingsHistory">Historique</div>
+        </div>
+      </div>
+      <!-- Futuristic language selector (single select) -->
+      <div id="langPicker" style="position:relative;margin-left:8px">
+        <select id="langSelect" aria-label="Langue" title="Langue" style="appearance:none;-webkit-appearance:none;-moz-appearance:none;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:14px;border:1px solid rgba(0,212,255,0.12);background:linear-gradient(135deg,#061229 0%,#08223a 100%);color:#cfefff;cursor:pointer;font-weight:700">
+          <option value="fr">🇫🇷 Français</option>
+          <option value="en">🇬🇧 English</option>
+          <option value="ar">🇸🇦 العربية</option>
+          <option value="es">🇪🇸 Español</option>
+          <option value="de">🇩🇪 Deutsch</option>
+          <option value="zh">🇨🇳 中文</option>
+        </select>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Local state status bar (helpful in file:// mode) -->
+  <div id="localStateBar" style="background:rgba(0,0,0,0.6);color:#cfefff;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:13px;display:flex;gap:12px;align-items:center;justify-content:space-between">
+    <div id="localStateText">État local: vérification en cours...</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button id="localStateRefresh" class="nav-btn" style="padding:6px 10px;">Rafraîchir</button>
+      <button id="localStateClear" class="nav-btn" style="padding:6px 10px;background:#ff6b6b">Reset flags</button>
+    </div>
+  </div>
+
+  <main class="main">
+    <section class="hero" id="catalog-hero" style="padding:18px;background:linear-gradient(135deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;margin-bottom:18px">
+      <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:120px;height:120px;border-radius:14px;background:linear-gradient(135deg,#00d4ff,#ff0096);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:#001;padding:12px;box-shadow:0 8px 40px rgba(0,212,255,0.08)">36<br><small style="font-size:12px;color:#001;font-weight:700">JEUX</small></div>
+          <div>
+            <h2 style="margin:0;font-family:Orbitron,monospace;color:#00d4ff">Catalogue Brainova — 36 jeux</h2>
+            <p style="margin:6px 0;color:#cfefff">Explorez par thème : sélectionnez une catégorie pour filtrer les cartes de jeux.</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="cat" data-filter="memoire" style="padding:10px 14px;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(26,26,46,0.6));border:1px solid rgba(255,255,255,0.03);border-radius:10px;color:#cfefff;cursor:pointer">Mémoire</button>
+          <button class="cat" data-filter="societe" style="padding:10px 14px;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(26,26,46,0.6));border:1px solid rgba(255,255,255,0.03);border-radius:10px;color:#cfefff;cursor:pointer">Société</button>
+          <button class="cat" data-filter="puzzle" style="padding:10px 14px;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(26,26,46,0.6));border:1px solid rgba(255,255,255,0.03);border-radius:10px;color:#cfefff;cursor:pointer">Puzzle</button>
+          <button class="cat" data-filter="arcade" style="padding:10px 14px;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(26,26,46,0.6));border:1px solid rgba(255,255,255,0.03);border-radius:10px;color:#cfefff;cursor:pointer">Arcade</button>
+          <button class="cat" data-filter="strategie" style="padding:10px 14px;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(26,26,46,0.6));border:1px solid rgba(255,255,255,0.03);border-radius:10px;color:#cfefff;cursor:pointer">Stratégie</button>
+          <button class="cat" data-filter="quiz" style="padding:10px 14px;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(26,26,46,0.6));border:1px solid rgba(255,255,255,0.03);border-radius:10px;color:#cfefff;cursor:pointer">Quiz</button>
+          <button class="cat" data-filter="reflexe" style="padding:10px 14px;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(26,26,46,0.6));border:1px solid rgba(255,255,255,0.03);border-radius:10px;color:#cfefff;cursor:pointer">Réflexe</button>
+        </div>
+      </div>
+    </section>
+  <div style="margin-top:10px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);color:#cfefff">Remarque : si vous ne pouvez pas lancer un serveur local, double-cliquez sur ce fichier <strong>global_platform.html</strong> pour l'ouvrir dans votre navigateur, puis activez (ou laissez activé) le <em>Mode sans serveur</em>. Les jeux s'ouvriront dans de nouveaux onglets.</div>
+
+    <section id="gamesGrid" class="games-grid" aria-live="polite"></section>
+  </main>
+  <div style="max-width:1200px;margin:12px auto;padding:0 18px;display:flex;gap:10px;align-items:center">
+    <button id="checkAllBtn" class="nav-btn">Tester tous les jeux</button>
+    <button id="noServerBtn" class="nav-btn">Mode sans serveur</button>
+    <div id="checkStatus" style="color:#cfefff"></div>
+  </div>
+
+  <!-- Overlay iframe -->
+  <div id="overlay" class="overlay" role="dialog" aria-modal="true">
+      <div class="frame">
+      <button id="closeBtn" class="close-btn">Fermer</button>
+      <div id="overlayTitle" class="overlay-title">Titre</div>
+      <iframe id="overlayIframe" src="about:blank" title="Jeu" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+    </div>
+  </div>
+
+  <script>
+    // Minimal global script to render cards and open jeuxNN.html in a fullscreen iframe
+    (async function(){
+      const total = 36;
+      // Robust dynamic import for platform/games/games-index.js that works on GitHub Pages / subpaths
+    async function tryLoadGamesIndex(){
+        const baseHref = location.href;
+        const candidates = [
+          new URL('./platform/games/games-index.js', baseHref).href,
+          new URL('platform/games/games-index.js', baseHref).href,
+          // try resolving relative to the site root + current first folder (best-effort)
+          (function(){ try{ const parts = location.pathname.split('/').filter(Boolean); const first = parts.length>0?parts[0]:''; return first? new URL('/' + first + '/platform/games/games-index.js', location.origin).href : null; }catch(e){ return null; } })(),
+        ].filter(Boolean);
+
+        for(const url of candidates){
+          try{
+            const mod = await import(url);
+            // support both named exports and default
+            if(mod){ window.GamesIndex = mod.default || mod; console.info('GamesIndex loaded from', url); return; }
+          }catch(e){ /* try next candidate */ }
+        }
+        console.warn('Could not import GamesIndex from candidates:', candidates);
+      }
+
+      try{ await tryLoadGamesIndex(); }catch(e){ console.warn('tryLoadGamesIndex failed', e); }
+      // Helper to normalize/resolve URLs robustly for GitHub Pages and filenames with spaces
+      function normalizeUrl(raw){
+        if(!raw) return raw;
+        try{
+          // If raw looks like an absolute URL, keep it
+          const maybe = new URL(raw, window.location.href);
+          // Use encodeURI to avoid double-encoding query/hash parts
+          return encodeURI(maybe.href);
+        }catch(e){
+          try{ return encodeURI(raw); }catch(_){ return raw; }
+        }
+      }
+    // Carte des jeux : fichier réel (si existant) et titre extrait des fichiers existants
+    // Added id 0 -> Test QI (carte qi.html)
+    const gameMap = {
+      0: { file: './carte qi.html', title: '🧪 Test QI', desc: 'Test QI — Carte de vérification', icon: '🧪', players: '1', duration: '1-5 min' },
+  1: { file: './jeux1super.html', title: '🧩 Quantum Tetris', desc: 'Tetris quantique — alignez les blocs et exploitez la superposition pour marquer plus de points.', icon: '🧩', players: '1', duration: '3-10 min' },
+          2: { file: './jeux2 nouveau.html', title: '🧠 Quantum Memory', desc: "Memory quantique — retournez les cartes et retrouvez les paires d'états quantiques.", icon: '🧠', players: '1-2', duration: '2-8 min' },
+        3: { file: './jeux3.html', title: '🧩 Neural Puzzle Master - IA Futuriste' },
+        4: { file: './jeux4.html', title: '♛ Brainova Quantum Chess - IA Quantique' },
+        5: { file: './jeux5.html', title: '🔥 Brainova Quantum Dames - IA Futuriste' },
+        6: { file: './jeux6.html', title: '🌟 Quantum Pac-Man - IA Futuriste' },
+        7: { file: './jeux7.html', title: '🎮 Simon Says - IA Futuriste' },
+        8: { file: './jeux8.html', title: '🚀 Speed Challenge - IA Futuriste' },
+        9: { file: './jeux9.html', title: '🔮 Cyber Checker - Connexion Quantique' },
+        10: { file: './jeux10.html', title: "🚀 DEMO PLAYGROUND - Terrain d'Entraînement Futuriste" },
+        11: { file: './jeux11.html', title: 'Quantum Monopoly - Jeu de Plateau Futuriste' },
+        12: { file: './jeux12.html', title: 'Quantum Poker - Jeu de Poker Futuriste' },
+  13: { file: './jeux13 nouveau.html', title: 'Blackjack Quantum' },
+        14: { file: './jeux14.html', title: 'Solitaire Fusion - Jeu de Cartes Futuriste' },
+        15: { file: './jeux15.html', title: 'NeuroSynth Explorer - Brainova Premium' },
+        16: { file: './jeux16.html', title: 'Enigma Hunter' },
+        17: { file: './jeux17.html', title: 'CyberRace Nexus - Prototypes 3D' },
+        18: { file: './jeux18.html', title: 'QUANTUM WARFARE 2.0 - Bataille Spatiale Futuriste' },
+        19: { file: './jeux19.html', title: 'Quantum Dots - Jeu Futuriste' },
+  20: { file: './jeux20 nouveau.html', title: 'Sudoku Futuriste AI' },
+        21: { file: './jeux21.html', title: 'Pharaon Cyber - Empire Galactique' },
+        22: { file: './jeux22.html', title: 'Quantum Pipes' },
+        23: { file: './jeux23.html', title: 'Neural Slot - Brainova AI Casino' },
+        24: { file: './jeux24.html', title: 'Neural Dice - Jeu Futuriste avec IA' },
+        25: { file: './jeux25.html', title: 'Quantum Bubbles' },
+        26: { file: './jeux26.html', title: 'Cyber Defense AI - Jeu Futuriste' },
+        27: { file: './jeux27.html', title: 'Cyber Pool - Billard Futuriste avec IA' },
+        28: { file: './jeux28.html', title: 'Quantum Tiles - Puzzle Futuriste avec IA' },
+        29: { file: './jeux29.html', title: 'Genius Quest - Quiz Multilingue' },
+        30: { file: './jeux30.html', title: 'Space Explorer - Aventure Galactique' },
+        31: { file: './jeux31.html', title: 'NeuroSphere - Jeu de Société Futuriste IA' },
+        32: { file: './jeux32.html', title: 'Skyjo Futuriste 3D' },
+        33: { file: './jeux33.html', title: 'STELLAR NEXUS - Jeu Spatial Interactif' },
+        34: { file: './jeux34.html', title: 'Dixit Futuriste 3D - Voyage Imaginaire' },
+        35: { file: './jeux35.html', title: 'Cyber Warrior - RPG Futuriste' },
+    36: { file: './jeux36.html', title: 'Crystal Quest - Puzzle Spatial' }
+    };
+    // expose for filter scripting
+    window.gameMap = gameMap;
+      const grid = document.getElementById('gamesGrid');
+      // Simple translations map
+      const Translations = {
+        fr: { login: 'Connexion', signup: 'Inscription', homeNote: 'Cliquez sur une carte pour ouvrir', testBtn: 'Tester tous les jeux', noServer: 'Mode sans serveur', close: 'Fermer', heroTitle: 'Catalogue Brainova — 36 jeux', gamesCount: '36 JEUX', categories: { memoire: 'Mémoire', societe: 'Société', puzzle: 'Puzzle', arcade: 'Arcade', strategie: 'Stratégie', quiz: 'Quiz', reflexe: 'Réflexe' } },
+        en: { login: 'Login', signup: 'Sign up', homeNote: 'Click a card to open', testBtn: 'Test all games', noServer: 'No-server mode', close: 'Close', heroTitle: 'Brainova Catalog — 36 games', gamesCount: '36 GAMES', categories: { memoire: 'Memory', societe: 'Society', puzzle: 'Puzzle', arcade: 'Arcade', strategie: 'Strategy', quiz: 'Quiz', reflexe: 'Reflex' } },
+        ar: { login: 'تسجيل الدخول', signup: 'إنشاء حساب', homeNote: 'انقر على بطاقة لفتحها', testBtn: 'اختبار جميع الألعاب', noServer: 'وضع بدون خادم', close: 'إغلاق', heroTitle: 'كتالوج براينوفا — 36 لعبة', gamesCount: '36 لعبة', categories: { memoire: 'الذاكرة', societe: 'المجتمع', puzzle: 'أحجية', arcade: 'أركيد', strategie: 'استراتيجية', quiz: 'اختبار', reflexe: 'رد فعل' } },
+        es: { login: 'Conexión', signup: 'Registro', homeNote: 'Haga clic en una tarjeta para abrir', testBtn: 'Probar todos los juegos', noServer: 'Modo sin servidor', close: 'Cerrar', heroTitle: 'Catálogo Brainova — 36 juegos', gamesCount: '36 JUEGOS', categories: { memoire: 'Memoria', societe: 'Sociedad', puzzle: 'Rompecabezas', arcade: 'Arcade', strategie: 'Estrategia', quiz: 'Quiz', reflexe: 'Reflejo' } },
+        de: { login: 'Anmelden', signup: 'Registrieren', homeNote: 'Klicken Sie auf eine Karte, um zu öffnen', testBtn: 'Alle Spiele testen', noServer: 'Kein-Server-Modus', close: 'Schließen', heroTitle: 'Brainova-Katalog — 36 Spiele', gamesCount: '36 SPIELE', categories: { memoire: 'Gedächtnis', societe: 'Gesellschaft', puzzle: 'Puzzle', arcade: 'Arcade', strategie: 'Strategie', quiz: 'Quiz', reflexe: 'Reflex' } },
+        zh: { login: '登录', signup: '注册', homeNote: '点击卡片以打开', testBtn: '测试所有游戏', noServer: '无服务器模式', close: '关闭', heroTitle: 'Brainova 目录 — 36 款游戏', gamesCount: '36 游戏', categories: { memoire: '记忆', societe: '社会', puzzle: '拼图', arcade: '街机', strategie: '策略', quiz: '测验', reflexe: '反应' } }
+      };
+      let currentLang = localStorage.getItem('brainovaLang') || 'fr';
+      function applyLanguage(lang){
+        currentLang = lang;
+        localStorage.setItem('brainovaLang', lang);
+        const t = Translations[lang] || Translations.fr;
+        const b1 = document.getElementById('btnLogin'); if(b1) b1.textContent = t.login;
+        const b2 = document.getElementById('btnSignup'); if(b2) b2.textContent = t.signup;
+        const note = document.querySelector('.hero p'); if(note) note.textContent = t.homeNote;
+        const checkBtn = document.getElementById('checkAllBtn'); if(checkBtn) checkBtn.textContent = t.testBtn;
+        const noBtn = document.getElementById('noServerBtn'); if(noBtn) noBtn.textContent = t.noServer;
+        const closeBtn = document.getElementById('closeBtn'); if(closeBtn) closeBtn.textContent = t.close;
+        // hero title and games count
+        try{ const heroH2 = document.querySelector('.hero h2'); if(heroH2) heroH2.textContent = t.heroTitle || heroH2.textContent; }catch(e){}
+        try{ const gamesBadge = document.querySelector('.hero > div div:first-child div'); if(gamesBadge) gamesBadge.innerHTML = (t.gamesCount || '36 JEUX') + '<br><small style="font-size:12px;color:#001;font-weight:700">JEUX</small>'; }catch(e){}
+        // translate category buttons
+        try{
+          const cats = document.querySelectorAll('.cat');
+          cats.forEach(btn=>{
+            const key = btn.getAttribute('data-filter');
+            if(t.categories && key && t.categories[key]) btn.textContent = t.categories[key];
+          });
+        }catch(e){}
+        // Re-render cards so per-game titles/descriptions update to the selected language
+        try{ renderGrid(); }catch(e){ /* ignore if renderGrid not available yet */ }
+      }
+      // Wire the language selector so changes update the UI immediately
+      (function wireLangSelector(){
+        const sel = document.getElementById('langSelect');
+        if(!sel) return;
+        // Ensure the select reflects stored language and is clearly visible
+        sel.value = currentLang;
+        sel.style.minWidth = '130px';
+        sel.style.zIndex = '2001';
+        sel.style.background = 'linear-gradient(135deg,#061229,#08223a)';
+        sel.style.color = '#cfefff';
+        sel.addEventListener('change', (e)=>{ applyLanguage(e.target.value); });
+      })();
+      const overlay = document.getElementById('overlay');
+      const iframe = document.getElementById('overlayIframe');
+      const titleEl = document.getElementById('overlayTitle');
+      const closeBtn = document.getElementById('closeBtn');
+
+      // Per-game translations (localized title/description override)
+      const gameTranslations = {
+        fr: {
+          0: { title: '🧪 Test QI', desc: 'Test QI — Carte de vérification' },
+          1: { title: '🧩 Quantum Tetris', desc: 'Tetris quantique — alignez les blocs et exploitez la superposition pour marquer plus de points.' },
+          2: { title: '🧠 Quantum Memory', desc: 'Memory quantique — retournez les cartes et retrouvez les paires d\'états quantiques.' },
+          3: { title: '🧩 Neural Puzzle Master', desc: 'Casse-tête neuronal — défiez votre logique.' },
+          4: { title: '♛ Quantum Chess', desc: 'Échecs quantiques — stratégie et superposition.' },
+          5: { title: '🔥 Quantum Checkers', desc: 'Dames futuristes — règles classiques, IA futuriste.' },
+          6: { title: '🌟 Quantum Pac-Man', desc: 'Pac-Man réinventé avec des fantômes quantiques.' },
+          7: { title: '🎮 Simon Says', desc: 'Répliquez la séquence — testez votre mémoire.' },
+          8: { title: '🚀 Speed Challenge', desc: 'Défi de rapidité — réactions et réflexes.' },
+          9: { title: '🔮 Cyber Checker', desc: 'Vérification intelligente — mini-jeu de logique.' },
+          10: { title: '🚀 Demo Playground', desc: 'Zone de démonstration — prototypes ludiques.' },
+          11: { title: 'Monopoly Quantique', desc: 'Jeu de plateau revisité — transactions quantiques.' },
+          12: { title: 'Quantum Poker', desc: 'Poker futuriste — mise et probabilités quantiques.' },
+          13: { title: 'Blackjack Quantum', desc: 'Blackjack Quantum — mise et stratégie quantique.' },
+          14: { title: 'Solitaire Fusion', desc: 'Solitaire Fusion — fusionnez les piles pour gagner.' },
+          15: { title: 'NeuroSynth Explorer', desc: 'Explorez les synthèses neuronales — contenu premium.' },
+          16: { title: 'Enigma Hunter', desc: 'Chasse aux énigmes — puzzles et indices.' },
+          17: { title: 'CyberRace Nexus', desc: 'Courses futuristes — prototypes 3D.' },
+          18: { title: 'QUANTUM WARFARE 2.0', desc: 'Bataille spatiale — stratégie en temps réel.' },
+          19: { title: 'Quantum Dots', desc: 'Puzzle de points — reliez les points quantiques.' },
+          20: { title: 'Sudoku Futuriste AI', desc: 'Sudoku assisté par IA — niveaux variés.' },
+          21: { title: 'Pharaon Cyber', desc: 'Aventure Égypte — casse-têtes historiques.' },
+          22: { title: 'Quantum Pipes', desc: 'Raccordez les tuyaux quantiques.' },
+          23: { title: 'Neural Slot', desc: 'Machine à sous IA — tours gratuits et bonus.' },
+          24: { title: 'Neural Dice', desc: 'Jeu de dés futuriste — lancers rapides.' },
+          25: { title: 'Quantum Bubbles', desc: 'Bulles quantiques — éclatez pour gagner.' },
+          26: { title: 'Cyber Defense AI', desc: 'Défense cybernétique — protégez le réseau.' },
+          27: { title: 'Cyber Pool', desc: 'Billard futuriste — modes solo & multi.' },
+          28: { title: 'Quantum Tiles', desc: 'Puzzle de tuiles — combinez pour nettoyer.' },
+          29: { title: 'Genius Quest', desc: 'Quiz multilingue — testez votre culture générale.' },
+          30: { title: 'Space Explorer', desc: 'Aventure spatiale — explorez des planètes.' },
+          31: { title: 'NeuroSphere', desc: 'Jeu de société IA — coopérez ou affrontez.' },
+          32: { title: 'Skyjo Futuriste', desc: 'Variante futuriste de Skyjo.' },
+          33: { title: 'STELLAR NEXUS', desc: 'Jeu spatial interactif — batailles & exploration.' },
+          34: { title: 'Dixit Futuriste', desc: 'Voyage imaginaire — cartes narratifs.' },
+          35: { title: 'Cyber Warrior', desc: 'RPG futuriste — missions et montée en niveau.' },
+          36: { title: 'Crystal Quest', desc: 'Puzzle spatial — collectez cristaux.' }
+        },
+        ar: {
+          0: { title: '🧪 اختبار الذكاء', desc: 'اختبار الذكاء — بطاقة التحقق' },
+          1: { title: '🧩 تتريس الكم', desc: 'تتريس كمومي — رتب القطع واستفد من التراكب للحصول على نقاط.' },
+          2: { title: '🧠 ذاكرة الكم', desc: 'ذاكرة كمومية — اقلب البطاقات وابحث عن الأزواج المتطابقة.' },
+          3: { title: '🧩 سيد الألغاز العصبية', desc: 'ألغاز عصبية — تحدى منطقك.' },
+          4: { title: '♛ الشطرنج الكمومي', desc: 'شطرنج كمومي — استراتيجية وآليات التراكب.' },
+          5: { title: '🔥 الداما الكمومية', desc: 'داما مستقبلية — قواعد كلاسيكية مع ذكاء اصطناعي متقدم.' },
+          6: { title: '🌟 باك-مان الكمومي', desc: 'باك-مان مُعاد تخيله مع أشباح كمومية.' },
+          7: { title: '🎮 سيمون يقول', desc: 'كرر التسلسل — اختبر ذاكرتك.' },
+          8: { title: '🚀 تحدي السرعة', desc: 'تحدي السرعة — ردود الفعل والسرعة.' },
+          9: { title: '🔮 فاحص السايبر', desc: 'فاحص ذكي — لعبة منطق صغيرة.' },
+          10: { title: '🚀 ساحة العروض', desc: 'منطقة عروض — نماذج تجريبية ممتعة.' },
+          11: { title: 'مونوبولي الكم', desc: 'لعبة طاولة مُعاد تصورها بمعاملات كمومية.' },
+          12: { title: 'بوكر كمومي', desc: 'بوكر مستقبلي — رهانات واحتمالات كمومية.' },
+          13: { title: 'بلاك جاك كمومي', desc: 'بلاك جاك كمومي — رهانات واستراتيجية.' },
+          14: { title: 'سوليتير فيوجن', desc: 'سوليتير فيوجن — ادمج الأكوام للفوز.' },
+          15: { title: 'مستكشف نيوروSynth', desc: 'استكشف التركيبات العصبية — محتوى مميز.' },
+          16: { title: 'صائد الألغاز', desc: 'صيد الألغاز — أحجيات وقرائن.' },
+          17: { title: 'سباق السايبر', desc: 'سباقات مستقبلية — نماذج ثلاثية الأبعاد.' },
+          18: { title: 'حرب الكم 2.0', desc: 'معركة فضائية — استراتيجية في الوقت الحقيقي.' },
+          19: { title: 'نقاط كمومية', desc: 'أحجية النقاط — اربط النقاط الكمومية.' },
+          20: { title: 'سودوكو الذكاء الاصطناعي', desc: 'سودوكو بمساعدة الذكاء الاصطناعي — مستويات متعددة.' },
+          21: { title: 'فرعون السايبر', desc: 'مغامرة مصرية — أحجيات تاريخية.' },
+          22: { title: 'أنابيب الكم', desc: 'قم بتوصيل أنابيب الكم.' },
+          23: { title: 'فتحة نيورال', desc: 'ماكينة سلوت ذكية — لُعب مجانية ومكافآت.' },
+          24: { title: 'نرد نيورال', desc: 'لعبة نرد مستقبلية — رميات سريعة.' },
+          25: { title: 'فقاعات كمومية', desc: 'فرقع الفقاعات الكمومية لتحصل على نقاط.' },
+          26: { title: 'دفاع السايبر AI', desc: 'دافع عن الشبكة — استراتيجية دفاعية.' },
+          27: { title: 'بلياردو السايبر', desc: 'بلياردو مستقبلية — أوضاع لاعب فردي ومتعدد.' },
+          28: { title: 'بلاطات كمومية', desc: 'أحجية البلاطات — اجمع لتنظيف اللوحة.' },
+          29: { title: 'مهمة العباقرة', desc: 'مسابقة متعددة اللغات — اختبر معلوماتك.' },
+          30: { title: 'مستكشف الفضاء', desc: 'مغامرة فضائية — استكشف الكواكب.' },
+          31: { title: 'نيرو سفير', desc: 'لعبة طاولة ذكية — تعاون أو تنافس.' },
+          32: { title: 'سكايو جو المستقبلي', desc: 'نسخة مستقبلية من Skyjo.' },
+          33: { title: 'STELLAR NEXUS', desc: 'لعبة فضاء تفاعلية — معارك واستكشاف.' },
+          34: { title: 'ديكسيت المستقبلية', desc: 'رحلة خيالية — بطاقات سردية.' },
+          35: { title: 'محارب السايبر', desc: 'RPG مستقبلي — مهمات وترقية.' },
+          36: { title: 'مهمة البلّور', desc: 'أحجية فضائية — اجمع البلّورات.' }
+        },
+        en: {
+          0: { title: '🧪 IQ Test', desc: 'IQ test — verification card' },
+          1: { title: '🧩 Quantum Tetris', desc: 'Quantum Tetris — align blocks and exploit superposition to score.' },
+          2: { title: '🧠 Quantum Memory', desc: 'Quantum Memory — flip cards and find matching quantum states.' },
+          3: { title: '🧩 Neural Puzzle Master', desc: 'Neural puzzles — challenge your logic.' },
+          4: { title: '♛ Quantum Chess', desc: 'Quantum Chess — strategy and superposition mechanics.' },
+          5: { title: '🔥 Quantum Checkers', desc: 'Futuristic checkers — classic rules with advanced AI.' },
+          6: { title: '🌟 Quantum Pac-Man', desc: 'Pac-Man reinvented with quantum ghosts.' },
+          7: { title: '🎮 Simon Says', desc: 'Repeat the sequence — test your memory.' },
+          8: { title: '🚀 Speed Challenge', desc: 'Speed challenge — reactions and reflexes.' },
+          9: { title: '🔮 Cyber Checker', desc: 'Smart checker — small logic mini-game.' },
+          10: { title: '🚀 Demo Playground', desc: 'Demo area — playful prototypes.' },
+          11: { title: 'Quantum Monopoly', desc: 'Board game reimagined with quantum transactions.' },
+          12: { title: 'Quantum Poker', desc: 'Futuristic poker — bets and quantum probabilities.' },
+          13: { title: 'Blackjack Quantum', desc: 'Quantum Blackjack — betting and strategy.' },
+          14: { title: 'Solitaire Fusion', desc: 'Solitaire Fusion — merge piles to win.' },
+          15: { title: 'NeuroSynth Explorer', desc: 'Explore neural synths — premium content.' },
+          16: { title: 'Enigma Hunter', desc: 'Puzzle hunt — riddles and clues.' },
+          17: { title: 'CyberRace Nexus', desc: 'Futuristic racing — 3D prototypes.' },
+          18: { title: 'QUANTUM WARFARE 2.0', desc: 'Space battle — real-time strategy.' },
+          19: { title: 'Quantum Dots', desc: 'Dots puzzle — connect quantum points.' },
+          20: { title: 'AI Sudoku', desc: 'Sudoku assisted by AI — multiple difficulty levels.' },
+          21: { title: 'Pharaoh Cyber', desc: 'Egyptian adventure — historical puzzles.' },
+          22: { title: 'Quantum Pipes', desc: 'Connect the quantum pipes.' },
+          23: { title: 'Neural Slot', desc: 'AI slot machine — free spins & bonuses.' },
+          24: { title: 'Neural Dice', desc: 'Futuristic dice game — quick rolls.' },
+          25: { title: 'Quantum Bubbles', desc: 'Pop quantum bubbles to score.' },
+          26: { title: 'Cyber Defense AI', desc: 'Protect the network — cyber defense strategy.' },
+          27: { title: 'Cyber Pool', desc: 'Futuristic billiards — solo & multiplayer modes.' },
+          28: { title: 'Quantum Tiles', desc: 'Tile puzzle — combine to clear.' },
+          29: { title: 'Genius Quest', desc: 'Multilingual quiz — test your knowledge.' },
+          30: { title: 'Space Explorer', desc: 'Space adventure — explore planets.' },
+          31: { title: 'NeuroSphere', desc: 'AI board game — cooperate or compete.' },
+          32: { title: 'Skyjo Futuristic', desc: 'Futuristic Skyjo variant.' },
+          33: { title: 'STELLAR NEXUS', desc: 'Interactive space game — battles & exploration.' },
+          34: { title: 'Dixit Futuristic', desc: 'Imaginary journey — narrative cards.' },
+          35: { title: 'Cyber Warrior', desc: 'Futuristic RPG — missions & leveling.' },
+          36: { title: 'Crystal Quest', desc: 'Spatial puzzle — collect crystals.' }
+        },
+        es: {
+          0: { title: '🧪 Test IQ', desc: 'Test de IQ — tarjeta de verificación' },
+          1: { title: '🧩 Quantum Tetris', desc: 'Tetris cuántico — alinea bloques y aprovecha la superposición.' },
+          2: { title: '🧠 Quantum Memory', desc: 'Memory cuántico — da la vuelta a las cartas y encuentra pares.' },
+          3: { title: '🧩 Neural Puzzle Master', desc: 'Rompecabezas neuronal — desafía tu lógica.' },
+          4: { title: '♛ Quantum Chess', desc: 'Ajedrez cuántico — estrategia y superposición.' },
+          5: { title: '🔥 Quantum Checkers', desc: 'Damas futuristas — reglas clásicas con IA.' },
+          6: { title: '🌟 Quantum Pac-Man', desc: 'Pac-Man reinventado con fantasmas cuánticos.' },
+          7: { title: '🎮 Simon Says', desc: 'Repite la secuencia — prueba tu memoria.' },
+          8: { title: '🚀 Speed Challenge', desc: 'Desafío de velocidad — reflejos rápidos.' },
+          9: { title: '🔮 Cyber Checker', desc: 'Mini juego lógico inteligente.' },
+          10: { title: '🚀 Demo Playground', desc: 'Zona demo — prototipos lúdicos.' },
+          11: { title: 'Monopoly Cuántico', desc: 'Juego de mesa reinventado con transacciones cuánticas.' },
+          12: { title: 'Quantum Poker', desc: 'Poker futurista — apuestas y probabilidades.' },
+          13: { title: 'Blackjack Quantum', desc: 'Blackjack cuántico — apuestas y estrategia.' },
+          14: { title: 'Solitaire Fusion', desc: 'Solitario Fusion — combina pilas para ganar.' },
+          15: { title: 'NeuroSynth Explorer', desc: 'Explora sintetizadores neuronales — contenido premium.' },
+          16: { title: 'Enigma Hunter', desc: 'Caza de enigmas — rompecabezas y pistas.' },
+          17: { title: 'CyberRace Nexus', desc: 'Carreras futuristas — prototipos 3D.' },
+          18: { title: 'QUANTUM WARFARE 2.0', desc: 'Guerra espacial — estrategia en tiempo real.' },
+          19: { title: 'Quantum Dots', desc: 'Conecta puntos cuánticos — puzzle.' },
+          20: { title: 'Sudoku AI', desc: 'Sudoku asistido por IA — niveles variados.' },
+          21: { title: 'Pharaoh Cyber', desc: 'Aventura egipcia — acertijos históricos.' },
+          22: { title: 'Quantum Pipes', desc: 'Conecta las tuberías cuánticas.' },
+          23: { title: 'Neural Slot', desc: 'Tragaperras IA — giros gratis y bonos.' },
+          24: { title: 'Neural Dice', desc: 'Juego de dados futurista — tiradas rápidas.' },
+          25: { title: 'Quantum Bubbles', desc: 'Explota burbujas cuánticas para ganar.' },
+          26: { title: 'Cyber Defense AI', desc: 'Defiende la red — estrategia cibernética.' },
+          27: { title: 'Cyber Pool', desc: 'Billar futurista — modos solo y multijugador.' },
+          28: { title: 'Quantum Tiles', desc: 'Puzzle de fichas — combina para limpiar.' },
+          29: { title: 'Genius Quest', desc: 'Quiz multilingüe — prueba tus conocimientos.' },
+          30: { title: 'Space Explorer', desc: 'Aventura espacial — explora planetas.' },
+          31: { title: 'NeuroSphere', desc: 'Juego de mesa IA — coopera o compite.' },
+          32: { title: 'Skyjo Futuristic', desc: 'Variante futurista de Skyjo.' },
+          33: { title: 'STELLAR NEXUS', desc: 'Juego espacial interactivo — batallas y exploración.' },
+          34: { title: 'Dixit Futuristic', desc: 'Viaje imaginario — cartas narrativas.' },
+          35: { title: 'Cyber Warrior', desc: 'RPG futurista — misiones y progresión.' },
+          36: { title: 'Crystal Quest', desc: 'Puzzle espacial — colecciona cristales.' }
+        },
+        de: {
+          0: { title: '🧪 IQ-Test', desc: 'IQ-Test — Prüfkarte' },
+          1: { title: '🧩 Quantum Tetris', desc: 'Quantum Tetris — Blöcke ausrichten und Superposition nutzen.' },
+          2: { title: '🧠 Quantum Memory', desc: 'Quantum Memory — Karten umdrehen und Paare finden.' },
+          3: { title: '🧩 Neural Puzzle Master', desc: 'Neuronale Rätsel — fordere deine Logik heraus.' },
+          4: { title: '♛ Quantum Chess', desc: 'Quantum Chess — Strategie und Superposition.' },
+          5: { title: '🔥 Quantum Checkers', desc: 'Futuristische Dame — klassische Regeln mit KI.' },
+          6: { title: '🌟 Quantum Pac-Man', desc: 'Pac-Man neu erfunden mit Quantengeistern.' },
+          7: { title: '🎮 Simon Says', desc: 'Wiederhole die Sequenz — teste dein Gedächtnis.' },
+          8: { title: '🚀 Speed Challenge', desc: 'Geschwindigkeits-Challenge — Reaktion und Reflexe.' },
+          9: { title: '🔮 Cyber Checker', desc: 'Kleines Logik-Minispiel.' },
+          10: { title: '🚀 Demo Playground', desc: 'Demo-Bereich — spielerische Prototypen.' },
+          11: { title: 'Quantum Monopoly', desc: 'Brettspiel neu gedacht mit Quanten-Transaktionen.' },
+          12: { title: 'Quantum Poker', desc: 'Futuristisches Poker — Einsätze und Wahrscheinlichkeiten.' },
+          13: { title: 'Blackjack Quantum', desc: 'Quantum Blackjack — Einsätze und Strategie.' },
+          14: { title: 'Solitaire Fusion', desc: 'Solitaire Fusion — Stapel kombinieren, um zu gewinnen.' },
+          15: { title: 'NeuroSynth Explorer', desc: 'Erkunde neuronale Synths — Premium-Inhalte.' },
+          16: { title: 'Enigma Hunter', desc: 'Rätseljagd — Rätsel und Hinweise.' },
+          17: { title: 'CyberRace Nexus', desc: 'Futuristische Rennen — 3D-Prototypen.' },
+          18: { title: 'QUANTUM WARFARE 2.0', desc: 'Weltraumkampf — Echtzeit-Strategie.' },
+          19: { title: 'Quantum Dots', desc: 'Punkte-Puzzle — verbinde die Quantenpunkte.' },
+          20: { title: 'AI Sudoku', desc: 'Sudoku mit KI-Unterstützung — verschiedene Schwierigkeitsgrade.' },
+          21: { title: 'Pharaoh Cyber', desc: 'Ägypten-Abenteuer — historische Rätsel.' },
+          22: { title: 'Quantum Pipes', desc: 'Verbinde die Quantenrohre.' },
+          23: { title: 'Neural Slot', desc: 'KI-Spielautomat — Freispiele & Boni.' },
+          24: { title: 'Neural Dice', desc: 'Futuristisches Würfelspiel — schnelle Würfe.' },
+          25: { title: 'Quantum Bubbles', desc: 'Quantenblasen platzen lassen, um Punkte zu erzielen.' },
+          26: { title: 'Cyber Defense AI', desc: 'Verteidige das Netzwerk — Cyberabwehrstrategie.' },
+          27: { title: 'Cyber Pool', desc: 'Futuristisches Billard — Solo- & Mehrspielermodi.' },
+          28: { title: 'Quantum Tiles', desc: 'Kachel-Puzzle — kombinieren, um zu löschen.' },
+          29: { title: 'Genius Quest', desc: 'Mehrsprachiges Quiz — teste dein Wissen.' },
+          30: { title: 'Space Explorer', desc: 'Weltraumabenteuer — erkunde Planeten.' },
+          31: { title: 'NeuroSphere', desc: 'KI-Brettspiel — kooperiere oder konkurriere.' },
+          32: { title: 'Skyjo Futuristic', desc: 'Futuristische Skyjo-Variante.' },
+          33: { title: 'STELLAR NEXUS', desc: 'Interaktives Weltraumspiel — Kämpfe & Erkundung.' },
+          34: { title: 'Dixit Futuristic', desc: 'Phantasiereise — narrative Karten.' },
+          35: { title: 'Cyber Warrior', desc: 'Futuristisches RPG — Missionen & Levelaufstieg.' },
+          36: { title: 'Crystal Quest', desc: 'Rätsel im Raum — sammle Kristalle.' }
+        },
+        zh: {
+          0: { title: '🧪 智商测试', desc: '智商测试 — 验证卡' },
+          1: { title: '🧩 量子俄罗斯方块', desc: '量子俄罗斯方块 — 排列方块并利用叠加得分。' },
+          2: { title: '🧠 量子记忆', desc: '量子记忆 — 翻牌并找出匹配的量子状态。' },
+          3: { title: '🧩 神经谜题大师', desc: '神经谜题 — 挑战你的逻辑。' },
+          4: { title: '♛ 量子国际象棋', desc: '量子国际象棋 — 策略与叠加机制。' },
+          5: { title: '🔥 量子跳棋', desc: '未来跳棋 — 经典规则与高级AI。' },
+          6: { title: '🌟 量子吃豆人', desc: '吃豆人重制版，带有量子幽灵。' },
+          7: { title: '🎮 西蒙说', desc: '重复序列 — 测试你的记忆。' },
+          8: { title: '🚀 速度挑战', desc: '速度挑战 — 反应与反射。' },
+          9: { title: '🔮 网络检查器', desc: '智能检查 — 小型逻辑小游戏。' },
+          10: { title: '🚀 演示游乐场', desc: '演示区 — 有趣的原型。' },
+          11: { title: '量子大富翁', desc: '采用量子交易的桌游重制版。' },
+          12: { title: '量子扑克', desc: '未来扑克 — 赌注与量子概率。' },
+          13: { title: '量子二十一点', desc: '量子二十一点 — 赌注与策略。' },
+          14: { title: '融合纸牌', desc: '融合纸牌 — 合并牌堆以获胜。' },
+          15: { title: '神经合成探索者', desc: '探索神经合成 — 高级内容。' },
+          16: { title: '谜题猎人', desc: '谜题狩猎 — 线索与谜题。' },
+          17: { title: '网络赛道枢纽', desc: '未来赛道 — 3D 原型。' },
+          18: { title: '量子战争 2.0', desc: '太空战 — 实时策略。' },
+          19: { title: '量子点', desc: '点点拼图 — 连接量子点。' },
+          20: { title: 'AI 数独', desc: '由 AI 协助的数独 — 多个难度级别。' },
+          21: { title: '法老网络', desc: '埃及冒险 — 历史谜题。' },
+          22: { title: '量子管道', desc: '连接量子管道。' },
+          23: { title: '神经老虎机', desc: 'AI 老虎机 — 免费旋转与奖励。' },
+          24: { title: '神经骰子', desc: '未来骰子游戏 — 快速掷骰。' },
+          25: { title: '量子泡泡', desc: '炸掉量子泡泡以得分。' },
+          26: { title: '网络防御 AI', desc: '保护网络 — 网络防御策略。' },
+          27: { title: '网络台球', desc: '未来台球 — 单人与多人模式。' },
+          28: { title: '量子瓦片', desc: '瓦片拼图 — 组合以清除。' },
+          29: { title: '天才任务', desc: '多语言测验 — 测试你的知识。' },
+          30: { title: '太空探险者', desc: '太空冒险 — 探索行星。' },
+          31: { title: '神经球体', desc: 'AI 桌游 — 合作或竞争。' },
+          32: { title: '未来 Skyjo', desc: '未来版 Skyjo 变体。' },
+          33: { title: 'STELLAR NEXUS', desc: '互动太空游戏 — 战斗与探索。' },
+          34: { title: '未来 Dixit', desc: '想象之旅 — 叙事卡牌。' },
+          35: { title: '网络战士', desc: '未来 RPG — 任务与升级。' },
+          36: { title: '水晶探险', desc: '空间谜题 — 收集水晶。' }
+        }
+      };
+
+      function getGameMeta(i, lang){
+        const base = gameMap[i] || { file: null, title: `Jeu ${i}`, desc: 'Cliquez pour ouvrir', icon: '🎮' };
+        const overrides = (gameTranslations[lang] && gameTranslations[lang][i]) ? gameTranslations[lang][i] : {};
+        return Object.assign({}, base, overrides);
+      }
+
+      // Build a card using GamesIndex when available, otherwise fall back to inline gameMap
+      function makeCard(i){
+        const div = document.createElement('div'); div.className='game-card'; div.dataset.gameId=i; div.style.position='relative';
+        // If GamesIndex is available prefer its markup and helpers
+        try{
+          if(window.GamesIndex && typeof window.GamesIndex.getCardHTML === 'function'){
+            const html = window.GamesIndex.getCardHTML(String(i)) || '';
+            div.innerHTML = html || '';
+            // allow GamesIndex to provide outer style
+            if(typeof window.GamesIndex.getCardStyle === 'function'){
+              const styleText = window.GamesIndex.getCardStyle(String(i)) || '';
+              if(styleText) div.style.cssText += styleText;
+            }
+            // Attach launch handler
+            div.addEventListener('click', ()=>{ try{ window.GamesIndex.launch(Number(i)); }catch(e){ openGame(i); } });
+            return div;
+          }
+        }catch(e){ /* ignore and fallback to inline rendering */ }
+
+        // Fallback: use local gameMap rendering
+        const meta = getGameMeta(i, currentLang);
+        div.dataset.file = (gameMap[i] && gameMap[i].file) ? gameMap[i].file : '';
+        // Ensure card 0 has the special cyan/teal accent even if GamesIndex failed to load.
+        try{ if(Number(i) === 0){ const accent = 'background:linear-gradient(180deg,#cceff7,#33c9ff);border-color:#33c9ff;color:#001;box-shadow:0 10px 30px rgba(51,201,255,0.22);border-radius:10px;'; div.style.cssText += accent; } }catch(e){}
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div class="game-number">${String(i).padStart(2,'0')}</div>
+            <div class="game-status">--</div>
+          </div>
+          <div class="game-icon">${meta.icon || '🎮'}</div>
+          <h3>${meta.title}</h3>
+          <p style="text-align:center;color:#cfefff">${meta.desc || 'Cliquez pour ouvrir'}</p>
+        `;
+        // premium badge for card 0 and 11..36
+        try{ const idn = Number(i); if(idn === 0 || (idn >= 11 && idn <= 36)){ const badge = document.createElement('div'); badge.className = 'game-badge'; badge.title = 'Premium'; badge.innerHTML = '👑'; div.appendChild(badge); } }catch(e){}
+        try{ if(Number(i) === 0){ div.style.color = '#000'; const p = div.querySelector('p'); if(p) p.style.color = '#000'; } }catch(e){}
+        div.addEventListener('click', ()=>openGame(i));
+        return div;
+      }
+
+      // Re-render the entire grid (used when language changes)
+      function renderGrid(){
+        grid.innerHTML = '';
+        // include 0..total so Test QI (id 0) appears before the other games
+        for(let i=0;i<=total;i++) grid.appendChild(makeCard(i));
+      }
+
+  // initial render (0..total)
+  for(let i=0;i<=total;i++) grid.appendChild(makeCard(i));
+
+  // Apply the saved/initial language and make header visible
+  try{ applyLanguage(currentLang); }catch(e){}
+  try{ const hdr = document.getElementById('header'); if(hdr) hdr.style.display = 'flex'; }catch(e){}
+
+  // Default: enable no-server only when opened via file://; when served over HTTP use iframe overlay by default
+  let noServerMode = (location.protocol === 'file:');
+      const noServerBtn = document.getElementById('noServerBtn');
+      function updateNoServerUI(){
+        noServerBtn.style.background = noServerMode ? 'linear-gradient(45deg,#ffd700,#00ff88)' : '';
+        noServerBtn.textContent = noServerMode ? 'Mode sans serveur (ON)' : 'Mode sans serveur';
+      }
+  updateNoServerUI();
+  // If we are running via file://, keep no-server; if we are running via http and user wants iframe, they can toggle off
+      noServerBtn.addEventListener('click', ()=>{ noServerMode = !noServerMode; updateNoServerUI(); });
+
+      function openGame(id){
+        const meta = gameMap[id] || {};
+        // resolve filename: prefer explicit file, else fallbacks
+        const candidates = [];
+        if(meta.file) candidates.push(meta.file);
+        candidates.push(`./jeux${id}.html`);
+        candidates.push(`./jeux${id}.html.html`);
+        const chosen = (cardFileExists => cardFileExists)();
+        // If no-server or file protocol, open in new tab using first candidate
+        const finalFile = meta.file || `./jeux${id}.html`;
+        if(noServerMode){
+          window.open(finalFile,'_blank');
+          return;
+        }
+        // When running via server, try to load the first candidate that responds
+        titleEl.textContent = meta.title || `Jeu ${id}`;
+        // Try to set iframe src to meta.file first
+          // Resolve relative URL to absolute for clearer logs and normalize it
+            let resolvedUrl = meta.file || `./jeux${id}.html`;
+            try{
+              resolvedUrl = new URL(resolvedUrl, window.location.href).href;
+            }catch(err){ /* keep raw */ }
+            const safeUrl = normalizeUrl(resolvedUrl);
+            console.debug(`global_platform.openGame id=${id} resolved='${resolvedUrl}' safe='${safeUrl}'`);
+
+            // Try setting src first
+            try{ iframe.src = safeUrl; }catch(e){ console.warn('iframe.src assignment failed', e); }
+
+            // Also attempt a quick HEAD to detect 404 and fallback if necessary
+            fetch(safeUrl, { method: 'HEAD' }).then(r=>{
+              if(!r.ok){
+                // fallback: fetch html and set srcdoc with <base>
+                return fetch(safeUrl).then(r2=>{ if(!r2.ok) throw new Error('HTTP '+r2.status); return r2.text(); }).then(html=>{
+                  const dir = safeUrl.split('/').slice(0,-1).join('/') || '.';
+                  const base = `<base href="${dir}/">`;
+                  iframe.srcdoc = base + html;
+                  console.debug(`global_platform.openGame id=${id} srcdoc fallback set`);
+                });
+              }
+            }).catch(err=>{
+              console.warn('Setting iframe.src or HEAD check failed, trying fetch+srcdoc fallback', err);
+              fetch(safeUrl).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); }).then(html=>{
+                const dir = safeUrl.split('/').slice(0,-1).join('/') || '.';
+                const base = `<base href="${dir}/">`;
+                iframe.srcdoc = base + html;
+                console.debug(`global_platform.openGame id=${id} srcdoc fallback set`);
+              }).catch(err2=>{
+                console.error('Failed to fetch game HTML for overlay', safeUrl, err2);
+                showOverlayError('Impossible de charger le jeu dans l’overlay. Ouvrir dans un nouvel onglet.');
+              });
+            });
+        // If opening game 1 (custom page with its own exit UI), hide the platform close button
+        try{ if(Number(id) === 1){ closeBtn.style.display = 'none'; } else { closeBtn.style.display = ''; } }catch(e){}
+        overlay.classList.add('active');
+        document.addEventListener('keydown', escClose);
+      }
+
+      // Open authentication page (mode = 'login' or 'signup') in overlay
+      async function openAuth(mode){
+        const target = './connexion et profil.html' + (mode ? `?mode=${encodeURIComponent(mode)}` : '');
+        if(noServerMode){ window.open(target, '_blank'); return; }
+        titleEl.textContent = (mode === 'signup') ? 'Inscription' : 'Connexion';
+        // quick HEAD check to ensure reachable
+        try{
+          const r = await fetch(target, { method: 'HEAD' });
+          if(!r.ok) throw new Error('HTTP '+r.status);
+          // reachable -> set iframe.src (percent-encode to handle spaces)
+          try{
+            const tgt = new URL(target, window.location.href).href;
+            iframe.src = normalizeUrl(tgt);
+          }catch(e){ try{ iframe.src = normalizeUrl(target); }catch(_){} }
+          overlay.classList.add('active');
+          document.addEventListener('keydown', escClose);
+          return;
+        }catch(err){
+          console.warn('Auth target unreachable in overlay, opening new tab', err);
+          // fallback to new tab
+          window.open(target, '_blank');
+          return;
+        }
+      }
+
+      function closeGame(){
+        try{ document.removeEventListener('keydown', escClose); }catch(e){}
+        try{ overlay.classList.remove('active'); }catch(e){}
+        try{ iframe.src = 'about:blank'; }catch(e){}
+        try{ iframe.srcdoc = ''; iframe.removeAttribute('srcdoc'); }catch(e){}
+        try{ document.getElementById('loader').style.display = 'none'; }catch(e){}
+        try{ document.getElementById('header').style.display = 'flex'; }catch(e){}
+        try{ closeBtn.style.display = ''; }catch(e){}
+        try{ window.scrollTo(0,0); }catch(e){}
+      }
+
+      function showOverlayError(msg){
+        try{
+          // show a simple HTML error message in the iframe so user sees why it failed
+          const errHtml = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#fff;background:#111;padding:20px;font-family:Rajdhani,Segoe UI,Arial">
+            <h2>Erreur de chargement</h2>
+            <p style="max-width:800px;text-align:center">${String(msg)}</p>
+            <p style="margin-top:12px"><button onclick="window.parent.postMessage({action:'close'},'*')" style="padding:8px 12px;border-radius:6px;border:0;cursor:pointer;background:#00d4ff;color:#000;font-weight:700">Fermer</button></p>
+          </div>`;
+          iframe.srcdoc = errHtml;
+        }catch(e){/* ignore */}
+      }
+
+      function escClose(e){ if(e.key==="Escape") closeGame(); }
+
+      closeBtn.addEventListener('click', closeGame);
+      overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeGame(); });
+
+      // Robust iframe load handler — diagnose and detect platform pages loaded inside iframe
+      iframe.addEventListener('load', ()=>{
+        try{
+          const src = String(iframe.src || '');
+          console.debug('overlay iframe loaded', { src });
+
+          // Quick URL-based heuristic
+          const looksLikePlatformURL = (u)=> !!(u && (u.indexOf('global_platform.html') !== -1 || u.indexOf('global_platform_correct.html') !== -1 || u.indexOf('/global/') !== -1));
+          if(looksLikePlatformURL(src)){
+            console.debug('iframe.src looks like platform -> closing overlay');
+            try{ closeGame(); }catch(e){}
+            try{ window.location.href = window.location.pathname; }catch(e){}
+            showAutoCloseToast();
+            return;
+          }
+
+          // If same-origin, inspect the iframe's document for platform markers
+          try{
+            const cw = iframe.contentWindow;
+            if(cw && cw.document){
+              const title = String(cw.document.title || '');
+              const bodyText = (cw.document.body && cw.document.body.innerText) ? cw.document.body.innerText : '';
+              console.debug('iframe document title:', title);
+              // marker: hero title or gamesGrid element
+              const hasGamesGrid = !!cw.document.getElementById('gamesGrid');
+              const looksLikePlatformDoc = hasGamesGrid || /Catalogue Brainova|36 JEUX|Catalogue Brainova/i.test(title + '\n' + bodyText);
+              if(looksLikePlatformDoc){
+                console.debug('iframe document looks like platform (title/body/selector match) -> closing overlay');
+                try{ closeGame(); }catch(e){}
+                try{ window.location.href = window.location.pathname; }catch(e){}
+                showAutoCloseToast();
+                return;
+              }
+            }
+          }catch(e){ console.debug('iframe doc inspection failed (cross-origin?)', e); }
+
+        }catch(e){ console.warn('Error in iframe load handler', e); }
+      });
+
+      // Small non-blocking toast to inform user the overlay was auto-closed
+      function showAutoCloseToast(){
+        try{
+          const id = 'autoCloseToast';
+          if(document.getElementById(id)) return;
+          const div = document.createElement('div');
+          div.id = id;
+          div.textContent = 'Retour à la plateforme';
+          div.style.cssText = 'position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#00d4ff,#00ff88);color:#001;padding:8px 12px;border-radius:8px;z-index:10005;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.4);';
+          document.body.appendChild(div);
+          setTimeout(()=>{ try{ div.style.transition='opacity .4s'; div.style.opacity='0'; setTimeout(()=>div.remove(),450); }catch(e){} }, 900);
+        }catch(e){}
+      }
+      iframe.addEventListener('error', (ev)=>{
+        try{ console.error('overlay iframe error loading', iframe.src, ev); }catch(e){}
+      });
+
+      // Allow games inside the iframe to communicate with the parent page using postMessage.
+      // For example the game can call: window.parent.postMessage({ action: 'close' }, '*')
+      // or { action: 'home' } to request closing the overlay / returning to the platform.
+      window.addEventListener('message', (ev)=>{
+        try{
+          // Normalize payload: many games send either objects or JSON strings
+          let data = ev && ev.data ? ev.data : null;
+          if(!data) return;
+          if(typeof data === 'string'){
+            try{ data = JSON.parse(data); }catch(_){ /* not JSON - ignore */ }
+          }
+          if(!data || typeof data !== 'object') return;
+          const action = data.action && String(data.action).toLowerCase();
+          if(!action) return;
+          if(action === 'close' || action === 'exit' || action === 'home' || action === 'go-home'){
+            try{ closeGame(); }catch(e){}
+            try{ /* also return to platform home (reload) for a clear UX) */ window.location.href = window.location.pathname; }catch(e){}
+            return;
+          }
+          if(action === 'open' && data.url){
+            try{ window.open(String(data.url), '_blank'); }catch(e){}
+            return;
+          }
+          if(action === 'navigate' && data.url){
+            try{ window.location.href = String(data.url); }catch(e){}
+            return;
+          }
+        }catch(err){ /* ignore malformed messages */ }
+      });
+
+      // show header after load
+      window.addEventListener('load', ()=>{
+        document.getElementById('loader').style.display='none';
+        document.getElementById('header').style.display='flex';
+        // wire auth buttons
+        const b1 = document.getElementById('btnLogin'); if(b1) b1.addEventListener('click', ()=>openAuth('login'));
+        const b2 = document.getElementById('btnSignup'); if(b2) b2.addEventListener('click', ()=>openAuth('signup'));
+  // show saved sigle if user already logged in
+        try{
+          const saved = localStorage.getItem('brainovaUser');
+          if(saved){
+            const u = JSON.parse(saved);
+            const sig = (u.avatar && u.avatar.length>0) ? u.avatar : (u.name?u.name.split(' ').map(n=>n.charAt(0)).join('').toUpperCase():'');
+            const sigEl = document.getElementById('userSigle');
+            if(sigEl && sig){ sigEl.textContent = sig; sigEl.style.display='flex'; }
+          }
+        }catch(e){/* ignore */}
+        // populate the local state bar (helps in file:// mode)
+        try{
+          function updateLocalStateBar(){
+            const txt = document.getElementById('localStateText'); if(!txt) return;
+            try{
+              const bundle = localStorage.getItem('bundlePurchased') === '1';
+              const parts = [];
+              if(bundle) parts.push('bundlePurchased=1');
+              for(let i=0;i<=36;i++){ if(localStorage.getItem('purchased_game_'+i) === '1') parts.push('purchased_game_'+i+'=1'); }
+              txt.textContent = parts.length ? ('État local: ' + parts.join(' | ')) : 'État local: aucun achat détecté';
+            }catch(e){ txt.textContent = 'État local: erreur de lecture'; }
+          }
+          const rbtn = document.getElementById('localStateRefresh'); if(rbtn) rbtn.addEventListener('click', updateLocalStateBar);
+          const cbtn = document.getElementById('localStateClear'); if(cbtn) cbtn.addEventListener('click', ()=>{ if(!confirm('Supprimer bundlePurchased et tous les flags purchased_game_* ?')) return; localStorage.removeItem('bundlePurchased'); for(let i=0;i<=36;i++) localStorage.removeItem('purchased_game_'+i); updateLocalStateBar(); alert('Flags supprimés'); });
+          updateLocalStateBar();
+        }catch(e){}
+        // initialize single language select
+        const langSelect = document.getElementById('langSelect');
+        const LangMeta = { fr:{emoji:'🇫🇷', label:'FR'}, en:{emoji:'🇬🇧', label:'EN'}, ar:{emoji:'🇸🇦', label:'AR'}, es:{emoji:'🇪🇸', label:'ES'}, de:{emoji:'🇩🇪', label:'DE'}, zh:{emoji:'🇨🇳', label:'中文'} };
+
+        function updateLangPickerUI(lang){
+          try{
+            if(langSelect) {
+              langSelect.value = lang;
+              // update visible label is already handled by the select's option text
+            }
+          }catch(e){/* ignore */}
+        }
+
+        // handle selection
+        if(langSelect){
+          langSelect.addEventListener('change', function(){ selectLang(this.value); });
+        }
+
+        function selectLang(L){ if(!L) return; applyLanguage(L); updateLangPickerUI(L); localStorage.setItem('brainovaLang', L); 
+          // notify children frames (so embedded games update immediately)
+          try{ window.frames && Array.from(document.getElementsByTagName('iframe')).forEach(f=>{ try{ f.contentWindow.postMessage({ action:'set-language', lang: L }, '*'); }catch(e){} }); }catch(e){}
+        }
+  // set initial label and apply language
+  updateLangPickerUI(currentLang);
+  applyLanguage(currentLang);
+        // settings menu
+        const sBtn = document.getElementById('settingsBtn'); const sMenu = document.getElementById('settingsMenu');
+        if(sBtn && sMenu){ sBtn.addEventListener('click', ()=>{ sMenu.style.display = (sMenu.style.display === 'block') ? 'none' : 'block'; }); }
+        document.getElementById('settingsEditProfile').addEventListener('click', ()=>{ sMenu.style.display='none'; openAuth('profile'); });
+        document.getElementById('settingsHistory').addEventListener('click', ()=>{ sMenu.style.display='none'; openAuth('history'); });
+      });
+
+      // Listen to messages from iframes so games can ask the platform to close the overlay
+      window.addEventListener('message', (e)=>{
+        try{
+          // Accept object payloads and JSON strings from older pages
+          let data = e.data || null;
+          if(!data) return;
+          if(typeof data === 'string'){
+            try{ data = JSON.parse(data); }catch(_){ /* ignore non-json */ }
+          }
+          if(!data || typeof data !== 'object') return;
+          if(data && data.action === 'close'){
+            closeGame();
+            try{ window.location.href = window.location.pathname; }catch(e){}
+          }
+          if(data && data.action === 'login-success'){
+            console.debug('Received login-success from iframe', data.user);
+            // Close overlay then reload or navigate to homepage
+            closeGame();
+            try{
+              try{
+                const u = data.user || {};
+                const sig = (u.avatar && u.avatar.length>0) ? u.avatar : (u.name?u.name.split(' ').map(n=>n.charAt(0)).join('').toUpperCase():'');
+                const sigEl = document.getElementById('userSigle');
+                if(sigEl && sig){ sigEl.textContent = sig; sigEl.style.display='flex'; }
+              }catch(e){}
+              window.location.href = window.location.pathname; // reload the current page (global_platform.html)
+            }catch(err){
+              window.location.reload();
+            }
+          }
+          // Message from embedded game asking to return to platform home
+          if(data && (data.action === 'go-home' || data.action === 'home')){
+            console.debug('Received go-home from iframe');
+            try{ closeGame(); window.location.href = window.location.pathname; }catch(err){ window.location.reload(); }
+          }
+        }catch(err){/* ignore */}
+      });
+
+      // Tester tous les jeux : vérifie chaque jeuxN.html et met à jour le statut
+      const checkBtn = document.getElementById('checkAllBtn');
+      const checkStatus = document.getElementById('checkStatus');
+      checkBtn.addEventListener('click', async ()=>{
+        checkBtn.disabled = true; checkStatus.textContent = 'Test en cours...';
+        let ok = 0, fail = 0;
+          for(let i=0;i<=total;i++){
+          const meta = gameMap[i] || {};
+          const candidates = [];
+          if(meta.file) candidates.push(meta.file);
+          candidates.push(`./jeux${i}.html`);
+          candidates.push(`./jeux${i}.html.html`);
+          const card = grid.querySelector(`.game-card[data-game-id="${i}"]`);
+          const statusEl = card.querySelector('.game-status');
+          let found = false;
+          for(const url of candidates){
+            if(!url) continue;
+            try{
+              const safe = normalizeUrl(new URL(url, window.location.href).href);
+              const r = await fetch(safe, {method:'HEAD'});
+              if(r.ok){ statusEl.textContent = 'OK'; statusEl.style.background = 'linear-gradient(45deg,#00ff88,#ffd700)'; statusEl.style.color = '#000'; ok++; found = true; break; }
+            }catch(e){ /* try next */ }
+          }
+          if(!found){ statusEl.textContent = 'N/D'; statusEl.style.background = 'rgba(255,0,0,0.12)'; fail++; }
+        }
+        checkStatus.textContent = `Résultat : ${ok} OK / ${fail} FAIL`;
+        checkBtn.disabled = false;
+      });
+
+    })();
+  </script>
+  <script>
+    // Wire category buttons to filter the games grid by meta.tags
+    (function(){
+      const hero = document.getElementById('catalog-hero');
+      if(!hero) return;
+      const buttons = hero.querySelectorAll('.cat');
+      const grid = document.getElementById('gamesGrid');
+      if(!buttons.length || !grid) return;
+      buttons.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const filter = (b.dataset.filter||'').toString().toLowerCase();
+          const cards = grid.querySelectorAll('.game-card');
+          cards.forEach(c=>{
+            const id = Number(c.dataset.gameId);
+            const meta = (window.gameMap && window.gameMap[id]) ? window.gameMap[id] : null;
+            const tags = (meta && meta.tags) ? meta.tags.map(t=>t.toString().toLowerCase()) : [];
+            if(!filter || tags.includes(filter)) c.style.display='block'; else c.style.display='none';
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
+
+
