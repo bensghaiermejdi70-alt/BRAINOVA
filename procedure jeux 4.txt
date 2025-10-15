@@ -1,0 +1,53 @@
+Procédure mémorisée pour les prochaines cartes
+
+Localiser la carte X dans le fichier global
+Chercher <!-- Jeu X ou <div class="game-number">X</div>.
+
+Remplacer le bloc par un déclencheur overlay
+
+<div class="game-card" onclick="launchGameX()" data-category="...">
+  <!-- en-tête, icône, titre, tags, stats -->
+</div>
+
+
+Créer l’overlay fullscreen avec bouton rouge ✖
+
+<div id="gameXOverlay" style="display:none; position:fixed; top:0; left:0;
+     width:100%; height:100%; background:#000; z-index:10000; overflow:auto;">
+  <button onclick="closeGameX()" 
+          style="position:absolute; top:20px; right:20px; background:red; color:#fff;
+                 border:none; padding:10px; font-size:20px; cursor:pointer; z-index:10001;">✖</button>
+  <div id="gameXContainer" style="width:100%; height:100%; overflow:auto; background:#000; color:#fff;">
+    <!-- contenu du jeuX.html -->
+  </div>
+</div>
+
+
+Intégrer le contenu complet de jeuxX.html
+
+Extraire le <body> + ses <style> + <script>
+
+Coller directement dans #gameXContainer.
+
+Ajouter les fonctions JS (si pas encore présentes)
+
+function launchGameX() {
+  document.getElementById('gameXOverlay').style.display = 'block';
+}
+function closeGameX() {
+  document.getElementById('gameXOverlay').style.display = 'none';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === "Escape") closeGameX();
+});
+
+
+📌 Résultat :
+
+Le jeu est embarqué dans le global (autonome, pas d’iframe).
+
+Taille du fichier augmente → preuve que le jeu est bien inclus.
+
+Overlay fullscreen avec bouton rouge et Échap.
+
+Maquette reste intacte.

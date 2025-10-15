@@ -1,0 +1,248 @@
+ VERSION COMPLÈTE - SUPPRESSION DOUBLONS CARTE 24
+
+ÉTAPE 1 : OUVRIR ET PRÉPARER LE FICHIER
+
+Ouvrez votre fichier index global fillscreengame 15.html
+
+Utilisez Ctrl+A pour tout sélectionner puis Ctrl+C pour copier
+
+Collez dans un éditeur de texte (Notepad++, VS Code, ou Bloc-notes)
+
+Sauvegardez une copie de sauvegarde avant de commencer
+
+ÉTAPE 2 : IDENTIFIER LES DOUBLONS DE LA CARTE 24
+
+A) Recherche du premier doublon (Modal/Overlay) :
+
+Appuyez sur Ctrl+F
+
+Tapez : game24Modal ou game24Overlay
+
+Cherchez les éléments suivants :
+
+Tout élément avec game24 dans l'ID
+
+B) Recherche du deuxième doublon (Jeu en plein écran) :
+
+Ctrl+F et tapez : le nom du jeu de la carte 24
+
+Cherchez après la carte 36 (fin de la grille)
+
+Identifiez le code HTML complet du jeu qui se répète
+
+ÉTAPE 3 : LOCALISER LE PREMIER DOUBLON (MODAL/OVERLAY)
+
+A) Trouvez le bloc modal :
+
+B) Identification complète du bloc :
+
+Placez votre curseur au DÉBUT du commentaire 
+
+Faites défiler vers le bas pour trouver la balise de fermeture correspondante
+
+Le bloc complet inclut :
+
+Le commentaire d'ouverture
+
+La div du modal/overlay
+
+Tout le contenu HTML du jeu
+
+La balise de fermeture 
+
+C) Suppression du premier doublon :
+
+Sélectionnez TOUT le bloc identifié
+
+Appuyez sur Suppr ou Delete
+
+Vérifiez que vous n'avez pas supprimé d'autres éléments
+
+ÉTAPE 4 : LOCALISER LE DEUXIÈME DOUBLON (JEU EN PLEIN ÉCRAN)
+
+A) Recherche de la fin des cartes :
+
+Ctrl+F et tapez : carte 36 ou la dernière carte
+
+Trouvez la balise de fermeture de la section des cartes
+
+Généralement : ou après la carte 36
+
+B) Identification du jeu en plein écran :
+Après la carte 36, cherchez :
+
+Le titre du jeu de la carte 24
+
+Des classes CSS spécifiques au jeu
+
+Une structure HTML complète du jeu
+
+Exemple de ce que vous pourriez trouver :
+
+C) Suppression du deuxième doublon :
+
+Sélectionnez depuis le début du jeu jusqu'à sa fin
+
+ATTENTION : Ne supprimez PAS les balises et finales
+
+Supprimez uniquement le code du jeu dupliqué
+
+ÉTAPE 5 : NETTOYER LES FONCTIONS JAVASCRIPT
+
+A) Recherche des fonctions liées aux doublons :
+
+Ctrl+F et tapez : function openGame24
+
+Ctrl+F et tapez : function closeGame24
+
+Cherchez aussi : openGame24() et closeGame24()
+
+B) Identification des fonctions à supprimer :
+
+SUPPRIMEZ ces fonctions SI elles ressemblent à ça :
+
+// FONCTIONS À SUPPRIMER (pour overlay/iframe)
+function openGame24() {
+document.getElementById('game24Overlay').style.display = 'block';
+}
+
+function closeGame24() {
+document.getElementById('game24Overlay').style.display = 'none';
+}
+
+GARDEZ ces fonctions (pour le modal principal) :
+
+// FONCTIONS À GARDER (pour le modal)
+function openGame24() {
+document.getElementById('game24Modal').style.display = 'flex';
+}
+
+function closeGame24() {
+document.getElementById('game24Modal').style.display = 'none';
+}
+
+C) Suppression sélective :
+
+Supprimez SEULEMENT les fonctions liées aux doublons
+
+Gardez les fonctions nécessaires au fonctionnement de la carte 24
+
+Vérifiez qu'il n'y a pas de fonctions orphelines
+
+ÉTAPE 6 : NETTOYER LES STYLES CSS
+
+A) Recherche des styles liés aux doublons :
+
+Ctrl+F et tapez : #game24Overlay
+
+Ctrl+F et tapez : .game24- (classes spécifiques)
+
+Cherchez les styles CSS dupliqués
+
+B) Suppression des styles dupliqués :
+
+Supprimez les styles CSS qui ne sont plus utilisés
+
+Gardez les styles nécessaires au modal principal
+
+Vérifiez qu'il n'y a pas de conflits de styles
+
+ÉTAPE 7 : VÉRIFICATION FINALE
+
+A) Éléments à conserver :
+
+✅ La carte 24 dans la grille des 36 cartes
+
+✅ Le modal principal du jeu 24 (si il existe)
+
+✅ Les fonctions JavaScript nécessaires
+
+✅ Les styles CSS du modal principal
+
+✅ Toutes les autres cartes (1-36)
+
+B) Éléments supprimés :
+
+❌ Modal/Overlay dupliqué (game24Overlay)
+
+❌ Jeu en plein écran après les cartes
+
+❌ Fonctions JavaScript des doublons
+
+❌ Styles CSS inutilisés
+
+❌ Code HTML dupliqué
+
+C) Test de fonctionnement :
+
+Sauvegardez le fichier modifié
+
+Ouvrez-le dans un navigateur web
+
+Vérifiez que la grille des 36 cartes s'affiche correctement
+
+Cliquez sur la carte 24 pour vérifier qu'elle fonctionne
+
+Vérifiez qu'il n'y a plus de jeu en plein écran après les cartes
+
+ÉTAPE 8 : RÉSOLUTION DES PROBLÈMES
+
+Si la carte 24 ne fonctionne plus :
+
+Vérifiez que vous avez gardé le bon modal
+
+Vérifiez que la fonction openGame24() existe
+
+Vérifiez que la carte 24 a bien onclick="openGame24()"
+
+Si vous avez supprimé trop d'éléments :
+
+Utilisez Ctrl+Z pour annuler les dernières actions
+
+Restaurez depuis votre copie de sauvegarde
+
+Recommencez plus prudemment
+
+Si il reste des doublons :
+
+Recherchez le nom exact du jeu de la carte 24
+
+Comptez combien de fois il apparaît dans le fichier
+
+Il ne devrait apparaître qu'UNE SEULE FOIS (dans le modal)
+
+Si il y a des erreurs JavaScript :
+
+Ouvrez la console du navigateur (F12)
+
+Regardez les erreurs affichées
+
+Vérifiez que toutes les fonctions nécessaires existent
+
+ÉTAPE 9 : VALIDATION COMPLÈTE
+
+A) Checklist finale :
+
+[ ] Fichier sauvegardé
+
+[ ] Grille des 36 cartes visible
+
+[ ] Carte 24 cliquable et fonctionnelle
+
+[ ] Aucun jeu en plein écran après les cartes
+
+[ ] Aucune erreur dans la console du navigateur
+
+[ ] Toutes les autres cartes fonctionnent encore
+
+B) Test sur différents navigateurs :
+
+Testez sur Chrome
+
+Testez sur Firefox
+
+Testez sur Edge
+
+Vérifiez la compatibilité mobile
+
+Voilà ! Votre carte 24 est maintenant nettoyée de tous ses doublons tout en conservant sa fonctionnalité principale ! 🧹✨```ht

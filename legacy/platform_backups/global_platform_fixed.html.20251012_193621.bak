@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Brainova - Plateforme unique (global)</title>
+  <style>
+    /* Inline minimal maquette CSS (self-contained) */
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;400;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Rajdhani,Segoe UI,Arial;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 50%,#16213e 100%);color:#fff}
+    .header{background:linear-gradient(135deg,rgba(0,0,0,0.95),rgba(26,26,46,0.9));backdrop-filter:blur(10px);border-bottom:2px solid #00d4ff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000}
+    .logo h1{font-family:Orbitron,monospace;font-size:1.6rem;margin:0;background:linear-gradient(45deg,#00d4ff,#ff0096,#00ff88);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+    .nav-btn{background:linear-gradient(45deg,#00d4ff,#ff0096);border:none;border-radius:20px;padding:8px 14px;color:#fff;font-weight:700;cursor:pointer}
+    .main{max-width:1200px;margin:18px auto;padding:0 18px}
+    .hero{padding:28px;background:linear-gradient(135deg,rgba(0,212,255,0.05),rgba(255,0,150,0.03));border-radius:12px;margin-bottom:18px}
+    .hero h2{font-family:Orbitron,monospace;font-size:2rem;margin:0;color:#00d4ff}
+    .games-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:18px}
+    .game-card{background:linear-gradient(135deg,rgba(0,0,0,0.9),rgba(26,26,46,0.8));border:2px solid #00d4ff;padding:14px;border-radius:14px;cursor:pointer;transition:transform .18s,box-shadow .18s}
+    .game-card:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(0,212,255,0.12)}
+    .game-number{font-weight:700;color:#00d4ff}
+    .game-icon{font-size:40px;text-align:center;margin:8px 0}
+    .game-card h3{font-family:Orbitron,monospace;margin:6px 0;color:#fff;text-align:center}
+    <!doctype html>
+    <html lang="fr">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Redirecting to canonical platform</title>
+        <meta http-equiv="refresh" content="0;url=./global_platform_canonical.html">
+        <script>location.replace('./global_platform_canonical.html');</script>
+      </head>
+      <body>
+        Redirecting to the canonical platform — <a href="./global_platform_canonical.html">open platform</a>
+      </body>
+    </html>

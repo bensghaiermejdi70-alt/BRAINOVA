@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Futuriste AI</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Orbitron', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ffff;
+            min-height: 100vh;
+            overflow-x: auto;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .title {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: brightness(1); }
+            to { filter: brightness(1.2); }
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: 2px solid #00ffff;
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1));
+            color: #00ffff;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.3), rgba(255, 0, 255, 0.3));
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .language-selector {
+            position: relative;
+        }
+
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.95);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            margin-top: 5px;
+            display: none;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .language-dropdown.show {
+            display: block;
+        }
+
+        .language-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .language-option:last-child {
+            border-bottom: none;
+        }
+
+        .language-option:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+
+        .game-area {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .sudoku-container {
+            position: relative;
+            order: 2;
+        }
+
+        .left-panel {
+            order: 1;
+        }
+
+        .right-panel {
+            order: 3;
+        }
+
+        .sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 50px);
+            grid-template-rows: repeat(9, 50px);
+            gap: 2px;
+            background: linear-gradient(45deg, var(--grid-color, #00ffff), var(--grid-secondary, #ff00ff));
+            padding: 4px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(var(--grid-rgb, 0, 255, 255), 0.3);
+            transition: all 0.5s ease;
+        }
+
+        .grid-theme-cyan {
+            --grid-color: #00ffff;
+            --grid-secondary: #ff00ff;
+            --grid-rgb: 0, 255, 255;
+        }
+
+        .grid-theme-green {
+            --grid-color: #00ff00;
+            --grid-secondary: #ffff00;
+            --grid-rgb: 0, 255, 0;
+        }
+
+        .grid-theme-purple {
+            --grid-color: #8000ff;
+            --grid-secondary: #ff0080;
+            --grid-rgb: 128, 0, 255;
+        }
+
+        .grid-theme-orange {
+            --grid-color: #ff8000;
+            --grid-secondary: #ff0040;
+            --grid-rgb: 255, 128, 0;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            background: rgba(26, 26, 46, 0.9);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            backdrop-filter: blur(5px);
+            color: #00ffff;
+        }
+
+        .cell:nth-child(3n):not(:nth-child(9n)) {
+            border-right: 3px solid var(--grid-color, #00ffff);
+        }
+
+        .cell:nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 3px solid var(--grid-color, #00ffff);
+        }
+
+        .cell.given {
+            background: rgba(26, 26, 46, 0.9);
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        .cell.selected {
+            background: linear-gradient(45deg, rgba(255, 255, 0, 0.3), rgba(255, 0, 255, 0.3));
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0.5);
+        }
+
+        .cell.error {
+            background: linear-gradient(45deg, rgba(255, 0, 0, 0.3), rgba(255, 100, 100, 0.3));
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .cell.hint {
+            background: linear-gradient(45deg, rgba(0, 255, 0, 0.3), rgba(100, 255, 100, 0.3));
+            animation: pulse 1s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .side-panel {
+            background: rgba(26, 26, 46, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            min-width: 250px;
+        }
+
+        .info-section {
+            margin-bottom: 25px;
+        }
+
+        .info-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ffff00;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ffff;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .difficulty-btn {
+            padding: 10px;
+            border: 2px solid #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+            color: #00ffff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.3), rgba(255, 0, 255, 0.3));
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+
+        .ai-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #00ffff;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .number-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .number-btn {
+            padding: 15px;
+            border: 2px solid #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+            color: #00ffff;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .number-btn:hover {
+            background: rgba(0, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .status-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 26, 46, 0.95);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+            display: none;
+            /* allow clicks to pass through the overlay so it doesn't block the game grid
+               but keep the status button clickable to dismiss the message */
+            pointer-events: none;
+        }
+
+        .status-message.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+            /* keep non-blocking behavior while visible */
+            pointer-events: none;
+        }
+
+        /* ensure the inner button in the status message remains clickable */
+        .status-message .btn {
+            pointer-events: auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .achievements {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .achievement {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .achievement.unlocked {
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.5);
+        }
+
+        .stats-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .combo-indicator {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #ffff00, #ff8000);
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            opacity: 0;
+            animation: comboShow 2s ease-in-out;
+        }
+
+        @keyframes comboShow {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            50% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+
+        @media (max-width: 1024px) {
+            .game-area {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .left-panel, .right-panel {
+                order: unset;
+                max-width: 500px;
+                width: 100%;
+            }
+            
+            .sudoku-container {
+                order: unset;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sudoku-grid {
+                grid-template-columns: repeat(9, 35px);
+                grid-template-rows: repeat(9, 35px);
+            }
+            
+            .cell {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .side-panel {
+                min-width: unset;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title" id="gameTitle">SUDOKU FUTURISTE AI</h1>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="startBtn">🚀 DÉMARRER</button>
+            <button class="btn" id="pauseBtn">⏸️ PAUSE</button>
+            <button class="btn" id="newGameBtn">🎮 NOUVEAU JEU</button>
+                    <!-- language selector intentionally minimal when embedded in platform; platform hosts main selector -->
+                    <div class="language-selector" id="languageSelectorPlaceholder" style="display:none"></div>
+        </div>
+
+        <div class="game-area">
+            <div class="side-panel left-panel">
+                <div class="info-section">
+                    <div class="info-title" id="aiLabel">ASSISTANT IA</div>
+                    <div class="ai-controls">
+                        <button class="btn" id="hintBtn">💡 INDICE</button>
+                        <button class="btn" id="solveBtn">🤖 RÉSOUDRE</button>
+                        <button class="btn" id="checkBtn">✅ VÉRIFIER</button>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title" id="timeLabel">TEMPS</div>
+                    <div class="info-value" id="timeValue">00:00</div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title" id="scoreLabel">SCORE</div>
+                    <div class="info-value" id="scoreValue">0</div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title" id="levelLabel">NIVEAU</div>
+                    <div class="info-value" id="levelValue">1</div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title" id="progressLabel">PROGRESSION</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="info-value" id="progressValue">0%</div>
+                </div>
+
+                <div class="stats-panel">
+                    <div class="info-title">STATISTIQUES</div>
+                    <div class="stat-item">
+                        <span>Puzzles résolus:</span>
+                        <span id="puzzlesSolved">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Meilleur temps:</span>
+                        <span id="bestTime">--:--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Combo actuel:</span>
+                        <span id="currentCombo">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Précision:</span>
+                        <span id="accuracy">100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sudoku-container">
+                <div class="sudoku-grid grid-theme-cyan" id="sudokuGrid"></div>
+            </div>
+
+            <div class="side-panel right-panel">
+                <div class="info-section">
+                    <div class="info-title" id="difficultyLabel">DIFFICULTÉ</div>
+                    <div class="difficulty-selector">
+                        <button class="difficulty-btn active" data-difficulty="easy" id="easyBtn">FACILE</button>
+                        <button class="difficulty-btn" data-difficulty="medium" id="mediumBtn">MOYEN</button>
+                        <button class="difficulty-btn" data-difficulty="hard" id="hardBtn">DIFFICILE</button>
+                        <button class="difficulty-btn" data-difficulty="expert" id="expertBtn">EXPERT</button>
+                    </div>
+                </div>
+
+                <div class="number-pad">
+                    <button class="number-btn" data-number="1">1</button>
+                    <button class="number-btn" data-number="2">2</button>
+                    <button class="number-btn" data-number="3">3</button>
+                    <button class="number-btn" data-number="4">4</button>
+                    <button class="number-btn" data-number="5">5</button>
+                    <button class="number-btn" data-number="6">6</button>
+                    <button class="number-btn" data-number="7">7</button>
+                    <button class="number-btn" data-number="8">8</button>
+                    <button class="number-btn" data-number="9">9</button>
+                </div>
+
+                <div class="achievements">
+                    <div class="info-title">SUCCÈS</div>
+                    <div class="achievement" id="achievement1">
+                        <span>🏆</span>
+                        <span>Premier puzzle</span>
+                    </div>
+                    <div class="achievement" id="achievement2">
+                        <span>⚡</span>
+                        <span>Vitesse éclair</span>
+                    </div>
+                    <div class="achievement" id="achievement3">
+                        <span>🎯</span>
+                        <span>Précision parfaite</span>
+                    </div>
+                    <div class="achievement" id="achievement4">
+                        <span>🔥</span>
+                        <span>Combo x10</span>
+                    </div>
+                    <div class="achievement" id="achievement5">
+                        <span>👑</span>
+                        <span>Maître Sudoku</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-message" id="statusMessage">
+        <h2 id="statusTitle">FÉLICITATIONS!</h2>
+        <p id="statusText">Vous avez résolu le Sudoku!</p>
+        <button class="btn" id="statusBtn">CONTINUER</button>
+    </div>
+
+    
+
+    <style>
+        .global-close-btn { position: fixed; top: 14px; right: 14px; z-index: 99999; background: #ff3b3b; color: #fff; border: none; width:52px; height:52px; border-radius:50%; font-size:22px; cursor:pointer; box-shadow:0 6px 18px rgba(255,59,59,0.3);} 
+        .global-close-btn:hover{ transform: scale(1.05); }
+    </style>
+    <button class="global-close-btn" title="Fermer" aria-label="Fermer" onclick="(function(){ try{ if(window.parent && window.parent !== window){ window.parent.postMessage({action:'go-home'}, '*'); } else { try{ window.location.href = new URL('./brainova.html', window.location.href).href; }catch(e){ window.location.href = './brainova.html'; } } }catch(e){ try{ window.location.href = new URL('./brainova.html', window.location.href).href; }catch(e2){ window.location.href = './brainova.html'; } } })()">✕</button>
+    <script>
+        class SudokuGame {
+            constructor() {
+                this.grid = Array(9).fill().map(() => Array(9).fill(0));
+                this.solution = Array(9).fill().map(() => Array(9).fill(0));
+                this.initialGrid = Array(9).fill().map(() => Array(9).fill(0));
+                this.selectedCell = null;
+                this.gameStarted = false;
+                this.gamePaused = false;
+                this.startTime = null;
+                this.elapsedTime = 0;
+                this.timer = null;
+                this.score = 0;
+                this.difficulty = 'easy';
+                this.currentLanguage = 'fr';
+                this.currentLevel = 1;
+                this.maxLevel = 50;
+                // Guards to prevent double-start / race conditions
+                this._starting = false;
+                this._clickLocked = false;
+                // Web Worker for heavy generation (if supported)
+                try{
+                    if(window.Worker){
+                        this._worker = new Worker('./platform/games/sudoku-worker.js');
+                        this._worker.addEventListener('message', (ev) => {
+                            try{
+                                const { solution, initial } = ev.data || {};
+                                if (solution && initial) {
+                                    // If elements aren't initialized yet, stash result for later
+                                    if (!this.elements) {
+                                        this._pendingWorkerResult = { solution, initial };
+                                        return;
+                                    }
+                                    this.solution = solution;
+                                    this.grid = initial.map(r => r.slice());
+                                    this.initialGrid = this.grid.map(r => r.slice());
+                                    this.renderGrid();
+                                    this.updateProgress();
+                                    try { this.elements.statusMessage.classList.remove('show'); } catch (e) {}
+                                }
+                            }catch(e){ console.error('Sudoku: worker message handler error', e); }
+                        });
+                    }
+                }catch(e){ console.debug('Sudoku: Worker not available', e); }
+                
+                // Nouvelles statistiques
+                this.stats = {
+                    puzzlesSolved: 0,
+                    bestTime: null,
+                    currentCombo: 0,
+                    totalMoves: 0,
+                    correctMoves: 0,
+                    achievements: new Set()
+                };
+                
+                this.translations = {
+                    fr: {
+                        title: 'SUDOKU FUTURISTE AI',
+                        start: '🚀 DÉMARRER',
+                        pause: '⏸️ PAUSE',
+                        resume: '▶️ REPRENDRE',
+                        newGame: '🎮 NOUVEAU JEU',
+                        time: 'TEMPS',
+                        score: 'SCORE',
+                        progress: 'PROGRESSION',
+                        difficulty: 'DIFFICULTÉ',
+                        level: 'NIVEAU',
+                        easy: 'FACILE',
+                        medium: 'MOYEN',
+                        hard: 'DIFFICILE',
+                        expert: 'EXPERT',
+                        ai: 'ASSISTANT IA',
+                        hint: '💡 INDICE',
+                        solve: '🤖 RÉSOUDRE',
+                        check: '✅ VÉRIFIER',
+                        congratulations: 'FÉLICITATIONS!',
+                        solved: 'Vous avez résolu le Sudoku!',
+                        continue: 'CONTINUER',
+                        gameComplete: 'JEU TERMINÉ!',
+                        newRecord: 'Nouveau record!',
+                        error: 'Erreur détectée!',
+                        hintUsed: 'Indice utilisé!',
+                        levelComplete: 'Niveau terminé! Passage au niveau',
+                        combo: 'COMBO x',
+                        perfectGame: 'JEU PARFAIT!',
+                        speedBonus: 'BONUS VITESSE!'
+                    },
+                    en: {
+                        title: 'FUTURISTIC AI SUDOKU',
+                        start: '🚀 START',
+                        pause: '⏸️ PAUSE',
+                        resume: '▶️ RESUME',
+                        newGame: '🎮 NEW GAME',
+                        time: 'TIME',
+                        score: 'SCORE',
+                        progress: 'PROGRESS',
+                        difficulty: 'DIFFICULTY',
+                        level: 'LEVEL',
+                        easy: 'EASY',
+                        medium: 'MEDIUM',
+                        hard: 'HARD',
+                        expert: 'EXPERT',
+                        ai: 'AI ASSISTANT',
+                        hint: '💡 HINT',
+                        solve: '🤖 SOLVE',
+                        check: '✅ CHECK',
+                        congratulations: 'CONGRATULATIONS!',
+                        solved: 'You solved the Sudoku!',
+                        continue: 'CONTINUE',
+                        gameComplete: 'GAME COMPLETE!',
+                        newRecord: 'New record!',
+                        error: 'Error detected!',
+                        hintUsed: 'Hint used!',
+                        levelComplete: 'Level complete! Moving to level',
+                        combo: 'COMBO x',
+                        perfectGame: 'PERFECT GAME!',
+                        speedBonus: 'SPEED BONUS!'
+                    },
+                    ar: {
+                        title: 'سودوكو مستقبلي بالذكاء الاصطناعي',
+                        start: '🚀 ابدأ',
+                        pause: '⏸️ توقف',
+                        resume: '▶️ استكمل',
+                        newGame: '🎮 لعبة جديدة',
+                        time: 'الوقت',
+                        score: 'النقاط',
+                        progress: 'التقدم',
+                        difficulty: 'الصعوبة',
+                        level: 'المستوى',
+                        easy: 'سهل',
+                        medium: 'متوسط',
+                        hard: 'صعب',
+                        expert: 'خبير',
+                        ai: 'مساعد ذكي',
+                        hint: '💡 تلميح',
+                        solve: '🤖 حل',
+                        check: '✅ تحقق',
+                        congratulations: 'تهانينا!',
+                        solved: 'لقد حللت السودوكو!',
+                        continue: 'متابعة',
+                        gameComplete: 'اللعبة مكتملة!',
+                        newRecord: 'رقم قياسي جديد!',
+                        error: 'خطأ مكتشف!',
+                        hintUsed: 'تم استخدام التلميح!',
+                        levelComplete: 'المستوى مكتمل! الانتقال للمستوى',
+                        combo: 'كومبو x',
+                        perfectGame: 'لعبة مثالية!',
+                        speedBonus: 'مكافأة السرعة!'
+                    },
+                    es: {
+                        title: 'SUDOKU FUTURISTA IA',
+                        start: '🚀 INICIAR',
+                        pause: '⏸️ PAUSA',
+                        resume: '▶️ REANUDAR',
+                        newGame: '🎮 NUEVO JUEGO',
+                        time: 'TIEMPO',
+                        score: 'PUNTUACIÓN',
+                        progress: 'PROGRESO',
+                        difficulty: 'DIFICULTAD',
+                        level: 'NIVEL',
+                        easy: 'FÁCIL',
+                        medium: 'MEDIO',
+                        hard: 'DIFÍCIL',
+                        expert: 'EXPERTO',
+                        ai: 'ASISTENTE IA',
+                        hint: '💡 PISTA',
+                        solve: '🤖 RESOLVER',
+                        check: '✅ VERIFICAR',
+                        congratulations: '¡FELICITACIONES!',
+                        solved: '¡Has resuelto el Sudoku!',
+                        continue: 'CONTINUAR',
+                        gameComplete: '¡JUEGO COMPLETADO!',
+                        newRecord: '¡Nuevo récord!',
+                        error: '¡Error detectado!',
+                        hintUsed: '¡Pista usada!',
+                        levelComplete: '¡Nivel completado! Pasando al nivel',
+                        combo: 'COMBO x',
+                        perfectGame: '¡JUEGO PERFECTO!',
+                        speedBonus: '¡BONUS VELOCIDAD!'
+                    },
+                    de: {
+                        title: 'FUTURISTISCHES KI SUDOKU',
+                        start: '🚀 START',
+                        pause: '⏸️ PAUSE',
+                        resume: '▶️ FORTSETZEN',
+                        newGame: '🎮 NEUES SPIEL',
+                        time: 'ZEIT',
+                        score: 'PUNKTE',
+                        progress: 'FORTSCHRITT',
+                        difficulty: 'SCHWIERIGKEIT',
+                        level: 'STUFE',
+                        easy: 'EINFACH',
+                        medium: 'MITTEL',
+                        hard: 'SCHWER',
+                        expert: 'EXPERTE',
+                        ai: 'KI ASSISTENT',
+                        hint: '💡 HINWEIS',
+                        solve: '🤖 LÖSEN',
+                        check: '✅ PRÜFEN',
+                        congratulations: 'GLÜCKWUNSCH!',
+                        solved: 'Sie haben das Sudoku gelöst!',
+                        continue: 'WEITER',
+                        gameComplete: 'SPIEL BEENDET!',
+                        newRecord: 'Neuer Rekord!',
+                        error: 'Fehler erkannt!',
+                        hintUsed: 'Hinweis verwendet!',
+                        levelComplete: 'Level abgeschlossen! Weiter zu Level',
+                        combo: 'COMBO x',
+                        perfectGame: 'PERFEKTES SPIEL!',
+                        speedBonus: 'GESCHWINDIGKEITSBONUS!'
+                    },
+                    zh: {
+                        title: '未来主义AI数独',
+                        start: '🚀 开始',
+                        pause: '⏸️ 暂停',
+                        resume: '▶️ 继续',
+                        newGame: '🎮 新游戏',
+                        time: '时间',
+                        score: '分数',
+                        progress: '进度',
+                        difficulty: '难度',
+                        level: '等级',
+                        easy: '简单',
+                        medium: '中等',
+                        hard: '困难',
+                        expert: '专家',
+                        ai: 'AI助手',
+                        hint: '💡 提示',
+                        solve: '🤖 解决',
+                        check: '✅ 检查',
+                        congratulations: '恭喜！',
+                        solved: '您已解决数独！',
+                        continue: '继续',
+                        gameComplete: '游戏完成！',
+                        newRecord: '新记录！',
+                        error: '检测到错误！',
+                        hintUsed: '已使用提示！',
+                        levelComplete: '等级完成！进入等级',
+                        combo: '连击 x',
+                        perfectGame: '完美游戏！',
+                        speedBonus: '速度奖励！'
+                    }
+                };
+
+                this.initializeElements();
+                this.setupEventListeners();
+                this.loadStats();
+                // Defer heavy initial puzzle generation so UI is responsive
+                setTimeout(() => { try { this.generateNewGame(); } catch(e){ console.error('Sudoku: initial generateNewGame error', e); } }, 50);
+                // Attach language sync to inherit the platform language when embedded
+                try{ this.attachLanguageSync(); }catch(e){}
+            }
+
+                    // Sync language from platform if available
+                    attachLanguageSync(){
+                        try{
+                            const lang = localStorage.getItem('brainovaLang');
+                            if(lang) this.changeLanguage(lang);
+                        }catch(e){}
+                        window.addEventListener('storage', (ev)=>{
+                            if(ev.key === 'brainovaLang' && ev.newValue){
+                                this.changeLanguage(ev.newValue);
+                            }
+                        });
+                    }
+
+                    // Helper to wrap event handlers to avoid uncaught exceptions and add debug logs
+                    safeHandler(fn, name) {
+                        const self = this;
+                        return function(...args) {
+                            try {
+                                console.debug('Sudoku: handler', name, 'invoked');
+                                return fn.apply(self, args);
+                            } catch (err) {
+                                console.error('Sudoku: handler', name, 'error', err);
+                            }
+                        };
+                    }
+
+            initializeElements() {
+                this.elements = {
+                    grid: document.getElementById('sudokuGrid'),
+                    startBtn: document.getElementById('startBtn'),
+                    pauseBtn: document.getElementById('pauseBtn'),
+                    newGameBtn: document.getElementById('newGameBtn'),
+                    languageBtn: document.getElementById('languageBtn'),
+                    languageDropdown: document.getElementById('languageDropdown'),
+                    timeValue: document.getElementById('timeValue'),
+                    scoreValue: document.getElementById('scoreValue'),
+                    levelValue: document.getElementById('levelValue'),
+                    progressFill: document.getElementById('progressFill'),
+                    progressValue: document.getElementById('progressValue'),
+                    hintBtn: document.getElementById('hintBtn'),
+                    solveBtn: document.getElementById('solveBtn'),
+                    checkBtn: document.getElementById('checkBtn'),
+                    statusMessage: document.getElementById('statusMessage'),
+                    statusTitle: document.getElementById('statusTitle'),
+                    statusText: document.getElementById('statusText'),
+                    statusBtn: document.getElementById('statusBtn'),
+                    puzzlesSolved: document.getElementById('puzzlesSolved'),
+                    bestTime: document.getElementById('bestTime'),
+                    currentCombo: document.getElementById('currentCombo'),
+                    accuracy: document.getElementById('accuracy')
+                };
+
+                this.createGrid();
+                console.debug('Sudoku: initializeElements completed - grid created');
+                // If worker produced a result before elements were ready, apply it now
+                if (this._pendingWorkerResult) {
+                    try {
+                        const { solution, initial } = this._pendingWorkerResult;
+                        this.solution = solution;
+                        this.grid = initial.map(r => r.slice());
+                        this.initialGrid = this.grid.map(r => r.slice());
+                        this.renderGrid();
+                        this.updateProgress();
+                        this._pendingWorkerResult = null;
+                        try { this.elements.statusMessage.classList.remove('show'); } catch (e) {}
+                    } catch (e) { console.error('Sudoku: apply pending worker result error', e); }
+                }
+            }
+
+            createGrid() {
+                this.elements.grid.innerHTML = '';
+                for (let i = 0; i < 81; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.index = i;
+                    this.elements.grid.appendChild(cell);
+                }
+            }
+
+            
+
+            setupEventListeners() {
+                // Contrôles principaux
+                    this.elements.startBtn.addEventListener('click', this.safeHandler((e) => {
+                        console.debug('Sudoku: startBtn clicked -> startNow', { _clickLocked: this._clickLocked, gameStarted: this.gameStarted });
+                        if (this._clickLocked) { console.debug('Sudoku: startBtn click ignored due to click lock'); return; }
+                        this._clickLocked = true;
+                        setTimeout(() => { this._clickLocked = false; }, 350);
+
+                        // Force an immediate start regardless of toggle state
+                        if (!this.gameStarted) {
+                            this.startNow();
+                        } else {
+                            console.debug('Sudoku: game already started; startNow will not reinitialize');
+                        }
+                    }, 'startBtn_click'));
+                // Temporarily hide/disable the pause button to avoid accidental pauses during debugging
+                try { this.elements.pauseBtn.style.display = 'none'; } catch (e) {}
+                // Keep pauseGame as a no-op while we're disabling pause to avoid regressions
+                // this.elements.pauseBtn.addEventListener('click', () => this.pauseGame());
+                this.elements.newGameBtn.addEventListener('click', () => this.resetToLevel1());
+
+                // Sélecteur de langue
+                this.elements.languageBtn.addEventListener('click', () => {
+                    this.elements.languageDropdown.classList.toggle('show');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.language-selector')) {
+                        this.elements.languageDropdown.classList.remove('show');
+                    }
+                });
+
+                document.querySelectorAll('.language-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        this.changeLanguage(e.target.dataset.lang);
+                        this.elements.languageDropdown.classList.remove('show');
+                    });
+                });
+
+                // Sélecteur de difficulté
+                    document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                        btn.addEventListener('click', this.safeHandler((e) => {
+                            document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                            e.target.classList.add('active');
+                            this.difficulty = e.target.dataset.difficulty;
+                            this.generateNewGame();
+                        }, 'difficulty_click'));
+                    });
+
+                // Contrôles IA
+                    this.elements.hintBtn.addEventListener('click', this.safeHandler(() => this.giveHint(), 'hintBtn_click'));
+                    this.elements.solveBtn.addEventListener('click', this.safeHandler(() => this.solvePuzzle(), 'solveBtn_click'));
+                    this.elements.checkBtn.addEventListener('click', this.safeHandler(() => this.checkSolution(), 'checkBtn_click'));
+
+                // Grille de jeu
+                    this.elements.grid.addEventListener('click', this.safeHandler((e) => {
+                        if (e.target.classList.contains('cell')) {
+                            this.selectCell(parseInt(e.target.dataset.index));
+                        }
+                    }, 'grid_click'));
+
+                // Pavé numérique
+                    document.querySelectorAll('.number-btn').forEach(btn => {
+                        btn.addEventListener('click', this.safeHandler((e) => {
+                            if (this.selectedCell === null) {
+                                // find first empty, non-given cell
+                                for (let i = 0; i < 81; i++) {
+                                    const r = Math.floor(i/9), c = i%9;
+                                    if (this.initialGrid[r][c] === 0) { this.selectCell(i); break; }
+                                }
+                            }
+                            if (this.selectedCell !== null) {
+                                this.placeNumber(parseInt(e.target.dataset.number));
+                            }
+                        }, 'number_btn_click'));
+                    });
+
+                // Contrôles clavier
+                    document.addEventListener('keydown', this.safeHandler((e) => {
+                        if (this.gameStarted && !this.gamePaused) {
+                            if (e.key >= '1' && e.key <= '9') {
+                                if (this.selectedCell !== null) {
+                                    this.placeNumber(parseInt(e.key));
+                                }
+                            } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                                if (this.selectedCell !== null) {
+                                    this.clearCell();
+                                }
+                            }
+                        }
+                    }, 'keydown'));
+
+                // Message de statut
+                    this.elements.statusBtn.addEventListener('click', this.safeHandler(() => {
+                        this.elements.statusMessage.classList.remove('show');
+                    }, 'statusBtn_click'));
+                console.debug('Sudoku: event listeners attached');
+            }
+
+            loadStats() {
+                const saved = localStorage.getItem('sudokuStats');
+                if (saved) {
+                    const savedStats = JSON.parse(saved);
+                    this.stats = { ...this.stats, ...savedStats };
+                    this.stats.achievements = new Set(savedStats.achievements || []);
+                }
+                this.updateStatsDisplay();
+            }
+
+            saveStats() {
+                const statsToSave = {
+                    ...this.stats,
+                    achievements: Array.from(this.stats.achievements)
+                };
+                localStorage.setItem('sudokuStats', JSON.stringify(statsToSave));
+            }
+
+            updateStatsDisplay() {
+                this.elements.puzzlesSolved.textContent = this.stats.puzzlesSolved;
+                this.elements.bestTime.textContent = this.stats.bestTime ? this.formatTime(this.stats.bestTime) : '--:--';
+                this.elements.currentCombo.textContent = this.stats.currentCombo;
+                
+                const accuracy = this.stats.totalMoves > 0 ? 
+                    Math.round((this.stats.correctMoves / this.stats.totalMoves) * 100) : 100;
+                this.elements.accuracy.textContent = accuracy + '%';
+
+                // Mise à jour des succès
+                this.updateAchievements();
+            }
+
+            updateAchievements() {
+                const achievements = [
+                    { id: 'achievement1', condition: () => this.stats.puzzlesSolved >= 1 },
+                    { id: 'achievement2', condition: () => this.stats.bestTime && this.stats.bestTime < 300000 },
+                    { id: 'achievement3', condition: () => this.stats.correctMoves >= 50 && (this.stats.correctMoves / this.stats.totalMoves) >= 0.95 },
+                    { id: 'achievement4', condition: () => this.stats.currentCombo >= 10 },
+                    { id: 'achievement5', condition: () => this.stats.puzzlesSolved >= 25 }
+                ];
+
+                achievements.forEach(achievement => {
+                    const element = document.getElementById(achievement.id);
+                    if (achievement.condition() && !this.stats.achievements.has(achievement.id)) {
+                        this.stats.achievements.add(achievement.id);
+                        element.classList.add('unlocked');
+                        this.showComboIndicator('🏆 SUCCÈS DÉBLOQUÉ!');
+                    } else if (this.stats.achievements.has(achievement.id)) {
+                        element.classList.add('unlocked');
+                    }
+                });
+            }
+
+            showComboIndicator(text) {
+                const indicator = document.createElement('div');
+                indicator.className = 'combo-indicator';
+                indicator.textContent = text;
+                this.elements.grid.parentElement.appendChild(indicator);
+                
+                setTimeout(() => {
+                    indicator.remove();
+                }, 2000);
+            }
+
+            changeLanguage(lang) {
+                this.currentLanguage = lang;
+                const t = this.translations[lang];
+                
+                document.getElementById('gameTitle').textContent = t.title;
+                this.elements.startBtn.textContent = this.gameStarted ? (this.gamePaused ? t.resume : t.pause) : t.start;
+                this.elements.pauseBtn.textContent = t.pause;
+                this.elements.newGameBtn.textContent = t.newGame;
+                this.elements.languageBtn.textContent = `🌍 ${document.querySelector(`[data-lang="${lang}"]`).textContent.split(' ')[1]}`;
+                
+                document.getElementById('timeLabel').textContent = t.time;
+                document.getElementById('scoreLabel').textContent = t.score;
+                document.getElementById('levelLabel').textContent = t.level;
+                document.getElementById('progressLabel').textContent = t.progress;
+                document.getElementById('difficultyLabel').textContent = t.difficulty;
+                document.getElementById('aiLabel').textContent = t.ai;
+                
+                document.getElementById('easyBtn').textContent = t.easy;
+                document.getElementById('mediumBtn').textContent = t.medium;
+                document.getElementById('hardBtn').textContent = t.hard;
+                document.getElementById('expertBtn').textContent = t.expert;
+                
+                this.elements.hintBtn.textContent = t.hint;
+                this.elements.solveBtn.textContent = t.solve;
+                this.elements.checkBtn.textContent = t.check;
+            }
+
+            resetToLevel1() {
+                this.currentLevel = 1;
+                this.score = 0;
+                this.stats.currentCombo = 0;
+                this.generateNewGame();
+            }
+
+            generateNewGame() {
+                // Show loading status to user
+                try { this.showMessage('Génération', 'Préparation du puzzle...'); } catch (e) {}
+
+                // Reset synchronously (lightweight)
+                this.resetGame();
+
+                // If worker available, ask it to generate and return result asynchronously
+                if (this._worker) {
+                    try {
+                        this._worker.postMessage({ action: 'generate', difficulty: this.difficulty, level: this.currentLevel });
+                        // safety fallback: hide status overlay after timeout so UI isn't permanently blocked
+                        try { clearTimeout(this._statusFallbackTimer); } catch(_){}
+                        this._statusFallbackTimer = setTimeout(()=>{
+                            try { this.elements.statusMessage.classList.remove('show'); } catch(e){}
+                            console.warn('Sudoku: status overlay fallback hidden after timeout');
+                        }, 8000);
+                        return;
+                    } catch (e) { console.error('Sudoku: worker postMessage error', e); }
+                }
+
+                // Fallback: Run heavy generation asynchronously to avoid blocking UI
+                setTimeout(() => {
+                    try {
+                        this.generateSolution();
+                        this.createPuzzle();
+                        this.changeGridTheme();
+                        this.renderGrid();
+                        this.updateProgress();
+                    } catch (e) {
+                        console.error('Sudoku: generateNewGame inner error', e);
+                    } finally {
+                        // hide status message after generation completes
+                        try { this.elements.statusMessage.classList.remove('show'); } catch (e) {}
+                        try { clearTimeout(this._statusFallbackTimer); } catch(_){}
+                    }
+                }, 50);
+            }
+
+            changeGridTheme() {
+                const themes = ['grid-theme-cyan', 'grid-theme-green', 'grid-theme-purple', 'grid-theme-orange'];
+                const currentTheme = themes[Math.floor(Math.random() * themes.length)];
+                
+                this.elements.grid.classList.remove(...themes);
+                this.elements.grid.classList.add(currentTheme);
+            }
+
+            resetGame() {
+                this.grid = Array(9).fill().map(() => Array(9).fill(0));
+                this.solution = Array(9).fill().map(() => Array(9).fill(0));
+                this.initialGrid = Array(9).fill().map(() => Array(9).fill(0));
+                this.selectedCell = null;
+                this.gameStarted = false;
+                this.gamePaused = false;
+                this.startTime = null;
+                this.elapsedTime = 0;
+                
+                if (this.timer) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                }
+                
+                this.elements.timeValue.textContent = '00:00';
+                this.elements.scoreValue.textContent = this.score;
+                this.elements.levelValue.textContent = this.currentLevel;
+                this.elements.startBtn.textContent = this.translations[this.currentLanguage].start;
+            }
+
+            generateSolution() {
+                let attempts = 0;
+                const maxAttempts = 100;
+                
+                do {
+                    this.solution = Array(9).fill().map(() => Array(9).fill(0));
+                    attempts++;
+                } while (!this.fillGridAdvanced(this.solution) && attempts < maxAttempts);
+                
+                if (attempts >= maxAttempts) {
+                    this.generateFallbackSolution();
+                }
+            }
+
+            fillGridAdvanced(grid) {
+                const positions = [];
+                for (let i = 0; i < 81; i++) {
+                    positions.push(i);
+                }
+                positions.sort(() => Math.random() - 0.5);
+                
+                return this.solveWithConstraints(grid, positions, 0);
+            }
+
+            solveWithConstraints(grid, positions, index) {
+                if (index >= positions.length) {
+                    return this.isValidSudoku(grid);
+                }
+                
+                const pos = positions[index];
+                const row = Math.floor(pos / 9);
+                const col = pos % 9;
+                
+                if (grid[row][col] !== 0) {
+                    return this.solveWithConstraints(grid, positions, index + 1);
+                }
+                
+                const numbers = this.getValidNumbers(grid, row, col);
+                
+                for (let num of numbers) {
+                    grid[row][col] = num;
+                    
+                    if (this.solveWithConstraints(grid, positions, index + 1)) {
+                        return true;
+                    }
+                    
+                    grid[row][col] = 0;
+                }
+                
+                return false;
+            }
+
+            getValidNumbers(grid, row, col) {
+                const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                const valid = [];
+                
+                for (let num of numbers) {
+                    if (this.isValidMove(grid, row, col, num)) {
+                        valid.push(num);
+                    }
+                }
+                
+                return valid.sort(() => Math.random() - 0.5);
+            }
+
+            generateFallbackSolution() {
+                const base = [
+                    [5,3,4,6,7,8,9,1,2],
+                    [6,7,2,1,9,5,3,4,8],
+                    [1,9,8,3,4,2,5,6,7],
+                    [8,5,9,7,6,1,4,2,3],
+                    [4,2,6,8,5,3,7,9,1],
+                    [7,1,3,9,2,4,8,5,6],
+                    [9,6,1,5,3,7,2,8,4],
+                    [2,8,7,4,1,9,6,3,5],
+                    [3,4,5,2,8,6,1,7,9]
+                ];
+                
+                this.shuffleSolution(base);
+                this.solution = base;
+            }
+
+            shuffleSolution(grid) {
+                for (let group = 0; group < 3; group++) {
+                    const rows = [group * 3, group * 3 + 1, group * 3 + 2];
+                    for (let i = rows.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [grid[rows[i]], grid[rows[j]]] = [grid[rows[j]], grid[rows[i]]];
+                    }
+                }
+                
+                for (let group = 0; group < 3; group++) {
+                    const cols = [group * 3, group * 3 + 1, group * 3 + 2];
+                    for (let i = cols.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        for (let row = 0; row < 9; row++) {
+                            [grid[row][cols[i]], grid[row][cols[j]]] = [grid[row][cols[j]], grid[row][cols[i]]];
+                        }
+                    }
+                }
+            }
+
+            isValidSudoku(grid) {
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        if (grid[row][col] === 0) return false;
+                        const num = grid[row][col];
+                        grid[row][col] = 0;
+                        if (!this.isValidMove(grid, row, col, num)) {
+                            grid[row][col] = num;
+                            return false;
+                        }
+                        grid[row][col] = num;
+                    }
+                }
+                return true;
+            }
+
+            createPuzzle() {
+                this.grid = this.solution.map(row => [...row]);
+                const toRemove = this.calculateCellsToRemove();
+                let attempts = 0;
+                const maxAttempts = 1000;
+                
+                while (attempts < maxAttempts) {
+                    const testGrid = this.solution.map(row => [...row]);
+                    const positions = [];
+                    
+                    for (let i = 0; i < 81; i++) {
+                        positions.push(i);
+                    }
+                    
+                    positions.sort(() => Math.random() - 0.5);
+                    
+                    let removed = 0;
+                    for (let i = 0; i < positions.length && removed < toRemove; i++) {
+                        const pos = positions[i];
+                        const row = Math.floor(pos / 9);
+                        const col = pos % 9;
+                        
+                        const originalValue = testGrid[row][col];
+                        testGrid[row][col] = 0;
+                        
+                        if (this.hasUniqueSolution(testGrid) && this.respectsConstraints(testGrid)) {
+                            removed++;
+                        } else {
+                            testGrid[row][col] = originalValue;
+                        }
+                    }
+                    
+                    if (this.isValidPuzzle(testGrid)) {
+                        this.grid = testGrid;
+                        break;
+                    }
+                    
+                    attempts++;
+                }
+                
+                if (attempts >= maxAttempts) {
+                    this.createSimplifiedPuzzle();
+                }
+                
+                this.initialGrid = this.grid.map(row => [...row]);
+            }
+
+            calculateCellsToRemove() {
+                const baseDifficulty = {
+                    easy: 30,
+                    medium: 40,
+                    hard: 50,
+                    expert: 60
+                };
+                
+                const levelIncrease = Math.min(20, Math.floor((this.currentLevel - 1) * 0.4));
+                
+                return baseDifficulty[this.difficulty] + levelIncrease;
+            }
+
+            respectsConstraints(grid) {
+                for (let row = 0; row < 9; row++) {
+                    let count = 0;
+                    for (let col = 0; col < 9; col++) {
+                        if (grid[row][col] !== 0) count++;
+                    }
+                    if (count === 9) return false;
+                }
+                
+                for (let col = 0; col < 9; col++) {
+                    let count = 0;
+                    for (let row = 0; row < 9; row++) {
+                        if (grid[row][col] !== 0) count++;
+                    }
+                    if (count === 9) return false;
+                }
+                
+                return true;
+            }
+
+            createSimplifiedPuzzle() {
+                this.grid = this.solution.map(row => [...row]);
+                const toRemove = this.calculateCellsToRemove();
+                const positions = [];
+                
+                for (let i = 0; i < 81; i++) {
+                    positions.push(i);
+                }
+                positions.sort(() => Math.random() - 0.5);
+                
+                let removed = 0;
+                for (let i = 0; i < positions.length && removed < toRemove; i++) {
+                    const pos = positions[i];
+                    const row = Math.floor(pos / 9);
+                    const col = pos % 9;
+                    
+                    if (this.canRemoveCell(this.grid, row, col)) {
+                        this.grid[row][col] = 0;
+                        removed++;
+                    }
+                }
+            }
+
+            canRemoveCell(grid, row, col) {
+                let rowCount = 0;
+                for (let c = 0; c < 9; c++) {
+                    if (grid[row][c] !== 0) rowCount++;
+                }
+                
+                let colCount = 0;
+                for (let r = 0; r < 9; r++) {
+                    if (grid[r][col] !== 0) colCount++;
+                }
+                
+                return rowCount > 2 && colCount > 2;
+            }
+
+            isValidPuzzle(grid) {
+                for (let row = 0; row < 9; row++) {
+                    let count = 0;
+                    for (let col = 0; col < 9; col++) {
+                        if (grid[row][col] !== 0) count++;
+                    }
+                    if (count === 9) return false;
+                }
+                
+                for (let col = 0; col < 9; col++) {
+                    let count = 0;
+                    for (let row = 0; row < 9; row++) {
+                        if (grid[row][col] !== 0) count++;
+                    }
+                    if (count === 9) return false;
+                }
+                
+                return true;
+            }
+
+            hasUniqueSolution(grid) {
+                const solutions = [];
+                this.findAllSolutions(grid.map(row => [...row]), solutions, 2);
+                return solutions.length === 1;
+            }
+
+            findAllSolutions(grid, solutions, maxSolutions) {
+                if (solutions.length >= maxSolutions) return;
+                
+                let row = -1, col = -1;
+                let isEmpty = false;
+                
+                for (let i = 0; i < 9 && !isEmpty; i++) {
+                    for (let j = 0; j < 9 && !isEmpty; j++) {
+                        if (grid[i][j] === 0) {
+                            row = i;
+                            col = j;
+                            isEmpty = true;
+                        }
+                    }
+                }
+                
+                if (!isEmpty) {
+                    solutions.push(grid.map(row => [...row]));
+                    return;
+                }
+                
+                for (let num = 1; num <= 9; num++) {
+                    if (this.isValidMove(grid, row, col, num)) {
+                        grid[row][col] = num;
+                        this.findAllSolutions(grid, solutions, maxSolutions);
+                        grid[row][col] = 0;
+                    }
+                }
+            }
+
+            isValidMove(grid, row, col, num) {
+                for (let c = 0; c < 9; c++) {
+                    if (c !== col && grid[row][c] === num) return false;
+                }
+                
+                for (let r = 0; r < 9; r++) {
+                    if (r !== row && grid[r][col] === num) return false;
+                }
+                
+                const boxRow = Math.floor(row / 3) * 3;
+                const boxCol = Math.floor(col / 3) * 3;
+                
+                for (let r = boxRow; r < boxRow + 3; r++) {
+                    for (let c = boxCol; c < boxCol + 3; c++) {
+                        if ((r !== row || c !== col) && grid[r][c] === num) return false;
+                    }
+                }
+                
+                return true;
+            }
+
+            renderGrid() {
+                const cells = this.elements.grid.children;
+                
+                for (let i = 0; i < 81; i++) {
+                    const row = Math.floor(i / 9);
+                    const col = i % 9;
+                    const cell = cells[i];
+                    
+                    cell.textContent = this.grid[row][col] || '';
+                    cell.className = 'cell';
+                    
+                    if (this.initialGrid[row][col] !== 0) {
+                        cell.classList.add('given');
+                    }
+                    
+                    if (i === this.selectedCell) {
+                        cell.classList.add('selected');
+                    }
+                }
+            }
+
+            selectCell(index) {
+                // If the game hasn't been started yet, start immediately on first interaction
+                if (!this.gameStarted) {
+                    console.debug('Sudoku: selectCell starting game on first interaction');
+                    try { this.startNow(); } catch (e) { console.error('Sudoku: startNow error on selectCell', e); }
+                }
+                if (this.gamePaused) return;
+                
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                
+                if (this.initialGrid[row][col] !== 0) return;
+                
+                this.selectedCell = index;
+                this.renderGrid();
+            }
+
+            placeNumber(num) {
+                if (!this.gameStarted || this.gamePaused || this.selectedCell === null) return;
+                
+                const row = Math.floor(this.selectedCell / 9);
+                const col = this.selectedCell % 9;
+                
+                if (this.initialGrid[row][col] !== 0) return;
+                
+                this.grid[row][col] = num;
+                this.stats.totalMoves++;
+                
+                if (this.isValidMove(this.grid, row, col, num)) {
+                    this.score += 10;
+                    this.stats.correctMoves++;
+                    this.stats.currentCombo++;
+                    
+                    if (this.stats.currentCombo >= 5) {
+                        const comboBonus = this.stats.currentCombo * 5;
+                        this.score += comboBonus;
+                        this.showComboIndicator(`${this.translations[this.currentLanguage].combo}${this.stats.currentCombo}!`);
+                    }
+                } else {
+                    const cell = this.elements.grid.children[this.selectedCell];
+                    cell.classList.add('error');
+                    setTimeout(() => cell.classList.remove('error'), 1000);
+                    this.score = Math.max(0, this.score - 5);
+                    this.stats.currentCombo = 0;
+                }
+                
+                this.elements.scoreValue.textContent = this.score;
+                this.renderGrid();
+                this.updateProgress();
+                this.updateStatsDisplay();
+                
+                if (this.isPuzzleComplete()) {
+                    this.gameComplete();
+                }
+            }
+
+            clearCell() {
+                if (!this.gameStarted || this.gamePaused || this.selectedCell === null) return;
+                
+                const row = Math.floor(this.selectedCell / 9);
+                const col = this.selectedCell % 9;
+                
+                if (this.initialGrid[row][col] !== 0) return;
+                
+                this.grid[row][col] = 0;
+                this.renderGrid();
+                this.updateProgress();
+            }
+
+            toggleGame() {
+                console.debug('Sudoku: toggleGame called', { gameStarted: this.gameStarted, gamePaused: this.gamePaused, _starting: this._starting });
+                if (this._starting) { console.debug('Sudoku: toggleGame ignored because start is in progress'); return; }
+                if (!this.gameStarted) {
+                    // Disable the start button while we asynchronously initialize the game
+                    try { this.elements.startBtn.disabled = true; } catch (e) {}
+                    this.startGame();
+                } else {
+                    this.pauseGame();
+                }
+            }
+
+            startGame() {
+                // Defer heavy start logic to avoid blocking the click handler / UI thread
+                try{
+                    if (this._starting) { console.debug('Sudoku: startGame already in progress'); return; }
+                    this._starting = true;
+                    // run asynchronously to keep UI responsive
+                    setTimeout(() => {
+                        try {
+                            this.gameStarted = true;
+                            this.gamePaused = false;
+                            this.startTime = Date.now() - this.elapsedTime;
+
+                            // ensure we don't create duplicate timers
+                            if (this.timer) { clearInterval(this.timer); this.timer = null; }
+                            this.timer = setInterval(() => {
+                                try {
+                                    if (!this.gamePaused) {
+                                        this.elapsedTime = Date.now() - this.startTime;
+                                        this.updateTimer();
+                                    }
+                                } catch (e) { console.error('Sudoku: timer tick error', e); }
+                            }, 1000);
+
+                            this.elements.startBtn.textContent = this.translations[this.currentLanguage].pause;
+                            console.debug('Sudoku: startGame completed');
+                        } catch (e) { console.error('Sudoku: startGame inner error', e); }
+                        // re-enable the start button after initialization completes
+                        try { this.elements.startBtn.disabled = false; } catch (e) {}
+                        this._starting = false;
+                    }, 0);
+                }catch(e){ console.error('Sudoku: startGame error', e); this._starting = false; }
+            }
+
+            // Immediate start path: synchronous and minimal to guarantee the game enters started state
+            startNow() {
+                try {
+                    if (this.gameStarted) { console.debug('Sudoku: startNow called but game already started'); return; }
+                    // Clear any existing timer just in case
+                    if (this.timer) { clearInterval(this.timer); this.timer = null; }
+
+                    this.gameStarted = true;
+                    this.gamePaused = false;
+                    this.startTime = Date.now() - this.elapsedTime;
+
+                    // Start timer (synchronous immediate interval)
+                    this.timer = setInterval(() => {
+                        try {
+                            if (!this.gamePaused) {
+                                this.elapsedTime = Date.now() - this.startTime;
+                                this.updateTimer();
+                            }
+                        } catch (e) { console.error('Sudoku: timer tick error (startNow)', e); }
+                    }, 1000);
+
+                    try { this.elements.startBtn.textContent = this.translations[this.currentLanguage].pause; } catch (e) {}
+                    console.debug('Sudoku: startNow completed - immediate start');
+                } catch (e) {
+                    console.error('Sudoku: startNow error', e);
+                }
+            }
+
+            pauseGame() {
+                // Pause functionality temporarily disabled for debugging: keep game running
+                console.debug('Sudoku: pauseGame called but pause is currently disabled in this build');
+                // Optionally update UI to reflect pause requests without stopping timers
+                try {
+                    this.elements.startBtn.textContent = this.translations[this.currentLanguage].pause;
+                    this.elements.startBtn.disabled = false;
+                } catch (e) {}
+            }
+
+            updateTimer() {
+                const minutes = Math.floor(this.elapsedTime / 60000);
+                const seconds = Math.floor((this.elapsedTime % 60000) / 1000);
+                this.elements.timeValue.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            formatTime(ms) {
+                const minutes = Math.floor(ms / 60000);
+                const seconds = Math.floor((ms % 60000) / 1000);
+                return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            updateProgress() {
+                let filledCells = 0;
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        if (this.grid[row][col] !== 0) {
+                            filledCells++;
+                        }
+                    }
+                }
+                
+                const progress = Math.round((filledCells / 81) * 100);
+                this.elements.progressFill.style.width = `${progress}%`;
+                this.elements.progressValue.textContent = `${progress}%`;
+            }
+
+            giveHint() {
+                if (!this.gameStarted || this.gamePaused) return;
+                
+                const emptyCells = [];
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        if (this.grid[row][col] === 0) {
+                            emptyCells.push({ row, col });
+                        }
+                    }
+                }
+                
+                if (emptyCells.length === 0) return;
+                
+                const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                const index = randomCell.row * 9 + randomCell.col;
+                
+                this.grid[randomCell.row][randomCell.col] = this.solution[randomCell.row][randomCell.col];
+                
+                const cell = this.elements.grid.children[index];
+                cell.classList.add('hint');
+                setTimeout(() => cell.classList.remove('hint'), 2000);
+                
+                this.score = Math.max(0, this.score - 20);
+                this.stats.currentCombo = 0;
+                this.elements.scoreValue.textContent = this.score;
+                
+                this.renderGrid();
+                this.updateProgress();
+                this.updateStatsDisplay();
+                this.showMessage(this.translations[this.currentLanguage].hintUsed, '');
+                
+                if (this.isPuzzleComplete()) {
+                    this.gameComplete();
+                }
+            }
+
+            solvePuzzle() {
+                if (!this.gameStarted) return;
+                
+                this.grid = this.solution.map(row => [...row]);
+                this.renderGrid();
+                this.updateProgress();
+                this.gameComplete();
+            }
+
+            checkSolution() {
+                if (!this.gameStarted || this.gamePaused) return;
+                
+                let hasErrors = false;
+                const cells = this.elements.grid.children;
+                
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        const index = row * 9 + col;
+                        const cell = cells[index];
+                        
+                        if (this.grid[row][col] !== 0) {
+                            if (!this.isValidMove(this.grid, row, col, this.grid[row][col])) {
+                                cell.classList.add('error');
+                                hasErrors = true;
+                                setTimeout(() => cell.classList.remove('error'), 2000);
+                            }
+                        }
+                    }
+                }
+                
+                if (hasErrors) {
+                    this.showMessage(this.translations[this.currentLanguage].error, '');
+                } else {
+                    this.showMessage('✅', this.translations[this.currentLanguage].solved);
+                }
+            }
+
+            isPuzzleComplete() {
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        if (this.grid[row][col] === 0) return false;
+                        if (this.grid[row][col] !== this.solution[row][col]) return false;
+                    }
+                }
+                return true;
+            }
+
+            gameComplete() {
+                this.gameStarted = false;
+                this.gamePaused = false;
+                
+                if (this.timer) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                }
+                
+                // Mise à jour des statistiques
+                this.stats.puzzlesSolved++;
+                if (!this.stats.bestTime || this.elapsedTime < this.stats.bestTime) {
+                    this.stats.bestTime = this.elapsedTime;
+                }
+                
+                const timeBonus = Math.max(0, 1000 - Math.floor(this.elapsedTime / 1000));
+                const comboBonus = this.stats.currentCombo * 10;
+                this.score += timeBonus + comboBonus;
+                
+                this.saveStats();
+                this.updateStatsDisplay();
+                
+                if (this.currentLevel < this.maxLevel) {
+                    this.currentLevel++;
+                    this.elements.levelValue.textContent = this.currentLevel;
+                    
+                    const t = this.translations[this.currentLanguage];
+                    let bonusText = '';
+                    if (timeBonus > 0) bonusText += `\n${t.speedBonus} +${timeBonus}`;
+                    if (comboBonus > 0) bonusText += `\n${t.combo}${this.stats.currentCombo} +${comboBonus}`;
+                    
+                    const levelText = `\n${t.levelComplete} ${this.currentLevel}`;
+                    
+                    this.elements.scoreValue.textContent = this.score;
+                    
+                    this.showMessage(
+                        t.congratulations,
+                        `${t.solved}\n${t.score}: ${this.score}${bonusText}${levelText}`
+                    );
+                    
+                    setTimeout(() => {
+                        this.generateNewGame();
+                    }, 3000);
+                } else {
+                    const t = this.translations[this.currentLanguage];
+                    this.elements.scoreValue.textContent = this.score;
+                    
+                    this.showMessage(
+                        t.gameComplete,
+                        `🏆 ${t.solved}\n${t.score}: ${this.score}\nNIVEAU MAXIMUM ATTEINT!\n🎉 ${t.perfectGame}`
+                    );
+                }
+            }
+
+            showMessage(title, text) {
+                this.elements.statusTitle.textContent = title;
+                this.elements.statusText.textContent = text;
+                this.elements.statusMessage.classList.add('show');
+            }
+        }
+
+    // Initialise le jeu and expose globally for debug/fallback
+    window.sudokuGame = new SudokuGame();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98868303a6dc777b',t:'MTc1OTQzMjM1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
