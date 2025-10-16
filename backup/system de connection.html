@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système d'Authentification Complet</title>
+    <script>
+        (function(){
+            if(window.__platform_nonblocking_dialogs) return; window.__platform_nonblocking_dialogs=true;
+            try{
+                const _alert = window.alert.bind(window);
+                const _confirm = window.confirm.bind(window);
+                const _prompt = window.prompt.bind(window.prompt);
+                function send(type,text){ try{ if(window.parent && window.parent!==window) parent.postMessage({action:'dialog', dialogType:type, text:String(text||'')}, '*'); }catch(e){} }
+                window.alert = function(msg){ if(window.parent && window.parent!==window){ send('alert', msg); } else { _alert(msg); } };
+                window.confirm = function(msg){ if(window.parent && window.parent!==window){ send('confirm', msg); return true; } else { return _confirm(msg); } };
+                window.prompt = function(msg, def){ if(window.parent && window.parent!==window){ send('prompt', msg+'\n(default: '+(def||'')+')'); return def||null; } else { return _prompt(msg, def); } };
+            }catch(e){ }
+        })();
+    </script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@300;400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(26, 26, 46, 0.9));
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid #00d4ff;
+            padding: 30px;
+            text-align: center;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 3rem;
+            background: linear-gradient(45deg, #00d4ff, #ff0096, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            color: #cccccc;
+            margin-bottom: 20px;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .auth-btn {
+            background: linear-gradient(45deg, #00d4ff, #ff0096);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.6);
+        }
+
+        .auth-btn.secondary {
+            background: linear-gradient(45deg, #ff0096, #00ff88);
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(26, 26, 46, 0.9));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 2rem;
+            color: #00d4ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            color: #ff0096;
+            transform: rotate(90deg);
+        }
+
+        .modal h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            color: #00d4ff;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cccccc;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #ffffff;
+            font-size: 1rem;
+            font-family: 'Rajdhani', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .form-group input::placeholder {
+            color: #666666;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #00d4ff, #ff0096);
+            border: none;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .form-links a {
+            color: #00d4ff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .form-links a:hover {
+            color: #ff0096;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            color: #666666;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #333333, transparent);
+        }
+
+        .divider span {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(26, 26, 46, 0.9));
+            padding: 0 20px;
+        }
+
+        /* Messages */
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .message.success {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+        }
+
+        .message.error {
+            background: rgba(255, 0, 150, 0.2);
+            border: 1px solid #ff0096;
+            color: #ff0096;
+        }
+
+        .message.info {
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: none;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(26, 26, 46, 0.6));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 30px;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .dashboard h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .user-info {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .user-info h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .user-info p {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .verification-banner {
+            background: linear-gradient(45deg, #ff6b00, #ff0096);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .verification-banner.verified {
+            background: linear-gradient(45deg, #00ff88, #00d4ff);
+        }
+
+        .logout-btn {
+            background: linear-gradient(45deg, #ff0096, #ff6b00);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            float: right;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 0, 150, 0.4);
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 212, 255, 0.3);
+            border-top: 4px solid #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .modal-content {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            
+            .auth-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .slide-up {
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚀 Système d'Authentification</h1>
+            <p>Connexion sécurisée avec vérification email</p>
+            <div class="auth-buttons" id="authButtons">
+                <button class="auth-btn" onclick="openModal('loginModal')">Se Connecter</button>
+                <button class="auth-btn secondary" onclick="openModal('registerModal')">S'inscrire</button>
+            </div>
+        </div>
+
+        <!-- Dashboard (caché par défaut) -->
+        <div class="dashboard" id="dashboard">
+            <button class="logout-btn" onclick="logout()">Déconnexion</button>
+            <h2>Tableau de Bord</h2>
+            
+            <div id="verificationBanner" class="verification-banner" style="display: none;">
+                <h3>📧 Vérification requise</h3>
+                <p>Vérifiez votre email pour activer toutes les fonctionnalités</p>
+                <button class="auth-btn" onclick="resendVerification()" style="margin-top: 10px;">
+                    Renvoyer l'email
+                </button>
+            </div>
+
+            <div class="user-info">
+                <h3>👤 Informations utilisateur</h3>
+                <p><strong>Nom :</strong> <span id="userName">-</span></p>
+                <p><strong>Email :</strong> <span id="userEmail">-</span></p>
+                <p><strong>Statut :</strong> <span id="userStatus">-</span></p>
+                <p><strong>Dernière connexion :</strong> <span id="lastLogin">-</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Connexion -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            <h2>🔐 Connexion</h2>
+            
+            <div id="loginMessage"></div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" name="email" placeholder="votre@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">Mot de passe</label>
+                    <input type="password" id="loginPassword" name="password" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="loginSubmit">
+                    Se Connecter
+                </button>
+            </form>
+            
+            <div class="form-links">
+                <a href="#" onclick="openModal('forgotModal'); closeModal('loginModal');">
+                    Mot de passe oublié ?
+                </a>
+            </div>
+            
+            <div class="divider">
+                <span>ou</span>
+            </div>
+            
+            <div class="form-links">
+                <a href="#" onclick="openModal('registerModal'); closeModal('loginModal');">
+                    Créer un compte
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal d'Inscription -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('registerModal')">&times;</span>
+            <h2>📝 Inscription</h2>
+            
+            <div id="registerMessage"></div>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="registerName">Nom complet</label>
+                    <input type="text" id="registerName" name="name" placeholder="Votre nom" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" name="email" placeholder="votre@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerPassword">Mot de passe</label>
+                    <input type="password" id="registerPassword" name="password" placeholder="••••••••" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmer le mot de passe</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="registerSubmit">
+                    Créer mon compte
+                </button>
+            </form>
+            
+            <div class="divider">
+                <span>ou</span>
+            </div>
+            
+            <div class="form-links">
+                <a href="#" onclick="openModal('loginModal'); closeModal('registerModal');">
+                    Déjà un compte ? Se connecter
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Mot de passe oublié -->
+    <div id="forgotModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('forgotModal')">&times;</span>
+            <h2>🔑 Récupération</h2>
+            
+            <div id="forgotMessage"></div>
+            
+            <form id="forgotForm">
+                <div class="form-group">
+                    <label for="forgotEmail">Email</label>
+                    <input type="email" id="forgotEmail" name="email" placeholder="votre@email.com" required>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="forgotSubmit">
+                    Envoyer le lien
+                </button>
+            </form>
+            
+            <div class="form-links">
+                <a href="#" onclick="openModal('loginModal'); closeModal('forgotModal');">
+                    Retour à la connexion
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Traitement en cours...</p>
+    </div>
+
+    <script>
+        // Configuration
+        const AUTH_CONFIG = {
+            apiUrl: '/api/auth', // Changez selon votre backend
+            tokenKey: 'authToken',
+            userKey: 'userData'
+        };
+
+        // État de l'application
+        let currentUser = null;
+        let isAuthenticated = false;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAuth();
+            setupEventListeners();
+            checkUrlParams();
+        });
+
+        // Configuration des écouteurs d'événements
+        function setupEventListeners() {
+            // Formulaires
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            document.getElementById('forgotForm').addEventListener('submit', handleForgotPassword);
+
+            // Fermeture des modals en cliquant à l'extérieur
+            window.addEventListener('click', function(event) {
+                if (event.target.classList.contains('modal')) {
+                    closeModal(event.target.id);
+                }
+            });
+
+            // Échap pour fermer les modals
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closeAllModals();
+                }
+            });
+        }
+
+        // Initialisation de l'authentification
+        function initializeAuth() {
+            // Use sessionStorage for auth token/user to avoid persisting credentials across browser sessions
+            const token = sessionStorage.getItem(AUTH_CONFIG.tokenKey);
+                const userData = sessionStorage.getItem(AUTH_CONFIG.userKey);
+
+            if (token && userData) {
+                try {
+                    currentUser = JSON.parse(userData);
+                    isAuthenticated = true;
+                    showDashboard();
+                } catch (error) {
+                    console.error('Erreur lors du parsing des données utilisateur:', error);
+                    logout();
+                }
+            }
+        }
+
+        // Vérification des paramètres URL
+        function checkUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const action = urlParams.get('action');
+
+            if (action === 'verify-email' && token) {
+                verifyEmail(token);
+            } else if (action === 'reset-password' && token) {
+                showResetPasswordForm(token);
+            }
+        }
+
+        // Gestion des modals
+        function openModal(modalId) {
+            closeAllModals();
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                clearMessages();
+                
+                // Focus sur le premier input
+                const firstInput = modal.querySelector('input');
+                if (firstInput) {
+                    setTimeout(() => firstInput.focus(), 100);
+                }
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('active');
+            });
+        }
+
+        // Gestion des messages
+        function showMessage(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.innerHTML = `<div class="message ${type}">${message}</div>`;
+                element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function clearMessages() {
+            const messageElements = ['loginMessage', 'registerMessage', 'forgotMessage'];
+            messageElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.innerHTML = '';
+            });
+        }
+
+        // Validation des formulaires
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function validatePassword(password) {
+            return password.length >= 8;
+        }
+
+        function validateForm(formData, type) {
+            const errors = [];
+
+            if (type === 'register') {
+                if (!formData.name || formData.name.trim().length < 2) {
+                    errors.push('Le nom doit contenir au moins 2 caractères');
+                }
+                
+                if (formData.password !== formData.confirmPassword) {
+                    errors.push('Les mots de passe ne correspondent pas');
+                }
+            }
+
+            if (!validateEmail(formData.email)) {
+                errors.push('Format d\'email invalide');
+            }
+
+            if (formData.password && !validatePassword(formData.password)) {
+                errors.push('Le mot de passe doit contenir au moins 8 caractères');
+            }
+
+            return errors;
+        }
+
+        // Gestion de la connexion
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = {
+                email: formData.get('email').trim(),
+                password: formData.get('password')
+            };
+
+            const errors = validateForm(data, 'login');
+            if (errors.length > 0) {
+                showMessage('loginMessage', errors.join('<br>'), 'error');
+                return;
+            }
+
+            setLoading('loginSubmit', true);
+            
+            try {
+                const result = await simulateApiCall('/login', data);
+                
+                if (result.success) {
+                    // Sauvegarder les données (session-only)
+                    sessionStorage.setItem(AUTH_CONFIG.tokenKey, result.token || 'demo-token');
+                    sessionStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(result.user));
+                    
+                    currentUser = result.user;
+                    isAuthenticated = true;
+                    
+                    showMessage('loginMessage', result.message, 'success');
+                    
+                    setTimeout(() => {
+                        closeModal('loginModal');
+                        showDashboard();
+                    }, 1500);
+                } else {
+                    showMessage('loginMessage', result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('loginMessage', 'Erreur de connexion. Veuillez réessayer.', 'error');
+            } finally {
+                setLoading('loginSubmit', false);
+            }
+        }
+
+        // Gestion de l'inscription
+        async function handleRegister(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = {
+                name: formData.get('name').trim(),
+                email: formData.get('email').trim(),
+                password: formData.get('password'),
+                confirmPassword: formData.get('confirmPassword')
+            };
+
+            const errors = validateForm(data, 'register');
+            if (errors.length > 0) {
+                showMessage('registerMessage', errors.join('<br>'), 'error');
+                return;
+            }
+
+            setLoading('registerSubmit', true);
+            
+            try {
+                const result = await simulateApiCall('/register', data);
+                
+                if (result.success) {
+                    showMessage('registerMessage', result.message + '<br>Vérifiez votre email pour activer votre compte.', 'success');
+                    
+                    // Réinitialiser le formulaire
+                    event.target.reset();
+                    
+                    setTimeout(() => {
+                        closeModal('registerModal');
+                        openModal('loginModal');
+                        showMessage('loginMessage', 'Compte créé ! Vérifiez votre email puis connectez-vous.', 'info');
+                    }, 3000);
+                } else {
+                    showMessage('registerMessage', result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('registerMessage', 'Erreur lors de la création du compte. Veuillez réessayer.', 'error');
+            } finally {
+                setLoading('registerSubmit', false);
+            }
+        }
+
+        // Gestion du mot de passe oublié
+        async function handleForgotPassword(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = {
+                email: formData.get('email').trim()
+            };
+
+            if (!validateEmail(data.email)) {
+                showMessage('forgotMessage', 'Format d\'email invalide', 'error');
+                return;
+            }
+
+            setLoading('forgotSubmit', true);
+            
+            try {
+                const result = await simulateApiCall('/forgot-password', data);
+                
+                showMessage('forgotMessage', result.message, result.success ? 'success' : 'info');
+                
+                if (result.success) {
+                    event.target.reset();
+                }
+            } catch (error) {
+                showMessage('forgotMessage', 'Erreur lors de l\'envoi. Veuillez réessayer.', 'error');
+            } finally {
+                setLoading('forgotSubmit', false);
+            }
+        }
+
+        // Vérification d'email
+        async function verifyEmail(token) {
+            try {
+                const result = await simulateApiCall('/verify-email', { token });
+                
+                if (result.success) {
+                    alert('✅ Email vérifié avec succès ! Vous pouvez maintenant vous connecter.');
+                    
+                    // Mettre à jour les données utilisateur si connecté
+                    if (currentUser) {
+                        currentUser.verified = true;
+                        // Keep user info session-only
+                        sessionStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(currentUser));
+                        updateDashboard();
+                    }
+                } else {
+                    alert('❌ Lien de vérification invalide ou expiré.');
+                }
+            } catch (error) {
+                alert('❌ Erreur lors de la vérification.');
+            }
+            
+            // Nettoyer l'URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // Renvoyer la vérification
+        async function resendVerification() {
+            if (!currentUser) return;
+            
+            try {
+                const result = await simulateApiCall('/resend-verification', { email: currentUser.email });
+                alert(result.message);
+            } catch (error) {
+                alert('Erreur lors de l\'envoi.');
+            }
+        }
+
+        // Affichage du tableau de bord
+        function showDashboard() {
+            document.getElementById('authButtons').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            if (!currentUser) return;
+
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userEmail').textContent = currentUser.email;
+            document.getElementById('userStatus').textContent = currentUser.verified ? '✅ Vérifié' : '⏳ En attente';
+            document.getElementById('lastLogin').textContent = new Date().toLocaleString('fr-FR');
+
+            // Bannière de vérification
+            const banner = document.getElementById('verificationBanner');
+            if (!currentUser.verified) {
+                banner.style.display = 'block';
+                banner.classList.remove('verified');
+            } else {
+                banner.style.display = 'none';
+            }
+        }
+
+        // Déconnexion
+        function logout() {
+            // Clear session-only auth
+            sessionStorage.removeItem(AUTH_CONFIG.tokenKey);
+            sessionStorage.removeItem(AUTH_CONFIG.userKey);
+            
+            currentUser = null;
+            isAuthenticated = false;
+            
+            document.getElementById('authButtons').style.display = 'flex';
+            document.getElementById('dashboard').classList.remove('active');
+            
+            closeAllModals();
+        }
+
+        // Gestion du loading
+        function setLoading(buttonId, isLoading) {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.disabled = isLoading;
+                button.textContent = isLoading ? 'Traitement...' : button.dataset.originalText || button.textContent;
+                
+                if (!button.dataset.originalText) {
+                    button.dataset.originalText = button.textContent;
+                }
+            }
+        }
+
+        // Simulation d'appels API (remplacez par de vrais appels)
+        async function simulateApiCall(endpoint, data) {
+            // Simulation d'un délai réseau
+            await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+            
+            // Simulation des réponses selon l'endpoint
+            switch (endpoint) {
+                case '/login':
+                    if (data.email === 'demo@example.com' && data.password === 'password123') {
+                        return {
+                            success: true,
+                            message: 'Connexion réussie !',
+                            user: {
+                                id: 1,
+                                name: 'Utilisateur Demo',
+                                email: data.email,
+                                verified: true
+                            },
+                            token: 'demo-jwt-token'
+                        };
+                    } else if (data.email === 'unverified@example.com' && data.password === 'password123') {
+                        return {
+                            success: true,
+                            message: 'Connexion réussie !',
+                            user: {
+                                id: 2,
+                                name: 'Utilisateur Non Vérifié',
+                                email: data.email,
+                                verified: false
+                            },
+                            token: 'demo-jwt-token'
+                        };
+                    } else {
+                        return {
+                            success: false,
+                            message: 'Email ou mot de passe incorrect'
+                        };
+                    }
+                
+                case '/register':
+                    if (data.email === 'existing@example.com') {
+                        return {
+                            success: false,
+                            message: 'Cet email est déjà utilisé'
+                        };
+                    } else {
+                        return {
+                            success: true,
+                            message: 'Compte créé avec succès !',
+                            user: {
+                                id: Date.now(),
+                                name: data.name,
+                                email: data.email,
+                                verified: false
+                            }
+                        };
+                    }
+                
+                case '/forgot-password':
+                    return {
+                        success: true,
+                        message: 'Si cet email existe, un lien de récupération a été envoyé'
+                    };
+                
+                case '/verify-email':
+                    return {
+                        success: data.token === 'valid-token',
+                        message: data.token === 'valid-token' ? 'Email vérifié !' : 'Token invalide'
+                    };
+                
+                case '/resend-verification':
+                    return {
+                        success: true,
+                        message: 'Email de vérification renvoyé !'
+                    };
+                
+                default:
+                    return {
+                        success: false,
+                        message: 'Endpoint non trouvé'
+                    };
+            }
+        }
+
+        // Fonction pour les vrais appels API (à utiliser en production)
+        async function realApiCall(endpoint, data) {
+            const response = await fetch(AUTH_CONFIG.apiUrl + endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Use session token for requests
+                    'Authorization': `Bearer ${sessionStorage.getItem(AUTH_CONFIG.tokenKey)}`
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            return await response.json();
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a4f40196b3e22d',t:'MTc1OTc1MTU1Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

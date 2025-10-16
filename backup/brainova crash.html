@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brainova Crash</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Orbitron', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ffff;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: rgba(0, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #00ffff;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 20px #00ffff;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            border: none;
+            color: #000;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .control-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .control-btn.active {
+            background: linear-gradient(45deg, #ff0080, #ff4080);
+            color: white;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ffff; }
+            to { text-shadow: 0 0 30px #00ffff, 0 0 40px #00ffff; }
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px 10px;
+            background: rgba(0, 255, 255, 0.2);
+            border-radius: 10px;
+            border: 1px solid #00ffff;
+        }
+
+        .language-selector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+
+        .language-btn {
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .game-board {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 3px;
+            width: min(80vw, 80vh);
+            height: min(80vw, 80vh);
+            background: rgba(0, 255, 255, 0.1);
+            border: 3px solid #00ffff;
+            border-radius: 15px;
+            padding: 10px;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
+        }
+
+        .board.paused {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 0 0 10px currentColor;
+            border: 2px solid transparent;
+        }
+
+        .cell:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px currentColor;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .cell:active {
+            transform: scale(0.95);
+        }
+
+        .cell.selected {
+            border-color: #ffff00;
+            box-shadow: 0 0 30px #ffff00;
+            animation: pulse 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        .cell.matching {
+            animation: match-glow 0.5s ease-in-out;
+        }
+
+        @keyframes match-glow {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); box-shadow: 0 0 40px currentColor; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        .type-0 { background: linear-gradient(45deg, #ff0080, #ff4080); color: #ff0080; }
+        .type-1 { background: linear-gradient(45deg, #00ff80, #40ff80); color: #00ff80; }
+        .type-2 { background: linear-gradient(45deg, #8000ff, #a040ff); color: #8000ff; }
+        .type-3 { background: linear-gradient(45deg, #ff8000, #ffa040); color: #ff8000; }
+        .type-4 { background: linear-gradient(45deg, #0080ff, #4080ff); color: #0080ff; }
+        .type-5 { background: linear-gradient(45deg, #ffff00, #ffff40); color: #ffff00; }
+
+        .power-up {
+            position: relative;
+        }
+
+        .power-up::after {
+            content: '⚡';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 12px;
+            color: #ffff00;
+            animation: spark 1s ease-in-out infinite;
+        }
+
+        @keyframes spark {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .sidebar {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 200px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .power-ups {
+            margin-bottom: 20px;
+        }
+
+        .power-up-btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            background: linear-gradient(45deg, #ff0080, #8000ff);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .power-up-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 0, 128, 0.5);
+        }
+
+        .power-up-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .leaderboard {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .leaderboard h3 {
+            margin: 0 0 10px 0;
+            text-align: center;
+            color: #00ffff;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .particles {
+            position: absolute;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #00ffff;
+            border-radius: 50%;
+            animation: particle-float 2s ease-out forwards;
+        }
+
+        @keyframes particle-float {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0) translateY(-100px);
+            }
+        }
+
+        @keyframes slideDown {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+        }
+
+        .level-complete {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .level-complete-content {
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            border: 3px solid #00ffff;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
+        }
+
+        .level-complete h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            animation: glow 1s ease-in-out infinite alternate;
+        }
+
+        .continue-btn {
+            background: linear-gradient(45deg, #00ff80, #00ffff);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            color: #000;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .continue-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(0, 255, 128, 0.5);
+        }
+
+        .pause-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .pause-content {
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            border: 3px solid #00ffff;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
+        }
+
+        .pause-content h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #00ffff;
+        }
+
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .game-over-content {
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            border: 3px solid #ff0080;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(255, 0, 128, 0.5);
+        }
+
+        .game-over h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #ff0080;
+        }
+
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .start-content {
+            background: rgba(0, 255, 255, 0.1);
+            border: 3px solid #00ffff;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .start-content h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            animation: glow 2s ease-in-out infinite alternate;
+            color: #00ffff;
+        }
+
+        .start-content p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #ffffff;
+            opacity: 0.9;
+        }
+
+        .start-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .feature {
+            background: rgba(0, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #00ffff;
+            font-size: 14px;
+            color: #ffffff;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #00ff80, #00ffff);
+            border: none;
+            padding: 20px 40px;
+            border-radius: 15px;
+            color: #000;
+            font-weight: bold;
+            font-size: 20px;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 30px rgba(0, 255, 128, 0.3);
+        }
+
+        .start-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 50px rgba(0, 255, 128, 0.5);
+        }
+
+        .difficulty-selector {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .difficulty-selector label {
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        .difficulty-selector select {
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .game-controls {
+                order: -1;
+            }
+
+            .control-btn {
+                padding: 6px 8px;
+                font-size: 10px;
+            }
+
+            .sidebar {
+                position: fixed;
+                bottom: 0;
+                right: 0;
+                left: 0;
+                top: auto;
+                transform: none;
+                width: auto;
+                border-radius: 15px 15px 0 0;
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                padding: 10px;
+            }
+
+            .power-ups {
+                display: flex;
+                gap: 10px;
+                margin: 0;
+            }
+
+            .power-up-btn {
+                margin: 0;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            .leaderboard {
+                display: none;
+            }
+
+            .board {
+                width: 90vw;
+                height: 90vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="language-selector">
+            <select class="language-btn" id="languageSelect">
+                <option value="fr">Français</option>
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+                <option value="es">Español</option>
+                <option value="de">Deutsch</option>
+                <option value="zh">中文</option>
+            </select>
+        </div>
+
+        <div class="header">
+            <div class="logo" id="gameTitle">BRAINOVA CRASH</div>
+            <div class="game-controls">
+                <button class="control-btn" onclick="pauseGame()" id="pauseBtn">⏸️ <span id="pauseText">Pause</span></button>
+                <button class="control-btn" onclick="resetGame()" id="resetBtn">🔄 <span id="resetText">Reset</span></button>
+                <button class="control-btn" onclick="toggleSound()" id="soundBtn">🔊 <span id="soundText">Son</span></button>
+                <button class="control-btn" onclick="toggleFullscreen()" id="fullscreenBtn">⛶ <span id="fullscreenText">Plein écran</span></button>
+                <button class="control-btn" onclick="showHelp()" id="helpBtn">❓ <span id="helpText">Aide</span></button>
+                <button class="control-btn" onclick="showRules()" id="rulesBtn">📋 <span id="rulesText">Règles</span></button>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span id="scoreLabel">Score</span>
+                    <span id="score">0</span>
+                </div>
+                <div class="stat-item">
+                    <span id="levelLabel">Niveau</span>
+                    <span id="level">1</span>
+                </div>
+                <div class="stat-item">
+                    <span id="movesLabel">Mouvements</span>
+                    <span id="moves">30</span>
+                </div>
+                <div class="stat-item">
+                    <span id="targetLabel">Objectif</span>
+                    <span id="target">1000</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-board">
+            <div class="board" id="gameBoard"></div>
+        </div>
+
+        <div class="sidebar">
+            <div class="power-ups">
+                <button class="power-up-btn" id="lineClearBtn" onclick="activatePowerUp('line')">
+                    <span id="lineClearText">🔥 Ligne (3)</span>
+                </button>
+                <button class="power-up-btn" id="bombBtn" onclick="activatePowerUp('bomb')">
+                    <span id="bombText">💣 Bombe (2)</span>
+                </button>
+                <button class="power-up-btn" id="rainbowBtn" onclick="activatePowerUp('rainbow')">
+                    <span id="rainbowText">🌈 Arc-en-ciel (1)</span>
+                </button>
+            </div>
+            
+            <div class="leaderboard">
+                <h3 id="leaderboardTitle">🏆 Classement</h3>
+                <div id="leaderboardList">
+                    <div class="leaderboard-entry">
+                        <span>1. Joueur</span>
+                        <span id="topScore">0</span>
+                    </div>
+                    <div class="leaderboard-entry">
+                        <span>2. IA</span>
+                        <span>12,350</span>
+                    </div>
+                    <div class="leaderboard-entry">
+                        <span>3. Bot</span>
+                        <span>9,870</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pause Overlay -->
+        <div class="pause-overlay" id="pauseOverlay">
+            <div class="pause-content">
+                <h2 id="pauseTitle">⏸️ Jeu en Pause</h2>
+                <p id="pauseMessage">Cliquez sur Reprendre pour continuer</p>
+                <button class="continue-btn" onclick="resumeGame()" id="resumeBtn">▶️ Reprendre</button>
+            </div>
+        </div>
+
+        <!-- Game Over Overlay -->
+        <div class="game-over" id="gameOver">
+            <div class="game-over-content">
+                <h2 id="gameOverTitle">💀 Game Over</h2>
+                <p id="gameOverMessage">Plus de mouvements! Score final: <span id="gameOverScore">0</span></p>
+                <button class="continue-btn" onclick="restartGame()" id="restartBtn">🔄 Recommencer</button>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div class="start-screen" id="startScreen">
+            <div class="start-content">
+                <h1 id="startTitle">🚀 BRAINOVA CRASH</h1>
+                <p id="startDescription">Alignez 3 symboles identiques ou plus pour marquer des points!</p>
+                <div class="start-features">
+                    <div class="feature">🎯 <span id="feature1">Objectifs à atteindre</span></div>
+                    <div class="feature">⚡ <span id="feature2">Power-ups magiques</span></div>
+                    <div class="feature">🏆 <span id="feature3">Système de score</span></div>
+                    <div class="feature">🌍 <span id="feature4">Multi-langues</span></div>
+                </div>
+                <button class="start-btn" onclick="startGame()" id="startBtn">🎮 Commencer à Jouer</button>
+                <div class="difficulty-selector">
+                    <label id="difficultyLabel">Difficulté:</label>
+                    <select id="difficultySelect">
+                        <option value="easy" id="easyOption">Facile</option>
+                        <option value="normal" id="normalOption" selected>Normal</option>
+                        <option value="hard" id="hardOption">Difficile</option>
+                    </select>
+                </div>
+                <div style="margin-top: 20px; font-size: 12px; color: #00ffff; opacity: 0.7;">
+                    💡 Cliquez sur deux cellules adjacentes pour les échanger
+                </div>
+            </div>
+        </div>
+
+        <!-- Level Complete -->
+        <div class="level-complete" id="levelComplete">
+            <div class="level-complete-content">
+                <h2 id="levelCompleteTitle">🎉 Niveau Terminé!</h2>
+                <p id="levelCompleteText">Félicitations! Vous avez terminé le niveau avec un score de <span id="finalScore">0</span> points!</p>
+                <button class="continue-btn" onclick="nextLevel()" id="continueBtn">➡️ Niveau Suivant</button>
+            </div>
+        </div>
+
+        <div class="particles" id="particles"></div>
+    </div>
+
+    <script>
+        // Système de traduction
+        const translations = {
+            fr: {
+                gameTitle: "BRAINOVA CRASH",
+                scoreLabel: "Score",
+                levelLabel: "Niveau",
+                movesLabel: "Mouvements",
+                targetLabel: "Objectif",
+                pauseText: "Pause",
+                resetText: "Reset",
+                soundText: "Son",
+                fullscreenText: "Plein écran",
+                helpText: "Aide",
+                rulesText: "Règles",
+                lineClearText: "🔥 Ligne",
+                bombText: "💣 Bombe",
+                rainbowText: "🌈 Arc-en-ciel",
+                leaderboardTitle: "🏆 Classement",
+                levelCompleteTitle: "🎉 Niveau Terminé!",
+                levelCompleteText: "Félicitations! Vous avez terminé le niveau avec un score de",
+                continueBtn: "➡️ Niveau Suivant",
+                pauseTitle: "⏸️ Jeu en Pause",
+                pauseMessage: "Cliquez sur Reprendre pour continuer",
+                resumeBtn: "▶️ Reprendre",
+                gameOverTitle: "💀 Game Over",
+                gameOverMessage: "Plus de mouvements! Score final:",
+                restartBtn: "🔄 Recommencer",
+                startTitle: "🚀 BRAINOVA CRASH",
+                startDescription: "Alignez 3 symboles identiques ou plus pour marquer des points!",
+                startBtn: "🎮 Commencer à Jouer",
+                feature1: "Objectifs à atteindre",
+                feature2: "Power-ups magiques",
+                feature3: "Système de score",
+                feature4: "Multi-langues",
+                difficultyLabel: "Difficulté:",
+                easyOption: "Facile",
+                normalOption: "Normal",
+                hardOption: "Difficile"
+            },
+            en: {
+                gameTitle: "BRAINOVA CRASH",
+                scoreLabel: "Score",
+                levelLabel: "Level",
+                movesLabel: "Moves",
+                targetLabel: "Target",
+                pauseText: "Pause",
+                resetText: "Reset",
+                soundText: "Sound",
+                fullscreenText: "Fullscreen",
+                helpText: "Help",
+                rulesText: "Rules",
+                lineClearText: "🔥 Line",
+                bombText: "💣 Bomb",
+                rainbowText: "🌈 Rainbow",
+                leaderboardTitle: "🏆 Leaderboard",
+                levelCompleteTitle: "🎉 Level Complete!",
+                levelCompleteText: "Congratulations! You completed the level with a score of",
+                continueBtn: "➡️ Next Level",
+                pauseTitle: "⏸️ Game Paused",
+                pauseMessage: "Click Resume to continue",
+                resumeBtn: "▶️ Resume",
+                gameOverTitle: "💀 Game Over",
+                gameOverMessage: "No more moves! Final score:",
+                restartBtn: "🔄 Restart",
+                startTitle: "🚀 BRAINOVA CRASH",
+                startDescription: "Match 3 or more identical symbols to score points!",
+                startBtn: "🎮 Start Playing",
+                feature1: "Targets to reach",
+                feature2: "Magic power-ups",
+                feature3: "Scoring system",
+                feature4: "Multi-language",
+                difficultyLabel: "Difficulty:",
+                easyOption: "Easy",
+                normalOption: "Normal",
+                hardOption: "Hard"
+            },
+            ar: {
+                gameTitle: "برينوفا كراش",
+                scoreLabel: "النقاط",
+                levelLabel: "المستوى",
+                movesLabel: "الحركات",
+                targetLabel: "الهدف",
+                pauseText: "إيقاف",
+                resetText: "إعادة",
+                soundText: "صوت",
+                fullscreenText: "ملء الشاشة",
+                helpText: "مساعدة",
+                rulesText: "القواعد",
+                lineClearText: "🔥 خط",
+                bombText: "💣 قنبلة",
+                rainbowText: "🌈 قوس قزح",
+                leaderboardTitle: "🏆 المتصدرين",
+                levelCompleteTitle: "🎉 !المستوى مكتمل",
+                levelCompleteText: "تهانينا! لقد أكملت المستوى بنقاط",
+                continueBtn: "➡️ المستوى التالي",
+                pauseTitle: "⏸️ اللعبة متوقفة",
+                pauseMessage: "انقر على استئناف للمتابعة",
+                resumeBtn: "▶️ استئناف",
+                gameOverTitle: "💀 انتهت اللعبة",
+                gameOverMessage: "لا مزيد من الحركات! النتيجة النهائية:",
+                restartBtn: "🔄 إعادة البدء",
+                startTitle: "🚀 برينوفا كراش",
+                startDescription: "!اربط 3 رموز متطابقة أو أكثر لتسجيل النقاط",
+                startBtn: "🎮 ابدأ اللعب",
+                feature1: "أهداف للوصول إليها",
+                feature2: "قوى سحرية",
+                feature3: "نظام النقاط",
+                feature4: "متعدد اللغات",
+                difficultyLabel: ":الصعوبة",
+                easyOption: "سهل",
+                normalOption: "عادي",
+                hardOption: "صعب"
+            },
+            es: {
+                gameTitle: "BRAINOVA CRASH",
+                scoreLabel: "Puntos",
+                levelLabel: "Nivel",
+                movesLabel: "Movimientos",
+                targetLabel: "Objetivo",
+                pauseText: "Pausa",
+                resetText: "Reiniciar",
+                soundText: "Sonido",
+                fullscreenText: "Pantalla completa",
+                helpText: "Ayuda",
+                rulesText: "Reglas",
+                lineClearText: "🔥 Línea",
+                bombText: "💣 Bomba",
+                rainbowText: "🌈 Arcoíris",
+                leaderboardTitle: "🏆 Clasificación",
+                levelCompleteTitle: "🎉 ¡Nivel Completado!",
+                levelCompleteText: "¡Felicidades! Completaste el nivel con una puntuación de",
+                continueBtn: "➡️ Siguiente Nivel",
+                pauseTitle: "⏸️ Juego Pausado",
+                pauseMessage: "Haz clic en Reanudar para continuar",
+                resumeBtn: "▶️ Reanudar",
+                gameOverTitle: "💀 Game Over",
+                gameOverMessage: "¡No más movimientos! Puntuación final:",
+                restartBtn: "🔄 Reiniciar",
+                startTitle: "🚀 BRAINOVA CRASH",
+                startDescription: "¡Conecta 3 o más símbolos idénticos para anotar puntos!",
+                startBtn: "🎮 Empezar a Jugar",
+                feature1: "Objetivos que alcanzar",
+                feature2: "Power-ups mágicos",
+                feature3: "Sistema de puntuación",
+                feature4: "Multi-idioma",
+                difficultyLabel: "Dificultad:",
+                easyOption: "Fácil",
+                normalOption: "Normal",
+                hardOption: "Difícil"
+            },
+            de: {
+                gameTitle: "BRAINOVA CRASH",
+                scoreLabel: "Punkte",
+                levelLabel: "Level",
+                movesLabel: "Züge",
+                targetLabel: "Ziel",
+                pauseText: "Pause",
+                resetText: "Zurücksetzen",
+                soundText: "Ton",
+                fullscreenText: "Vollbild",
+                helpText: "Hilfe",
+                rulesText: "Regeln",
+                lineClearText: "🔥 Linie",
+                bombText: "💣 Bombe",
+                rainbowText: "🌈 Regenbogen",
+                leaderboardTitle: "🏆 Bestenliste",
+                levelCompleteTitle: "🎉 Level Abgeschlossen!",
+                levelCompleteText: "Glückwunsch! Du hast das Level mit einer Punktzahl von",
+                continueBtn: "➡️ Nächstes Level",
+                pauseTitle: "⏸️ Spiel Pausiert",
+                pauseMessage: "Klicke auf Fortsetzen um weiterzumachen",
+                resumeBtn: "▶️ Fortsetzen",
+                gameOverTitle: "💀 Game Over",
+                gameOverMessage: "Keine Züge mehr! Endpunktzahl:",
+                restartBtn: "🔄 Neustart",
+                startTitle: "🚀 BRAINOVA CRASH",
+                startDescription: "Verbinde 3 oder mehr identische Symbole um Punkte zu erzielen!",
+                startBtn: "🎮 Spielen Starten",
+                feature1: "Ziele zu erreichen",
+                feature2: "Magische Power-ups",
+                feature3: "Punktesystem",
+                feature4: "Mehrsprachig",
+                difficultyLabel: "Schwierigkeit:",
+                easyOption: "Einfach",
+                normalOption: "Normal",
+                hardOption: "Schwer"
+            },
+            zh: {
+                gameTitle: "脑力冲击",
+                scoreLabel: "分数",
+                levelLabel: "关卡",
+                movesLabel: "移动",
+                targetLabel: "目标",
+                pauseText: "暂停",
+                resetText: "重置",
+                soundText: "声音",
+                fullscreenText: "全屏",
+                helpText: "帮助",
+                rulesText: "规则",
+                lineClearText: "🔥 直线",
+                bombText: "💣 炸弹",
+                rainbowText: "🌈 彩虹",
+                leaderboardTitle: "🏆 排行榜",
+                levelCompleteTitle: "🎉 关卡完成！",
+                levelCompleteText: "恭喜！您以",
+                continueBtn: "➡️ 下一关",
+                pauseTitle: "⏸️ 游戏暂停",
+                pauseMessage: "点击继续来继续游戏",
+                resumeBtn: "▶️ 继续",
+                gameOverTitle: "💀 游戏结束",
+                gameOverMessage: "没有更多移动！最终得分：",
+                restartBtn: "🔄 重新开始",
+                startTitle: "🚀 脑力冲击",
+                startDescription: "连接3个或更多相同符号来得分！",
+                startBtn: "🎮 开始游戏",
+                feature1: "要达成的目标",
+                feature2: "魔法道具",
+                feature3: "计分系统",
+                feature4: "多语言支持",
+                difficultyLabel: "难度：",
+                easyOption: "简单",
+                normalOption: "普通",
+                hardOption: "困难"
+            }
+        };
+
+        // État du jeu
+        let gameState = {
+            board: [],
+            score: 0,
+            level: 1,
+            moves: 30,
+            target: 1000,
+            selectedCell: null,
+            powerUps: { line: 3, bomb: 2, rainbow: 1 },
+            activePowerUp: null,
+            currentLanguage: 'fr',
+            isPaused: false,
+            soundEnabled: true,
+            isGameActive: false,
+            gameStarted: false,
+            highScore: 0,
+            comboMultiplier: 1,
+            difficulty: 'normal'
+        };
+
+        const BOARD_SIZE = 8;
+        const CELL_TYPES = 6;
+        const symbols = ['◆', '●', '▲', '■', '★', '♦'];
+
+        // Sons du jeu (simulation avec des effets visuels)
+        function playSound(type) {
+            if (!gameState.soundEnabled) return;
+            
+            // Simulation d'effets sonores avec des animations visuelles
+            const soundIndicator = document.createElement('div');
+            soundIndicator.style.position = 'fixed';
+            soundIndicator.style.top = '20px';
+            soundIndicator.style.right = '20px';
+            soundIndicator.style.color = '#00ffff';
+            soundIndicator.style.fontSize = '20px';
+            soundIndicator.style.zIndex = '9999';
+            soundIndicator.style.animation = 'glow 0.5s ease-out';
+            
+            switch(type) {
+                case 'match':
+                    soundIndicator.textContent = '♪ Match!';
+                    break;
+                case 'powerup':
+                    soundIndicator.textContent = '♫ Power!';
+                    break;
+                case 'levelup':
+                    soundIndicator.textContent = '♬ Level Up!';
+                    break;
+                case 'gameover':
+                    soundIndicator.textContent = '♭ Game Over';
+                    break;
+            }
+            
+            document.body.appendChild(soundIndicator);
+            setTimeout(() => soundIndicator.remove(), 1000);
+        }
+
+        // Fonction de démarrage du jeu - VERSION SIMPLE
+        function startGame() {
+            gameState.score = 0;
+            gameState.level = 1;
+            gameState.moves = 30;
+            gameState.target = 1000;
+            gameState.selectedCell = null;
+            gameState.gameStarted = true;
+            gameState.isGameActive = true;
+            gameState.isPaused = false;
+            
+            document.getElementById('startScreen').style.display = 'none';
+            
+            createBoard();
+            updateUI();
+            
+            // Notification de démarrage
+            setTimeout(() => {
+                showNotification('🎮 Jeu démarré! Cliquez sur les cellules pour jouer!', 3000);
+            }, 500);
+        }
+
+        // Fonction d'accès direct au jeu
+        function quickStart() {
+            startGame();
+        }
+
+        // Mode développeur pour tests rapides
+        function devMode() {
+            gameState.powerUps = { line: 99, bomb: 99, rainbow: 99 };
+            gameState.moves = 999;
+            gameState.score = gameState.target - 100;
+            updateUI();
+            console.log('Mode développeur activé');
+        }
+
+        // Auto-hint système
+        function showHint() {
+            if (!gameState.isGameActive || gameState.isPaused) return;
+            
+            // Trouver les mouvements possibles
+            const possibleMoves = findPossibleMoves();
+            if (possibleMoves.length > 0) {
+                const hint = possibleMoves[0];
+                const cell1 = document.querySelector(`[data-row="${hint.row1}"][data-col="${hint.col1}"]`);
+                const cell2 = document.querySelector(`[data-row="${hint.row2}"][data-col="${hint.col2}"]`);
+                
+                // Effet visuel d'indice
+                cell1.style.border = '3px solid #ffff00';
+                cell2.style.border = '3px solid #ffff00';
+                cell1.style.animation = 'pulse 1s ease-in-out 3';
+                cell2.style.animation = 'pulse 1s ease-in-out 3';
+                
+                setTimeout(() => {
+                    cell1.style.border = '';
+                    cell2.style.border = '';
+                    cell1.style.animation = '';
+                    cell2.style.animation = '';
+                }, 3000);
+            }
+        }
+
+        // Trouver les mouvements possibles
+        function findPossibleMoves() {
+            const moves = [];
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    // Vérifier échange horizontal
+                    if (col < BOARD_SIZE - 1) {
+                        swapForTest(row, col, row, col + 1);
+                        if (findMatches().length > 0) {
+                            moves.push({row1: row, col1: col, row2: row, col2: col + 1});
+                        }
+                        swapForTest(row, col, row, col + 1); // Remettre
+                    }
+                    // Vérifier échange vertical
+                    if (row < BOARD_SIZE - 1) {
+                        swapForTest(row, col, row + 1, col);
+                        if (findMatches().length > 0) {
+                            moves.push({row1: row, col1: col, row2: row + 1, col2: col});
+                        }
+                        swapForTest(row, col, row + 1, col); // Remettre
+                    }
+                }
+            }
+            return moves;
+        }
+
+        // Échange temporaire pour test
+        function swapForTest(row1, col1, row2, col2) {
+            const temp = gameState.board[row1][col1];
+            gameState.board[row1][col1] = gameState.board[row2][col2];
+            gameState.board[row2][col2] = temp;
+        }
+
+        // Mode auto-play pour démonstration
+        function autoPlay() {
+            if (!gameState.isGameActive || gameState.isPaused) return;
+            
+            const moves = findPossibleMoves();
+            if (moves.length > 0 && gameState.moves > 0) {
+                const move = moves[0];
+                swapCells(move.row1, move.col1, move.row2, move.col2);
+                
+                setTimeout(() => {
+                    if (gameState.isGameActive && gameState.moves > 0) {
+                        autoPlay();
+                    }
+                }, 2000);
+            }
+        }
+
+        // Système de sauvegarde multiple
+        function saveToCloud() {
+            const saveData = {
+                ...gameState,
+                timestamp: Date.now(),
+                version: '2.0'
+            };
+            
+            // Sauvegarde locale
+            localStorage.setItem('brainovaCrash', JSON.stringify(saveData));
+            localStorage.setItem('brainovaCrash_backup', JSON.stringify(saveData));
+            
+            // Simulation sauvegarde cloud
+            console.log('Jeu sauvegardé dans le cloud');
+            showNotification('💾 Jeu sauvegardé!');
+        }
+
+
+
+        // Système de succès/achievements
+        const achievements = {
+            firstMatch: { unlocked: false, name: 'Premier Match', desc: 'Faire votre premier match' },
+            combo5: { unlocked: false, name: 'Combo Master', desc: 'Faire un combo x5' },
+            powerUser: { unlocked: false, name: 'Utilisateur Power', desc: 'Utiliser tous les power-ups' },
+            speedster: { unlocked: false, name: 'Rapide', desc: 'Terminer un niveau en moins de 20 mouvements' },
+            highScore: { unlocked: false, name: 'Score Élevé', desc: 'Atteindre 50,000 points' }
+        };
+
+        function checkAchievements() {
+            // Premier match
+            if (!achievements.firstMatch.unlocked && gameState.score > 0) {
+                unlockAchievement('firstMatch');
+            }
+            
+            // Combo master
+            if (!achievements.combo5.unlocked && gameState.comboMultiplier >= 5) {
+                unlockAchievement('combo5');
+            }
+            
+            // High score
+            if (!achievements.highScore.unlocked && gameState.score >= 50000) {
+                unlockAchievement('highScore');
+            }
+            
+            // Speedster
+            if (!achievements.speedster.unlocked && gameState.score >= gameState.target && gameState.moves >= 10) {
+                unlockAchievement('speedster');
+            }
+        }
+
+        function unlockAchievement(id) {
+            achievements[id].unlocked = true;
+            showNotification(`🏆 ${achievements[id].name} débloqué!`, 5000);
+            playSound('levelup');
+            saveGame();
+        }
+
+
+
+        // Création du plateau - VERSION SIMPLE ET FONCTIONNELLE
+        function createBoard() {
+            const board = document.getElementById('gameBoard');
+            board.innerHTML = '';
+            gameState.board = [];
+
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                gameState.board[row] = [];
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    // Un seul événement de clic simple
+                    cell.addEventListener('click', handleCellClick);
+                    
+                    // Générer un type aléatoire
+                    const type = Math.floor(Math.random() * CELL_TYPES);
+                    gameState.board[row][col] = type;
+                    
+                    cell.classList.add(`type-${type}`);
+                    cell.textContent = symbols[type];
+                    
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        // Vérifier si placer un type créerait un match
+        function wouldCreateMatch(row, col, type) {
+            // Vérifier horizontal
+            let count = 1;
+            for (let c = col - 1; c >= 0 && gameState.board[row][c] === type; c--) count++;
+            for (let c = col + 1; c < BOARD_SIZE && gameState.board[row][c] === type; c++) count++;
+            if (count >= 3) return true;
+            
+            // Vérifier vertical
+            count = 1;
+            for (let r = row - 1; r >= 0 && gameState.board[r][col] === type; r--) count++;
+            for (let r = row + 1; r < BOARD_SIZE && gameState.board[r][col] === type; r++) count++;
+            if (count >= 3) return true;
+            
+            return false;
+        }
+
+        // Gestion des clics sur les cellules - VERSION SIMPLIFIÉE
+        function handleCellClick(event) {
+            console.log('🖱️ Clic détecté sur cellule');
+            
+            if (!gameState.isGameActive || gameState.isPaused) {
+                console.log('❌ Jeu inactif ou en pause');
+                return;
+            }
+            
+            // Récupérer les coordonnées de la cellule cliquée
+            let target = event.target;
+            let row = parseInt(target.dataset.row);
+            let col = parseInt(target.dataset.col);
+            
+            // Si on a cliqué sur le contenu de la cellule, remonter au parent
+            if (isNaN(row) || isNaN(col)) {
+                target = target.closest('.cell');
+                if (target) {
+                    row = parseInt(target.dataset.row);
+                    col = parseInt(target.dataset.col);
+                }
+            }
+            
+            if (isNaN(row) || isNaN(col)) {
+                console.log('❌ Coordonnées invalides:', row, col);
+                return;
+            }
+            
+            console.log('✅ Cellule cliquée:', row, col);
+
+            if (gameState.activePowerUp) {
+                console.log('⚡ Utilisation power-up');
+                usePowerUp(row, col);
+                return;
+            }
+
+            if (gameState.selectedCell) {
+                const selectedRow = gameState.selectedCell.row;
+                const selectedCol = gameState.selectedCell.col;
+                
+                console.log('🔄 Cellule déjà sélectionnée:', selectedRow, selectedCol);
+                
+                if (row === selectedRow && col === selectedCol) {
+                    console.log('🔄 Désélection de la même cellule');
+                    clearSelection();
+                    return;
+                }
+                
+                if (isAdjacent(selectedRow, selectedCol, row, col)) {
+                    console.log('🔄 Échange de cellules adjacentes');
+                    swapCells(selectedRow, selectedCol, row, col);
+                    clearSelection();
+                } else {
+                    console.log('🔄 Sélection d\'une nouvelle cellule');
+                    clearSelection();
+                    selectCell(row, col);
+                }
+            } else {
+                console.log('🎯 Première sélection');
+                selectCell(row, col);
+            }
+        }
+
+        // Sélection d'une cellule
+        function selectCell(row, col) {
+            console.log('🎯 Selecting cell:', row, col);
+            gameState.selectedCell = { row, col };
+            const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            if (cell) {
+                cell.classList.add('selected');
+                cell.style.border = '3px solid #ffff00';
+                cell.style.boxShadow = '0 0 20px #ffff00';
+                console.log('✅ Cell selected and highlighted');
+            } else {
+                console.log('❌ Cell not found for selection');
+            }
+        }
+
+        // Effacer la sélection
+        function clearSelection() {
+            if (gameState.selectedCell) {
+                const cell = document.querySelector(`[data-row="${gameState.selectedCell.row}"][data-col="${gameState.selectedCell.col}"]`);
+                if (cell) {
+                    cell.classList.remove('selected');
+                    cell.style.border = '';
+                    cell.style.boxShadow = '';
+                }
+                gameState.selectedCell = null;
+                console.log('🔄 Selection cleared');
+            }
+        }
+
+        // Vérifier si deux cellules sont adjacentes
+        function isAdjacent(row1, col1, row2, col2) {
+            const rowDiff = Math.abs(row1 - row2);
+            const colDiff = Math.abs(col1 - col2);
+            return (rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1);
+        }
+
+        // Échanger deux cellules
+        function swapCells(row1, col1, row2, col2) {
+            console.log('🔄 Swapping cells:', row1, col1, 'with', row2, col2);
+            
+            // Vérifier que les coordonnées sont valides
+            if (row1 < 0 || row1 >= BOARD_SIZE || col1 < 0 || col1 >= BOARD_SIZE ||
+                row2 < 0 || row2 >= BOARD_SIZE || col2 < 0 || col2 >= BOARD_SIZE) {
+                console.log('❌ Invalid coordinates for swap');
+                return;
+            }
+            
+            const temp = gameState.board[row1][col1];
+            gameState.board[row1][col1] = gameState.board[row2][col2];
+            gameState.board[row2][col2] = temp;
+
+            updateCellDisplay(row1, col1);
+            updateCellDisplay(row2, col2);
+            
+            showNotification('🔄 Échange effectué!', 1000);
+
+            const matches = findMatches();
+            console.log('🎯 Matches found:', matches.length);
+            
+            if (matches.length > 0) {
+                gameState.moves--;
+                gameState.comboMultiplier = 1;
+                showNotification(`✨ ${matches.length} matches trouvés!`, 2000);
+                processMatches();
+            } else {
+                showNotification('❌ Aucun match - Annulation...', 1500);
+                setTimeout(() => {
+                    // Remettre les cellules à leur place
+                    const temp = gameState.board[row1][col1];
+                    gameState.board[row1][col1] = gameState.board[row2][col2];
+                    gameState.board[row2][col2] = temp;
+                    updateCellDisplay(row1, col1);
+                    updateCellDisplay(row2, col2);
+                    console.log('🔄 Swap reverted - no matches');
+                }, 300);
+            }
+            updateUI();
+        }
+
+        // Mettre à jour l'affichage d'une cellule
+        function updateCellDisplay(row, col) {
+            const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            if (!cell) return;
+            const type = gameState.board[row][col];
+            cell.className = `cell type-${type}`;
+            cell.textContent = symbols[type];
+        }
+
+        // Trouver les matches
+        function findMatches() {
+            const matches = [];
+            
+            // Matches horizontaux
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                let count = 1;
+                let currentType = gameState.board[row][0];
+                
+                for (let col = 1; col < BOARD_SIZE; col++) {
+                    if (gameState.board[row][col] === currentType) {
+                        count++;
+                    } else {
+                        if (count >= 3) {
+                            for (let i = col - count; i < col; i++) {
+                                matches.push({ row, col: i });
+                            }
+                        }
+                        count = 1;
+                        currentType = gameState.board[row][col];
+                    }
+                }
+                
+                if (count >= 3) {
+                    for (let i = BOARD_SIZE - count; i < BOARD_SIZE; i++) {
+                        matches.push({ row, col: i });
+                    }
+                }
+            }
+            
+            // Matches verticaux
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                let count = 1;
+                let currentType = gameState.board[0][col];
+                
+                for (let row = 1; row < BOARD_SIZE; row++) {
+                    if (gameState.board[row][col] === currentType) {
+                        count++;
+                    } else {
+                        if (count >= 3) {
+                            for (let i = row - count; i < row; i++) {
+                                matches.push({ row: i, col });
+                            }
+                        }
+                        count = 1;
+                        currentType = gameState.board[row][col];
+                    }
+                }
+                
+                if (count >= 3) {
+                    for (let i = BOARD_SIZE - count; i < BOARD_SIZE; i++) {
+                        matches.push({ row: i, col });
+                    }
+                }
+            }
+            
+            return matches;
+        }
+
+        // Traiter les matches
+        function processMatches() {
+            const matches = findMatches();
+            if (matches.length > 0) {
+                const baseScore = matches.length * 100;
+                const comboScore = baseScore * gameState.comboMultiplier;
+                gameState.score += comboScore;
+                gameState.comboMultiplier += 0.5;
+                
+                playSound('match');
+                removeMatches();
+                createParticles(matches);
+                
+                // Vérifier les succès
+                checkAchievements();
+                
+                setTimeout(() => {
+                    dropCells();
+                    fillEmptyCells();
+                    
+                    setTimeout(() => {
+                        if (findMatches().length > 0) {
+                            processMatches();
+                        } else {
+                            gameState.comboMultiplier = 1;
+                        }
+                    }, 300);
+                }, 500);
+            }
+            
+            checkGameState();
+        }
+
+        // Supprimer les matches
+        function removeMatches() {
+            const matches = findMatches();
+            matches.forEach(match => {
+                const cell = document.querySelector(`[data-row="${match.row}"][data-col="${match.col}"]`);
+                if (cell) cell.classList.add('matching');
+                gameState.board[match.row][match.col] = -1;
+            });
+        }
+
+        // Faire tomber les cellules
+        function dropCells() {
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                let writePos = BOARD_SIZE - 1;
+                
+                for (let row = BOARD_SIZE - 1; row >= 0; row--) {
+                    if (gameState.board[row][col] !== -1) {
+                        gameState.board[writePos][col] = gameState.board[row][col];
+                        if (writePos !== row) {
+                            gameState.board[row][col] = -1;
+                        }
+                        writePos--;
+                    }
+                }
+            }
+            
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    updateCellDisplay(row, col);
+                }
+            }
+        }
+
+        // Remplir les cellules vides
+        function fillEmptyCells() {
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    if (gameState.board[row][col] === -1) {
+                        let type;
+                        do {
+                            type = Math.floor(Math.random() * CELL_TYPES);
+                        } while (wouldCreateMatch(row, col, type));
+                        
+                        gameState.board[row][col] = type;
+                        updateCellDisplay(row, col);
+                    }
+                }
+            }
+        }
+
+        // Fonction de notification
+        function showNotification(message, duration = 2000) {
+            const notification = document.createElement('div');
+            notification.style.position = 'fixed';
+            notification.style.top = '50%';
+            notification.style.left = '50%';
+            notification.style.transform = 'translate(-50%, -50%)';
+            notification.style.background = 'rgba(0, 255, 255, 0.9)';
+            notification.style.color = '#000';
+            notification.style.padding = '15px 25px';
+            notification.style.borderRadius = '10px';
+            notification.style.fontSize = '16px';
+            notification.style.fontWeight = 'bold';
+            notification.style.zIndex = '9999';
+            notification.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.5)';
+            notification.style.animation = 'slideDown 0.3s ease-out';
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideUp 0.3s ease-out';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, duration);
+        }
+
+        // Créer des particules
+        function createParticles(matches) {
+            const particlesContainer = document.getElementById('particles');
+            
+            matches.forEach(match => {
+                const cell = document.querySelector(`[data-row="${match.row}"][data-col="${match.col}"]`);
+                if (!cell) return;
+                const rect = cell.getBoundingClientRect();
+                
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = (rect.left + rect.width / 2 + Math.random() * 20 - 10) + 'px';
+                    particle.style.top = (rect.top + rect.height / 2 + Math.random() * 20 - 10) + 'px';
+                    particle.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                    particle.style.animationDelay = Math.random() * 0.5 + 's';
+                    
+                    particlesContainer.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        if (particle.parentNode) particle.remove();
+                    }, 2000);
+                }
+            });
+        }
+
+        // Activer un power-up
+        function activatePowerUp(type) {
+            if (gameState.powerUps[type] > 0 && gameState.isGameActive && !gameState.isPaused) {
+                gameState.activePowerUp = type;
+                document.body.style.cursor = 'crosshair';
+                
+                // Effet visuel sur le bouton
+                const btn = document.getElementById(type === 'line' ? 'lineClearBtn' : type === 'bomb' ? 'bombBtn' : 'rainbowBtn');
+                btn.classList.add('active');
+            }
+        }
+
+        // Utiliser un power-up
+        function usePowerUp(row, col) {
+            if (!gameState.activePowerUp) return;
+            
+            const type = gameState.activePowerUp;
+            gameState.powerUps[type]--;
+            
+            let cellsToRemove = [];
+            
+            switch (type) {
+                case 'line':
+                    for (let c = 0; c < BOARD_SIZE; c++) {
+                        cellsToRemove.push({row, col: c});
+                        gameState.board[row][c] = -1;
+                    }
+                    break;
+                    
+                case 'bomb':
+                    for (let r = Math.max(0, row - 1); r <= Math.min(BOARD_SIZE - 1, row + 1); r++) {
+                        for (let c = Math.max(0, col - 1); c <= Math.min(BOARD_SIZE - 1, col + 1); c++) {
+                            cellsToRemove.push({row: r, col: c});
+                            gameState.board[r][c] = -1;
+                        }
+                    }
+                    break;
+                    
+                case 'rainbow':
+                    const targetType = gameState.board[row][col];
+                    for (let r = 0; r < BOARD_SIZE; r++) {
+                        for (let c = 0; c < BOARD_SIZE; c++) {
+                            if (gameState.board[r][c] === targetType) {
+                                cellsToRemove.push({row: r, col: c});
+                                gameState.board[r][c] = -1;
+                            }
+                        }
+                    }
+                    break;
+            }
+            
+            gameState.activePowerUp = null;
+            document.body.style.cursor = 'default';
+            
+            // Retirer l'effet visuel
+            document.querySelectorAll('.power-up-btn').forEach(btn => btn.classList.remove('active'));
+            
+            playSound('powerup');
+            createParticles(cellsToRemove);
+            
+            setTimeout(() => {
+                dropCells();
+                fillEmptyCells();
+                processMatches();
+                updateUI();
+            }, 500);
+        }
+
+        // Vérifier l'état du jeu
+        function checkGameState() {
+            if (gameState.score >= gameState.target) {
+                gameState.isGameActive = false;
+                playSound('levelup');
+                document.getElementById('levelComplete').style.display = 'flex';
+                document.getElementById('finalScore').textContent = gameState.score;
+                
+                // Mettre à jour le high score
+                if (gameState.score > gameState.highScore) {
+                    gameState.highScore = gameState.score;
+                    document.getElementById('topScore').textContent = gameState.highScore;
+                }
+                
+                saveGame();
+            } else if (gameState.moves <= 0) {
+                gameState.isGameActive = false;
+                playSound('gameover');
+                document.getElementById('gameOver').style.display = 'flex';
+                document.getElementById('gameOverScore').textContent = gameState.score;
+                
+                if (gameState.score > gameState.highScore) {
+                    gameState.highScore = gameState.score;
+                    document.getElementById('topScore').textContent = gameState.highScore;
+                }
+                
+                saveGame();
+            }
+        }
+
+        // Niveau suivant
+        function nextLevel() {
+            gameState.level++;
+            gameState.moves = 30 + (gameState.level * 2);
+            gameState.target = Math.floor(gameState.target * 1.4);
+            gameState.powerUps = { 
+                line: Math.min(5, 3 + Math.floor(gameState.level / 3)), 
+                bomb: Math.min(4, 2 + Math.floor(gameState.level / 4)), 
+                rainbow: Math.min(3, 1 + Math.floor(gameState.level / 5)) 
+            };
+            
+            document.getElementById('levelComplete').style.display = 'none';
+            gameState.isGameActive = true;
+            createBoard();
+            updateUI();
+            saveGame();
+        }
+
+        // Fonctions de contrôle du jeu
+        function pauseGame() {
+            if (!gameState.isGameActive) return;
+            
+            gameState.isPaused = !gameState.isPaused;
+            const pauseOverlay = document.getElementById('pauseOverlay');
+            const board = document.getElementById('gameBoard');
+            
+            if (gameState.isPaused) {
+                pauseOverlay.style.display = 'flex';
+                board.classList.add('paused');
+                document.getElementById('pauseBtn').innerHTML = '▶️ <span id="pauseText">' + translations[gameState.currentLanguage].resumeBtn.split(' ')[1] + '</span>';
+            } else {
+                pauseOverlay.style.display = 'none';
+                board.classList.remove('paused');
+                document.getElementById('pauseBtn').innerHTML = '⏸️ <span id="pauseText">' + translations[gameState.currentLanguage].pauseText + '</span>';
+            }
+        }
+
+        function resumeGame() {
+            pauseGame();
+        }
+
+        function resetGame() {
+            // Non-blocking: post a confirm dialog request to parent and perform reset immediately
+            try{ parent.postMessage({ action: 'dialog', dialogType: 'confirm', text: 'Êtes-vous sûr de vouloir recommencer le niveau ?' }, '*'); }catch(e){}
+            gameState.score = Math.max(0, gameState.score - Math.floor(gameState.target * 0.1));
+            gameState.moves = 30 + (gameState.level * 2);
+            gameState.isGameActive = true;
+            gameState.isPaused = false;
+            
+            document.getElementById('pauseOverlay').style.display = 'none';
+            document.getElementById('gameBoard').classList.remove('paused');
+            
+            createBoard();
+            updateUI();
+        }
+
+        function restartGame() {
+            gameState.level = 1;
+            gameState.score = 0;
+            gameState.isGameActive = false;
+            gameState.isPaused = false;
+            gameState.gameStarted = false;
+            
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('pauseOverlay').style.display = 'none';
+            document.getElementById('gameBoard').classList.remove('paused');
+            document.getElementById('startScreen').style.display = 'flex';
+            
+            saveGame();
+        }
+
+        function toggleSound() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            const soundBtn = document.getElementById('soundBtn');
+            if (gameState.soundEnabled) {
+                soundBtn.innerHTML = '🔊 <span id="soundText">' + translations[gameState.currentLanguage].soundText + '</span>';
+                soundBtn.classList.remove('active');
+            } else {
+                soundBtn.innerHTML = '🔇 <span id="soundText">' + translations[gameState.currentLanguage].soundText + '</span>';
+                soundBtn.classList.add('active');
+            }
+            saveGame();
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('Fullscreen not supported');
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function showHelp() {
+            const helpText = gameState.currentLanguage === 'fr' ? 
+                'Alignez 3 symboles identiques ou plus pour marquer des points!\n\n🔥 Ligne: Supprime une ligne entière\n💣 Bombe: Supprime une zone 3x3\n🌈 Arc-en-ciel: Supprime tous les symboles du même type\n\nAtteignez l\'objectif avant d\'épuiser vos mouvements!' :
+                'Match 3 or more identical symbols to score points!\n\n🔥 Line: Removes entire row\n💣 Bomb: Removes 3x3 area\n🌈 Rainbow: Removes all symbols of same type\n\nReach the target before running out of moves!';
+            
+            try{ parent.postMessage({ action: 'dialog', dialogType: 'alert', text: helpText }, '*'); }catch(e){}
+        }
+
+        function showRules() {
+            const rulesText = {
+                fr: '🎮 RÈGLES DU JEU\n\n' +
+                    '🎯 OBJECTIF:\n' +
+                    '• Alignez 3 symboles identiques ou plus\n' +
+                    '• Atteignez le score cible avant d\'épuiser vos mouvements\n\n' +
+                    '🕹️ COMMENT JOUER:\n' +
+                    '1. Cliquez sur une cellule pour la sélectionner\n' +
+                    '2. Cliquez sur une cellule adjacente pour échanger\n' +
+                    '3. Les alignements de 3+ disparaissent automatiquement\n' +
+                    '4. De nouveaux symboles tombent du haut\n\n' +
+                    '⚡ POWER-UPS:\n' +
+                    '• 🔥 Ligne: Supprime une ligne complète\n' +
+                    '• 💣 Bombe: Supprime une zone 3x3\n' +
+                    '• 🌈 Arc-en-ciel: Supprime tous les symboles identiques\n\n' +
+                    '🏆 SCORING:\n' +
+                    '• Plus d\'alignements = plus de points\n' +
+                    '• Les combos multiplient le score\n' +
+                    '• Chaque niveau augmente la difficulté',
+                en: '🎮 GAME RULES\n\n' +
+                    '🎯 OBJECTIVE:\n' +
+                    '• Match 3 or more identical symbols\n' +
+                    '• Reach target score before running out of moves\n\n' +
+                    '🕹️ HOW TO PLAY:\n' +
+                    '1. Click on a cell to select it\n' +
+                    '2. Click on adjacent cell to swap\n' +
+                    '3. Matches of 3+ disappear automatically\n' +
+                    '4. New symbols fall from the top\n\n' +
+                    '⚡ POWER-UPS:\n' +
+                    '• 🔥 Line: Removes entire row\n' +
+                    '• 💣 Bomb: Removes 3x3 area\n' +
+                    '• 🌈 Rainbow: Removes all matching symbols\n\n' +
+                    '🏆 SCORING:\n' +
+                    '• More matches = more points\n' +
+                    '• Combos multiply score\n' +
+                    '• Each level increases difficulty',
+                ar: '🎮 قواعد اللعبة\n\n' +
+                    '🎯 الهدف:\n' +
+                    '• اربط 3 رموز متطابقة أو أكثر\n' +
+                    '• اوصل للنقاط المطلوبة قبل انتهاء الحركات\n\n' +
+                    '🕹️ كيفية اللعب:\n' +
+                    '1. انقر على خلية لتحديدها\n' +
+                    '2. انقر على خلية مجاورة للتبديل\n' +
+                    '3. التطابقات من 3+ تختفي تلقائياً\n' +
+                    '4. رموز جديدة تسقط من الأعلى\n\n' +
+                    '⚡ القوى الخاصة:\n' +
+                    '• 🔥 خط: يحذف صف كامل\n' +
+                    '• 💣 قنبلة: تحذف منطقة 3×3\n' +
+                    '• 🌈 قوس قزح: يحذف كل الرموز المتطابقة\n\n' +
+                    '🏆 النقاط:\n' +
+                    '• المزيد من التطابقات = المزيد من النقاط\n' +
+                    '• الكومبو يضاعف النقاط\n' +
+                    '• كل مستوى يزيد الصعوبة',
+                es: '🎮 REGLAS DEL JUEGO\n\n' +
+                    '🎯 OBJETIVO:\n' +
+                    '• Conecta 3 o más símbolos idénticos\n' +
+                    '• Alcanza la puntuación objetivo antes de quedarte sin movimientos\n\n' +
+                    '🕹️ CÓMO JUGAR:\n' +
+                    '1. Haz clic en una celda para seleccionarla\n' +
+                    '2. Haz clic en una celda adyacente para intercambiar\n' +
+                    '3. Las coincidencias de 3+ desaparecen automáticamente\n' +
+                    '4. Nuevos símbolos caen desde arriba\n\n' +
+                    '⚡ POWER-UPS:\n' +
+                    '• 🔥 Línea: Elimina fila completa\n' +
+                    '• 💣 Bomba: Elimina área 3x3\n' +
+                    '• 🌈 Arcoíris: Elimina todos los símbolos iguales\n\n' +
+                    '🏆 PUNTUACIÓN:\n' +
+                    '• Más coincidencias = más puntos\n' +
+                    '• Los combos multiplican la puntuación\n' +
+                    '• Cada nivel aumenta la dificultad',
+                de: '🎮 SPIELREGELN\n\n' +
+                    '🎯 ZIEL:\n' +
+                    '• Verbinde 3 oder mehr identische Symbole\n' +
+                    '• Erreiche die Zielpunktzahl bevor die Züge ausgehen\n\n' +
+                    '🕹️ WIE GESPIELT WIRD:\n' +
+                    '1. Klicke auf eine Zelle um sie auszuwählen\n' +
+                    '2. Klicke auf eine benachbarte Zelle zum Tauschen\n' +
+                    '3. Übereinstimmungen von 3+ verschwinden automatisch\n' +
+                    '4. Neue Symbole fallen von oben\n\n' +
+                    '⚡ POWER-UPS:\n' +
+                    '• 🔥 Linie: Entfernt ganze Reihe\n' +
+                    '• 💣 Bombe: Entfernt 3x3 Bereich\n' +
+                    '• 🌈 Regenbogen: Entfernt alle gleichen Symbole\n\n' +
+                    '🏆 PUNKTZAHL:\n' +
+                    '• Mehr Übereinstimmungen = mehr Punkte\n' +
+                    '• Kombos multiplizieren die Punktzahl\n' +
+                    '• Jedes Level erhöht die Schwierigkeit',
+                zh: '🎮 游戏规则\n\n' +
+                    '🎯 目标:\n' +
+                    '• 连接3个或更多相同符号\n' +
+                    '• 在移动用完前达到目标分数\n\n' +
+                    '🕹️ 如何游戏:\n' +
+                    '1. 点击单元格选择它\n' +
+                    '2. 点击相邻单元格交换\n' +
+                    '3. 3+匹配自动消失\n' +
+                    '4. 新符号从顶部掉落\n\n' +
+                    '⚡ 道具:\n' +
+                    '• 🔥 直线: 移除整行\n' +
+                    '• 💣 炸弹: 移除3x3区域\n' +
+                    '• 🌈 彩虹: 移除所有相同符号\n\n' +
+                    '🏆 计分:\n' +
+                    '• 更多匹配 = 更多分数\n' +
+                    '• 连击倍增分数\n' +
+                    '• 每级增加难度'
+            };
+            
+            try{ parent.postMessage({ action: 'dialog', dialogType: 'alert', text: (rulesText[gameState.currentLanguage] || rulesText.en) }, '*'); }catch(e){}
+        }
+
+        // Mettre à jour l'interface
+        function updateUI() {
+            document.getElementById('score').textContent = gameState.score.toLocaleString();
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('moves').textContent = gameState.moves;
+            document.getElementById('target').textContent = gameState.target.toLocaleString();
+            
+            const t = translations[gameState.currentLanguage];
+            document.getElementById('lineClearBtn').innerHTML = `${t.lineClearText} (${gameState.powerUps.line})`;
+            document.getElementById('bombBtn').innerHTML = `${t.bombText} (${gameState.powerUps.bomb})`;
+            document.getElementById('rainbowBtn').innerHTML = `${t.rainbowText} (${gameState.powerUps.rainbow})`;
+            
+            document.getElementById('lineClearBtn').disabled = gameState.powerUps.line <= 0;
+            document.getElementById('bombBtn').disabled = gameState.powerUps.bomb <= 0;
+            document.getElementById('rainbowBtn').disabled = gameState.powerUps.rainbow <= 0;
+            
+            // Mettre à jour la barre de progression
+            const progress = Math.min(100, (gameState.score / gameState.target) * 100);
+            document.getElementById('target').style.background = `linear-gradient(90deg, #00ff80 ${progress}%, transparent ${progress}%)`;
+        }
+
+        // Changer de langue
+        function changeLanguage(lang) {
+            gameState.currentLanguage = lang;
+            const t = translations[lang];
+            
+            // Écran de démarrage
+            document.getElementById('startTitle').textContent = t.startTitle;
+            document.getElementById('startDescription').textContent = t.startDescription;
+            document.getElementById('startBtn').textContent = t.startBtn;
+            document.getElementById('feature1').textContent = t.feature1;
+            document.getElementById('feature2').textContent = t.feature2;
+            document.getElementById('feature3').textContent = t.feature3;
+            document.getElementById('feature4').textContent = t.feature4;
+            document.getElementById('difficultyLabel').textContent = t.difficultyLabel;
+            document.getElementById('easyOption').textContent = t.easyOption;
+            document.getElementById('normalOption').textContent = t.normalOption;
+            document.getElementById('hardOption').textContent = t.hardOption;
+            
+            // Interface de jeu
+            document.getElementById('gameTitle').textContent = t.gameTitle;
+            document.getElementById('scoreLabel').textContent = t.scoreLabel;
+            document.getElementById('levelLabel').textContent = t.levelLabel;
+            document.getElementById('movesLabel').textContent = t.movesLabel;
+            document.getElementById('targetLabel').textContent = t.targetLabel;
+            document.getElementById('leaderboardTitle').textContent = t.leaderboardTitle;
+            document.getElementById('levelCompleteTitle').textContent = t.levelCompleteTitle;
+            document.getElementById('continueBtn').textContent = t.continueBtn;
+            document.getElementById('pauseTitle').textContent = t.pauseTitle;
+            document.getElementById('pauseMessage').textContent = t.pauseMessage;
+            document.getElementById('resumeBtn').textContent = t.resumeBtn;
+            document.getElementById('gameOverTitle').textContent = t.gameOverTitle;
+            document.getElementById('restartBtn').textContent = t.restartBtn;
+            
+            // Mettre à jour les boutons de contrôle
+            document.getElementById('pauseBtn').innerHTML = `⏸️ <span>${t.pauseText}</span>`;
+            document.getElementById('resetBtn').innerHTML = `🔄 <span>${t.resetText}</span>`;
+            document.getElementById('soundBtn').innerHTML = `${gameState.soundEnabled ? '🔊' : '🔇'} <span>${t.soundText}</span>`;
+            document.getElementById('fullscreenBtn').innerHTML = `⛶ <span>${t.fullscreenText}</span>`;
+            document.getElementById('helpBtn').innerHTML = `❓ <span>${t.helpText}</span>`;
+            document.getElementById('rulesBtn').innerHTML = `📋 <span>${t.rulesText}</span>`;
+            
+            updateUI();
+            saveGame();
+        }
+
+        // Sauvegarder le jeu
+        function saveGame() {
+            localStorage.setItem('brainovaCrash', JSON.stringify(gameState));
+        }
+
+        // Charger le jeu
+        function loadGame() {
+            const saved = localStorage.getItem('brainovaCrash');
+            if (saved) {
+                try {
+                    const savedState = JSON.parse(saved);
+                    gameState = { ...gameState, ...savedState };
+                    changeLanguage(gameState.currentLanguage);
+                    document.getElementById('topScore').textContent = gameState.highScore;
+                } catch (e) {
+                    console.log('Erreur de chargement de la sauvegarde');
+                }
+            }
+            updateUI();
+        }
+
+        // Gestionnaires d'événements
+        document.getElementById('languageSelect').addEventListener('change', (e) => {
+            changeLanguage(e.target.value);
+        });
+
+        // Raccourcis clavier avancés
+        document.addEventListener('keydown', (e) => {
+            // Si on est sur l'écran de démarrage et qu'on appuie sur Entrée
+            if (!gameState.gameStarted && e.key === 'Enter') {
+                e.preventDefault();
+                startGame();
+                return;
+            }
+            
+            // Si le plateau est vide et qu'on appuie sur Entrée, forcer la création
+            if (gameState.gameStarted && e.key === 'Enter') {
+                e.preventDefault();
+                const board = document.getElementById('gameBoard');
+                if (!board.children.length) {
+                    console.log('Forcing board creation with Enter key');
+                    createBoard();
+                    updateUI();
+                }
+                return;
+            }
+            
+            // Raccourcis globaux (fonctionnent toujours)
+            switch(e.key) {
+                case 'q':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        quickStart();
+                    }
+                    break;
+                case 'd':
+                    if (e.ctrlKey && e.shiftKey) {
+                        e.preventDefault();
+                        devMode();
+                    }
+                    break;
+                case 'h':
+                    e.preventDefault();
+                    showHint();
+                    break;
+                case 'a':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        autoPlay();
+                    }
+                    break;
+                case 'n':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        showNotification('🎮 Raccourcis: H=Indice, Ctrl+A=Auto, Ctrl+D=Dev');
+                    }
+                    break;
+            }
+            
+            if (!gameState.isGameActive) return;
+            
+            switch(e.key) {
+                case ' ':
+                case 'p':
+                    e.preventDefault();
+                    pauseGame();
+                    break;
+                case 'r':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        resetGame();
+                    }
+                    break;
+                case 's':
+                    e.preventDefault();
+                    if (e.ctrlKey) {
+                        saveToCloud();
+                    } else {
+                        toggleSound();
+                    }
+                    break;
+                case 'f':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        toggleFullscreen();
+                    }
+                    break;
+                case '1':
+                    activatePowerUp('line');
+                    break;
+                case '2':
+                    activatePowerUp('bomb');
+                    break;
+                case '3':
+                    activatePowerUp('rainbow');
+                    break;
+                case 'Escape':
+                    e.preventDefault();
+                    if (gameState.activePowerUp) {
+                        gameState.activePowerUp = null;
+                        document.body.style.cursor = 'default';
+                        document.querySelectorAll('.power-up-btn').forEach(btn => btn.classList.remove('active'));
+                    } else {
+                        pauseGame();
+                    }
+                    break;
+            }
+        });
+
+        // Fonction de secours pour forcer l'affichage du plateau
+        function forceShowBoard() {
+            if (gameState.gameStarted && !document.getElementById('gameBoard').children.length) {
+                console.log('Emergency board creation triggered');
+                createBoard();
+                updateUI();
+            }
+        }
+
+        // Fonction de diagnostic et création forcée
+        function forceCreateBoard() {
+            console.log('🔧 DIAGNOSTIC COMPLET:');
+            const board = document.getElementById('gameBoard');
+            
+            console.log('- État du jeu:', gameState.gameStarted, gameState.isGameActive);
+            console.log('- Plateau DOM:', board ? 'Existe' : 'Manquant');
+            console.log('- Enfants plateau:', board ? board.children.length : 'N/A');
+            console.log('- Style display:', board ? board.style.display : 'N/A');
+            console.log('- Visibilité:', board ? board.style.visibility : 'N/A');
+            
+            // Forcer l'état du jeu
+            gameState.gameStarted = true;
+            gameState.isGameActive = true;
+            gameState.isPaused = false;
+            
+            // Masquer l'écran de démarrage
+            document.getElementById('startScreen').style.display = 'none';
+            
+            // Réinitialiser complètement le plateau
+            if (board) {
+                board.innerHTML = '';
+                board.style.display = 'grid';
+                board.style.visibility = 'visible';
+                board.style.opacity = '1';
+                board.classList.remove('paused');
+                
+                console.log('🔧 Création forcée du plateau...');
+                createBoard();
+                updateUI();
+                
+                setTimeout(() => {
+                    console.log('✅ Résultat:', board.children.length, 'cellules créées');
+                    if (board.children.length > 0) {
+                        showNotification('✅ Plateau créé avec succès!');
+                    } else {
+                        showNotification('❌ Échec de création du plateau');
+                        
+                        // Dernière tentative avec méthode alternative
+                        console.log('🔧 Tentative alternative...');
+                        alternativeCreateBoard();
+                    }
+                }, 100);
+            }
+        }
+
+        // Méthode alternative de création du plateau
+        function alternativeCreateBoard() {
+            const board = document.getElementById('gameBoard');
+            board.innerHTML = '';
+            
+            // Créer directement le HTML
+            let html = '';
+            gameState.board = [];
+            
+            for (let row = 0; row < BOARD_SIZE; row++) {
+                gameState.board[row] = [];
+                for (let col = 0; col < BOARD_SIZE; col++) {
+                    const type = Math.floor(Math.random() * CELL_TYPES);
+                    gameState.board[row][col] = type;
+                    
+                    html += `<div class="cell type-${type}" data-row="${row}" data-col="${col}" 
+                             onclick="handleCellClick(event)" 
+                             style="display: flex; visibility: visible; pointer-events: auto;">
+                             ${symbols[type]}
+                             </div>`;
+                }
+            }
+            
+            board.innerHTML = html;
+            console.log('🔧 Méthode alternative utilisée');
+            
+            setTimeout(() => {
+                if (board.children.length > 0) {
+                    showNotification('✅ Méthode alternative réussie!');
+                } else {
+                    showNotification('❌ Toutes les méthodes ont échoué');
+                }
+            }, 50);
+        }
+
+        // Ajouter un clic de secours sur la zone de jeu
+        document.addEventListener('click', (e) => {
+            if (gameState.gameStarted && e.target.classList.contains('game-board')) {
+                forceShowBoard();
+            }
+        });
+
+        // Initialiser le jeu au chargement
+        window.addEventListener('load', () => {
+            // Toujours afficher l'écran de démarrage au début
+            gameState.gameStarted = false;
+            gameState.isGameActive = false;
+            document.getElementById('startScreen').style.display = 'flex';
+            
+            loadGame();
+            changeLanguage(gameState.currentLanguage);
+        });
+
+        // Auto-save périodique
+        setInterval(saveGame, 30000);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'987b38d7c3ce07ea',t:'MTc1OTMxMzk3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Simulate Purchase - Brainova</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;padding:20px;background:#0b1220;color:#cfefff} .card{background:#071226;padding:18px;border-radius:10px;max-width:720px;margin:40px auto;border:1px solid rgba(255,255,255,0.04)}</style>
+</head>
+<body>
+  <div class="card">
+    <h2>Simulation d'achat (mode local)</h2>
+    <p>Clique sur le bouton ci‑dessous ou attends la redirection automatique pour simuler l'achat du jeu <strong>11</strong>.</p>
+    <p>Si tu veux changer l'ID testé, édite ce fichier et remplace <code>11</code> par l'ID souhaité.</p>
+    <button id="runBtn" style="padding:10px 14px;border-radius:8px;border:none;background:#00d4ff;color:#001;font-weight:700;cursor:pointer">Simuler achat et ouvrir la plateforme</button>
+    <p style="margin-top:12px;font-size:0.9rem;color:#9fbfdc">Remarque : ouvrir en <code>file://</code> peut bloquer certains imports ES, mais la clé <code>localStorage</code> sera définie correctement.</p>
+  </div>
+
+  <script>
+    function doSim(id){
+      try{
+        localStorage.setItem('purchased_game_' + String(id), '1');
+      }catch(e){ /* ignore if localStorage not available */ }
+      // Try to redirect to the platform page in same folder
+  var target = 'brainova.html';
+      // If running from a different folder, open a relative fallback
+      try{ window.location.href = target; }catch(e){ /* ignore */ }
+    }
+
+    document.getElementById('runBtn').addEventListener('click', function(){ doSim(11); });
+
+    // Auto-run after short delay so double-clicking the file will work immediately
+    setTimeout(function(){ try{ doSim(11); }catch(e){} }, 600);
+  </script>
+</body>
+</html>
