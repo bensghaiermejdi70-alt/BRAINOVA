@@ -1142,7 +1142,78 @@
       setTimeout(updateDebug, 500);
       setTimeout(updateDebug, 2000);
     })();
-  </script>
+  </script><script>
+  // Création des 37 cartes dynamiquement
+  const grid = document.getElementById('gamesGrid');
+  const totalGames = 37; // 0 à 36
+
+  for(let i=0; i<totalGames; i++){
+    const card = document.createElement('div');
+    card.className = 'game-card';
+    card.dataset.gameId = i;
+    card.textContent = `Carte ${i}`;
+    card.style.cursor = 'pointer';
+    card.style.padding = '12px';
+    card.style.border = '1px solid #00d4ff';
+    card.style.borderRadius = '8px';
+    card.style.textAlign = 'center';
+    card.style.background = '#111';
+    card.style.color = '#fff';
+    card.style.transition = 'transform .2s, background .2s';
+    card.addEventListener('mouseenter', ()=>{ card.style.transform='scale(1.05)'; card.style.background='#00d4ff'; card.style.color='#000'; });
+    card.addEventListener('mouseleave', ()=>{ card.style.transform='scale(1)'; card.style.background='#111'; card.style.color='#fff'; });
+
+    // clic ouvre le jeu correspondant
+    card.addEventListener('click', () => openGame(i));
+
+    grid.appendChild(card);
+  }
+
+  // Overlay pour afficher le jeu
+  function openGame(id){
+    let overlay = document.getElementById('overlay');
+    if(!overlay){
+      overlay = document.createElement('div');
+      overlay.id = 'overlay';
+      overlay.style.position = 'fixed';
+      overlay.style.top = 0;
+      overlay.style.left = 0;
+      overlay.style.width = '100vw';
+      overlay.style.height = '100vh';
+      overlay.style.background = 'rgba(0,0,0,0.9)';
+      overlay.style.display = 'flex';
+      overlay.style.alignItems = 'center';
+      overlay.style.justifyContent = 'center';
+      overlay.style.zIndex = 9999;
+      document.body.appendChild(overlay);
+
+      const iframe = document.createElement('iframe');
+      iframe.id = 'overlayIframe';
+      iframe.style.width = '90%';
+      iframe.style.height = '90%';
+      iframe.style.border = '0';
+      overlay.appendChild(iframe);
+
+      const closeBtn = document.createElement('button');
+      closeBtn.id = 'overlayClose';
+      closeBtn.textContent = '✖';
+      closeBtn.style.position = 'absolute';
+      closeBtn.style.top = '20px';
+      closeBtn.style.right = '20px';
+      closeBtn.style.padding = '8px 12px';
+      closeBtn.style.fontSize = '18px';
+      closeBtn.style.cursor = 'pointer';
+      closeBtn.addEventListener('click', ()=>{ overlay.style.display='none'; iframe.src='about:blank'; });
+      overlay.appendChild(closeBtn);
+    }
+
+    const iframe = document.getElementById('overlayIframe');
+    overlay.style.display = 'flex';
+    iframe.src = `https://bensghaiermejdi70-alt.github.io/BRAINOVA/jeux${id}.html`;
+  }
+</script>
+
 </body>
 </html>
+
 
