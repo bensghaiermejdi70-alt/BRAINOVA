@@ -2394,11 +2394,23 @@
             try{ window.location.href = fallbackHref; }catch(e){ try{ window.location.href = '/brainova.html'; }catch(_){} }
         }
     </script>
+<script>
+function openOverlay() {
+    const overlay = parent.document.getElementById('overlay');
+    const iframe = parent.document.getElementById('overlayIframe');
+    const title = parent.document.getElementById('overlayTitle');
+
+    iframe.src = 'jeux0.html';   // charge le jeu complet
+    title.textContent = 'Test QI (Jeu 0)';
+    overlay.style.display = 'block';
+}
+</script>
 
 </body>
 </html>
 
 </body>
+
 
 
 
