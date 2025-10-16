@@ -1262,6 +1262,23 @@ body{
     <li><a href="jeux36.html">Jeu 36</a></li>
   </ul>
 </section>
+<script>
+function openOverlay0() {
+    const overlay = document.getElementById('overlay');
+    const iframe = document.getElementById('overlayIframe');
+    const title = document.getElementById('overlayTitle');
+
+    iframe.src = 'jeux0.html';  // charge le jeu complet
+    title.textContent = 'Test QI (Jeu 0)';
+    overlay.style.display = 'block';
+}
+
+// Fermer l'overlay
+document.getElementById('closeBtn').addEventListener('click', function() {
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('overlayIframe').src = 'about:blank';
+});
+</script>
 
 </body>
 </html>
@@ -1279,3 +1296,4 @@ body{
 
 </html>
 >>>>>>> 4e834959 (Sauvegarde avant passage sur gh-pages)
+
