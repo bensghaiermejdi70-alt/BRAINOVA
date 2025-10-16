@@ -1,2381 +1,1090 @@
-<!DOCTYPE html>
-<html lang="fr">f
+<!doctype html>
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BrainOva QI Test - Advanced</title>
-    <style>
-        /* Copied from qi test.html - visual styles for the test UI */
-        body {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            min-height: 100vh;
-            color: white;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 15px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(15px);
-            border-radius: 15px;
-            padding: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-        }
-
-        .logo {
-            font-size: 2rem;
-            font-weight: 900;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .subtitle {
-            font-size: 1rem;
-            opacity: 0.9;
-            margin-bottom: 10px;
-        }
-
-        .language-selector {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .lang-select {
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-            min-width: 150px;
-        }
-
-        .lang-select:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .lang-select option {
-            background: #1a1a2e;
-            color: white;
-        }
-
-        .game-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .info-card {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(15px);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-        }
-
-        .info-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #4ecdc4;
-        }
-
-        .test-area {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-            min-height: 400px;
-        }
-
-        .question-panel, .answer-panel {
-            background: rgba(255, 255, 255, 0.18);
-            backdrop-filter: blur(15px);
-            border-radius: 15px;
-            padding: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.35);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-        }
-
-        .question-panel h3, .answer-panel h3 {
-            margin-top: 0;
-            color: #4ecdc4;
-            font-size: 1.5rem;
-        }
-
-        .pattern-display {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-            max-width: 600px;
-            gap: 15px;
-            margin: 20px auto;
-            justify-items: center;
-        }
-
-        .pattern-item {
-            width: 80px;
-            height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            font-size: 2rem;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .pattern-item.missing {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px dashed rgba(255, 255, 255, 0.5);
-            position: relative;
-            animation: pulse 2s infinite;
-        }
-
-        .pattern-item.missing::after {
-            content: '?';
-            color: #ff6b6b;
-            font-size: 2.5rem;
-            font-weight: bold;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .answer-options {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .option-btn {
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            color: white;
-            font-size: 2rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        .option-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .option-btn.correct {
-            background: rgba(76, 175, 80, 0.7);
-            border-color: #4caf50;
-            animation: correctAnswer 0.6s ease-out;
-        }
-
-        .option-btn.incorrect {
-            background: rgba(244, 67, 54, 0.7);
-            border-color: #f44336;
-            animation: incorrectAnswer 0.6s ease-out;
-        }
-
-        @keyframes correctAnswer {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1.05); }
-        }
-
-        @keyframes incorrectAnswer {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-            100% { transform: translateX(0); }
-        }
-
-        .top-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.18);
-            backdrop-filter: blur(15px);
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.35);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .progress-section {
-            flex: 0.4;
-            max-width: 300px;
-        }
-
-        .control-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            border: none;
-            border-radius: 20px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            transform: none;
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #4ecdc4, #45b7d1);
-            transition: width 0.5s ease;
-            position: relative;
-        }
-
-        .progress-fill::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            animation: progressShine 2s infinite;
-        }
-
-        @keyframes progressShine {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        .score-display {
-            text-align: center;
-            font-size: 1.2rem;
-            margin: 10px 0;
-        }
-
-        .question-counter {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .shapes {
-            display: inline-block;
-        }
-
-        .circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #4ecdc4;
-            display: inline-block;
-            margin: 2px;
-        }
-
-        .square {
-            width: 40px;
-            height: 40px;
-            background: #ff6b6b;
-            display: inline-block;
-            margin: 2px;
-        }
-
-        .triangle {
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-bottom: 35px solid #45b7d1;
-            display: inline-block;
-            margin: 2px 5px;
-        }
-
-        .rectangle {
-            width: 50px;
-            height: 30px;
-            background: #f39c12;
-            display: inline-block;
-            margin: 2px;
-        }
-
-        .diamond {
-            width: 30px;
-            height: 30px;
-            background: #9b59b6;
-            transform: rotate(45deg);
-            display: inline-block;
-            margin: 7px;
-        }
-
-        .star {
-            position: relative;
-            display: inline-block;
-            width: 0;
-            height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-bottom: 10px solid #e74c3c;
-            transform: rotate(35deg);
-            margin: 10px;
-        }
-
-        .star::before {
-            content: '';
-            position: absolute;
-            left: -15px;
-            top: -7px;
-            width: 0;
-            height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-bottom: 10px solid #e74c3c;
-            transform: rotate(-70deg);
-        }
-
-        .star::after {
-            content: '';
-            position: absolute;
-            left: -15px;
-            top: 3px;
-            width: 0;
-            height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-bottom: 10px solid #e74c3c;
-            transform: rotate(70deg);
-        }
-
-        .timer-display {
-            /* Now positioned by the wrapper container (fixed). Keep styling but make it flow normally inside the wrapper */
-            position: relative;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(15px);
-            border-radius: 15px;
-            padding: 15px 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #4ecdc4;
-            transition: all 0.3s ease;
-        }
-
-        .timer-display.warning {
-            color: #ff6b6b;
-            animation: timerPulse 1s infinite;
-            border-color: #ff6b6b;
-        }
-
-        @keyframes timerPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        .achievement-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 240, 240, 0.95));
-            color: #333;
-            padding: 30px;
-            border-radius: 20px;
-            text-align: center;
-            z-index: 2000;
-            display: none;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-            border: 3px solid #4ecdc4;
-        }
-
-        .achievement-popup.show {
-            display: block;
-            animation: achievementShow 0.8s ease-out;
-        }
-
-        @keyframes achievementShow {
-            0% { 
-                transform: translate(-50%, -50%) scale(0.3) rotate(-10deg); 
-                opacity: 0; 
-            }
-            50% { 
-                transform: translate(-50%, -50%) scale(1.1) rotate(5deg); 
-            }
-            100% { 
-                transform: translate(-50%, -50%) scale(1) rotate(0deg); 
-                opacity: 1; 
-            }
-        }
-
-        .unified-stats-panel {
-            background: rgba(255, 255, 255, 0.18);
-            backdrop-filter: blur(15px);
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 2px solid rgba(255, 255, 255, 0.35);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .stats-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            gap: 5px;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 5px 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
-            flex: 1;
-            min-width: 80px;
-            transition: all 0.3s ease;
-        }
-
-        .stat-item:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .stat-value {
-            font-size: 1rem;
-            font-weight: bold;
-            color: #4ecdc4;
-        }
-
-        .difficulty-indicator {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            padding: 5px 10px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
-
-        .difficulty-easy { color: #4caf50; }
-        .difficulty-medium { color: #ff9800; }
-        .difficulty-hard { color: #f44336; }
-        .difficulty-expert { color: #9c27b0; }
-
-        .feedback-message {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.9);
-            color: #333;
-            padding: 15px 25px;
-            border-radius: 25px;
-            font-weight: bold;
-            z-index: 1500;
-            display: none;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .feedback-message.show {
-            display: block;
-            animation: feedbackSlide 0.5s ease-out;
-        }
-
-        @keyframes feedbackSlide {
-            0% { transform: translateX(-50%) translateY(100px); opacity: 0; }
-            100% { transform: translateX(-50%) translateY(0); opacity: 1; }
-        }
-
-        .combo-indicator {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 3rem;
-            font-weight: bold;
-            color: #4ecdc4;
-            z-index: 1800;
-            display: none;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .combo-indicator.show {
-            display: block;
-            animation: comboShow 1s ease-out;
-        }
-
-        @keyframes comboShow {
-            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-            50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
-        }
-
-        .explanation-box {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            border-left: 4px solid #4ecdc4;
-        }
-
-        .explanation-title {
-            font-weight: bold;
-            color: #4ecdc4;
-            margin-bottom: 8px;
-        }
-
-        @media (max-width: 768px) {
-            .test-area {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .pattern-display {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            
-            .answer-options {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .top-controls {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .control-buttons {
-                justify-content: center;
-            }
-
-            .stats-grid {
-                flex-direction: column;
-                gap: 5px;
-            }
-            
-            .stat-item {
-                min-width: auto;
-            }
-
-            .timer-display {
-                top: 10px;
-                right: 10px;
-                padding: 10px 15px;
-                font-size: 1rem;
-            }
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Brainova - Plateforme unique (global)</title>
+  <!-- restored: no automatic redirect (platform correct should be its own page) -->
+  <style>
+    /* Inline minimal maquette CSS (self-contained) */
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;400;700&display=swap');
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Rajdhani,Segoe UI,Arial;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 50%,#16213e 100%);color:#fff}
+    .header{background:linear-gradient(135deg,rgba(0,0,0,0.95),rgba(26,26,46,0.9));backdrop-filter:blur(10px);border-bottom:2px solid #00d4ff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000}
+    .logo h1{font-family:Orbitron,monospace;font-size:1.6rem;margin:0;background:linear-gradient(45deg,#00d4ff,#ff0096,#00ff88);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+    .nav-btn{background:linear-gradient(45deg,#00d4ff,#ff0096);border:none;border-radius:20px;padding:8px 14px;color:#fff;font-weight:700;cursor:pointer}
+    .main{max-width:1200px;margin:18px auto;padding:0 18px}
+    .hero{padding:28px;background:linear-gradient(135deg,rgba(0,212,255,0.05),rgba(255,0,150,0.03));border-radius:12px;margin-bottom:18px}
+    .hero h2{font-family:Orbitron,monospace;font-size:2rem;margin:0;color:#00d4ff}
+    .games-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:18px}
+   .game-card{background:linear-gradient(135deg,rgba(0,0,0,0.9),rgba(26,26,46,0.8));border:2px solid #00d4ff;padding:14px;border-radius:14px;cursor:pointer;transition:transform .18s,box-shadow .18s}
+   .game-card:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(0,212,255,0.12)}
+   /* Prevent cards from stretching when some entries have longer descriptions or larger icons.
+     Use a vertical flex layout, a sensible min-height and clamp description text to 3 lines. */
+  .game-card{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;min-height:220px;height:auto}
+   .game-card .game-icon{height:80px;display:flex;align-items:center;justify-content:center;font-size:40px}
+   .game-card h3{margin:8px 0 6px 0}
+  .game-card p{margin:0;text-align:center;color:#cfefff;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;line-clamp:3}
+  @media (max-width:480px){ .game-card{min-height:180px} }
+    .game-number{font-weight:700;color:#00d4ff}
+  .game-badge{position:absolute;top:8px;right:8px;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#ffd700,#ffbf00);display:flex;align-items:center;justify-content:center;color:#001;font-weight:900;box-shadow:0 6px 18px rgba(255,191,0,0.18);border:2px solid rgba(255,255,255,0.12);z-index:5}
+    .game-icon{font-size:40px;text-align:center;margin:8px 0}
+    .game-card h3{font-family:Orbitron,monospace;margin:6px 0;color:#fff;text-align:center}
+    /* per-card customizations removed to restore default platform styling */
+  .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.92);z-index:2000}
+  .overlay.active{display:flex}
+  /* Make the iframe frame full-viewport so games render large */
+  .overlay .frame{position:fixed;inset:0;background:#000;border-radius:0;overflow:hidden;display:flex;align-items:stretch;justify-content:stretch}
+  .overlay .frame iframe{position:absolute;inset:0;width:100vw;height:100vh;border:0;z-index:1}
+    .close-btn{position:absolute;top:8px;right:8px;background:linear-gradient(45deg,#ff0096,#00d4ff);border:none;color:#fff;padding:8px 10px;border-radius:8px;font-weight:700;cursor:pointer;z-index:1002}
+    .overlay-title{position:absolute;left:12px;top:10px;color:#fff;font-weight:700;z-index:10}
+    .loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0b1220,#11223a);z-index:9999}
+    .spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,0.12);border-top-color:#00d4ff;border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  @media (max-width:480px){.overlay .frame{position:fixed;inset:0;border-radius:0}}
+  /* Futuristic language picker styles */
+  #langPicker { font-family: Rajdhani, Arial, sans-serif; }
+  #langBtn { display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#061229 0%,#08223a 100%);border:1px solid rgba(0,212,255,0.12);padding:8px 12px;border-radius:14px;color:#cfefff;backdrop-filter:blur(6px);box-shadow:0 6px 24px rgba(0,212,255,0.06); }
+  #langBtn:focus{outline:2px solid rgba(0,212,255,0.18)}
+  #langMenu .lang-item{transition:transform .12s,background .12s;color:#e6f7ff}
+  #langMenu .lang-item:hover{transform:translateX(6px);background:linear-gradient(90deg,rgba(0,212,255,0.04),rgba(255,0,150,0.02));}
+  #langMenu .lang-item.selected{background:linear-gradient(90deg,rgba(0,212,255,0.12),rgba(255,0,150,0.04));box-shadow:0 6px 18px rgba(0,212,255,0.06);}
+  /* Ensure the native select dropdown options are readable across platforms */
+  #langSelect{ position:relative; z-index:2001; min-width:130px; color:#cfefff; background:linear-gradient(135deg,#061229,#08223a); }
+  #langSelect option{ color:#001 !important; background:#fff !important; direction:ltr; }
+  /* On some platforms options can't be fully styled; provide an accessible fallback visual hint */
+  #langSelect:focus{ outline:2px solid rgba(0,212,255,0.14); }
+  /* Category button color schemes */
+  #catalog-hero .cat[data-filter="memoire"]{ background: linear-gradient(135deg,#7ee8fa 0%,#eec0c6 100%); color:#001 }
+  #catalog-hero .cat[data-filter="memoire"]:hover{ box-shadow:0 8px 28px rgba(126,232,250,0.18); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="societe"]{ background: linear-gradient(135deg,#cfd9df 0%,#e2ebf0 100%); color:#001 }
+  #catalog-hero .cat[data-filter="societe"]:hover{ box-shadow:0 8px 28px rgba(200,217,223,0.12); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="puzzle"]{ background: linear-gradient(135deg,#ffd6a5 0%,#fdffb6 100%); color:#111 }
+  #catalog-hero .cat[data-filter="puzzle"]:hover{ box-shadow:0 8px 28px rgba(255,214,165,0.14); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="arcade"]{ background: linear-gradient(135deg,#a18cd1 0%,#fbc2eb 100%); color:#0b002b }
+  #catalog-hero .cat[data-filter="arcade"]:hover{ box-shadow:0 8px 28px rgba(161,140,209,0.14); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="strategie"]{ background: linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%); color:#001 }
+  #catalog-hero .cat[data-filter="strategie"]:hover{ box-shadow:0 8px 28px rgba(102,166,255,0.14); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="quiz"]{ background: linear-gradient(135deg,#fbc2eb 0%,#a6c1ee 100%); color:#001 }
+  #catalog-hero .cat[data-filter="quiz"]:hover{ box-shadow:0 8px 28px rgba(191,194,238,0.14); transform:translateY(-3px) }
+  #catalog-hero .cat[data-filter="reflexe"]{ background: linear-gradient(135deg,#ff9a9e 0%,#fecfef 100%); color:#001 }
+  #catalog-hero .cat[data-filter="reflexe"]:hover{ box-shadow:0 8px 28px rgba(255,154,158,0.14); transform:translateY(-3px) }
+  </style>
 </head>
 <body>
-        <!-- Timer Display -->
-            <div id="timerWrapper" style="position:fixed;top:20px;right:20px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:1000">
-                <div class="timer-display" id="timerDisplay">⏱️ 30s</div>
-            </div>
-
-    <!-- Achievement Popup -->
-    <div class="achievement-popup" id="achievementPopup">
-        <div style="font-size: 3rem; margin-bottom: 10px;">🏆</div>
-        <h3 id="achievementTitle">Succès Débloqué!</h3>
-        <p id="achievementText">Première question correcte!</p>
-    </div>
-
-    <!-- Feedback Message -->
-    <div class="feedback-message" id="feedbackMessage">
-        Excellente réponse! +5 points
-    </div>
-
-    <!-- Combo Indicator -->
-    <div class="combo-indicator" id="comboIndicator">
-        COMBO x5! 🔥
-    </div>
-
-    <div class="container">
-        <div class="header">
-            <div class="logo">🧠 BrainOva QI Test</div>
-            <div class="subtitle" id="subtitle">Test d'Intelligence Diversifié - 20 Types de Questions</div>
-            
-            <div class="language-selector">
-                <select id="languageSelect" onchange="setLanguage(this.value)" class="lang-select">
-                    <option value="fr">🇫🇷 Français</option>
-                    <option value="en">🇬🇧 English</option>
-                    <option value="ar">🇸🇦 العربية</option>
-                    <option value="es">🇪🇸 Español</option>
-                    <option value="de">🇩🇪 Deutsch</option>
-                    <option value="zh">🇨🇳 中文</option>
-                </select>
-            </div>
+  <!-- restored: no redirect script -->
+  <div class="loader" id="loader"><div class="spinner" aria-hidden></div></div>
+  <header class="header" id="header" style="display:none">
+    <div class="logo"><h1>🧠 BRAINOVA</h1></div>
+    <nav class="nav" style="display:flex;gap:8px;align-items:center">
+  <button class="nav-btn" onclick="location.href=new URL('./global_platform_correct.html', location.href).href">Accueil</button>
+  <a id="btnLogin" class="nav-btn" href="./connexion et profil.html?mode=login">Connexion</a>
+  <a id="btnSignup" class="nav-btn" href="./connexion et profil.html?mode=signup">Inscription</a>
+      <a class="nav-btn" href="https://buy.stripe.com/cNi8wR7IC77o54icy49EI01" target="_blank" rel="noopener noreferrer" style="background:linear-gradient(45deg,#ffd700,#ff7a00);">Pass Premium</a>
+      <div id="userSigle" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#00d4ff,#ff0096);display:flex;align-items:center;justify-content:center;color:#001;font-weight:800;margin-left:8px;display:none">JD</div>
+      <div style="position:relative;margin-left:8px">
+        <button id="settingsBtn" class="nav-btn" style="padding:6px 8px">⚙️</button>
+        <div id="settingsMenu" style="position:absolute;right:0;top:40px;background:#0b1220;border:1px solid rgba(255,255,255,0.04);padding:6px;border-radius:8px;display:none;min-width:160px">
+          <div style="padding:8px;color:#cfefff;cursor:pointer" id="settingsEditProfile">Changer profil</div>
+          <div style="padding:8px;color:#cfefff;cursor:pointer" id="settingsHistory">Historique</div>
         </div>
+      </div>
+      <!-- Futuristic language selector (single select) -->
+      <div id="langPicker" style="position:relative;margin-left:8px">
+        <select id="langSelect" aria-label="Langue" title="Langue" style="appearance:none;-webkit-appearance:none;-moz-appearance:none;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:14px;border:1px solid rgba(0,212,255,0.12);background:linear-gradient(135deg,#061229 0%,#08223a 100%);color:#cfefff;cursor:pointer;font-weight:700">
+          <option value="fr">🇫🇷 Français</option>
+          <option value="en">🇬🇧 English</option>
+          <option value="ar">🇸🇦 العربية</option>
+          <option value="es">🇪🇸 Español</option>
+          <option value="de">🇩🇪 Deutsch</option>
+          <option value="zh">🇨🇳 中文</option>
+        </select>
+      </div>
+    </nav>
+  </header>
 
-        <!-- Unified Stats Panel -->
-        <div class="unified-stats-panel">
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-value" id="accuracyRate">0%</div>
-                    <div id="accuracyLabel">Précision</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="avgTime">0s</div>
-                    <div id="avgTimeLabel">Temps Moyen</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="streak">0</div>
-                    <div id="streakLabel">Série</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="iqEstimate">100</div>
-                    <div id="iqLabel">QI Estimé</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="currentPart">1</div>
-                    <div id="partLabel">Partie</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="currentLevel">1</div>
-                    <div id="levelLabel">Niveau</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="currentQuestion">1</div>
-                    <div id="questionLabel">Question</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="currentScore">0</div>
-                    <div id="scoreLabel">Score</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Top Controls Panel -->
-        <div class="top-controls">
-            <div class="progress-section">
-                <div class="question-counter" id="questionCounter">Question 1 sur 20</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 5%"></div>
-                </div>
-            </div>
-            
-            <div class="score-display">
-                <div id="levelScore">Score Niveau: 0/100</div>
-            </div>
-            
-            <div class="control-buttons">
-                <button class="btn" id="startBtn" onclick="startGame()">Démarrer</button>
-                <button class="btn" id="pauseBtn" onclick="togglePause()" disabled>Pause</button>
-                <button class="btn" id="nextBtn" onclick="nextQuestion()" disabled style="display: none;">Suivant</button>
-                <button class="btn" id="newGameBtn" onclick="newGame()">Nouveau Jeu</button>
-                <button class="btn" id="levelBtn" onclick="changeLevel()">Changer Niveau</button>
-                <button class="btn" id="partBtn" onclick="changePart()">Changer Partie</button>
-                <!-- Red close button removed — overlay-aware closeToBrainova() remains available -->
-                <a id="brainovaLink0" href="./brainova.html" title="Aller à Brainova" aria-label="Aller à Brainova" style="margin-left:10px;padding:6px 8px;border-radius:8px;background:linear-gradient(45deg,#ff9b3b,#ff6a6a);color:#fff;text-decoration:none;display:none;font-weight:700;">Accueil Brainova</a>
-            </div>
-        </div>
-
-        <div class="test-area">
-            <div class="question-panel">
-                <div class="difficulty-indicator" id="difficultyIndicator">Facile</div>
-                <h3 id="questionTitle">Question - Logique Visuelle</h3>
-                <div id="questionText">Cliquez sur Démarrer pour commencer</div>
-                <div class="pattern-display" id="patternDisplay">
-                    <!-- Pattern will be generated here -->
-                </div>
-                <div class="explanation-box" id="explanationBox" style="display: none;">
-                    <div class="explanation-title">💡 Explication :</div>
-                    <div id="explanationText"></div>
-                </div>
-            </div>
-
-            <div class="answer-panel">
-                <h3 id="answerTitle">Choisissez votre réponse</h3>
-                <div class="answer-options" id="answerOptions">
-                    <!-- Options will be generated here -->
-                </div>
-            </div>
-        </div>
+  <!-- Local state status bar (helpful in file:// mode) -->
+  <div id="localStateBar" style="background:rgba(0,0,0,0.6);color:#cfefff;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:13px;display:flex;gap:12px;align-items:center;justify-content:space-between">
+    <div id="localStateText">État local: vérification en cours...</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button id="localStateRefresh" class="nav-btn" style="padding:6px 10px;">Rafraîchir</button>
+      <button id="localStateClear" class="nav-btn" style="padding:6px 10px;background:#ff6b6b">Reset flags</button>
     </div>
+  </div>
 
-    <script>
-        // Show brainova link when standalone and provide robust close handler
-        (function(){
-            function getFallbackHref(){
-                try{
-                    if(location && location.protocol && (location.protocol.indexOf('http') === 0)){
-                        return (location.origin || (location.protocol + '//' + location.host)) + '/brainova.html';
-                    }
-                    try{ return new URL('brainova.html', location.href).href; }catch(e){}
-                    return './brainova.html';
-                }catch(e){ return '/brainova.html'; }
+  <main class="main">
+    <section class="hero" id="catalog-hero" style="padding:18px;background:linear-gradient(135deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;margin-bottom:18px">
+      <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:120px;height:120px;border-radius:14px;background:linear-gradient(135deg,#00d4ff,#ff0096);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:#001;padding:12px;box-shadow:0 8px 40px rgba(0,212,255,0.08)">36<br><small style="font-size:12px;color:#001;font-weight:700">JEUX</small></div>
+          <div>
+            <h2 style="margin:0;font-family:Orbitron,monospace;color:#00d4ff">Catalogue Brainova — 36 jeux</h2>
+            <p style="margin:6px 0;color:#cfefff">Explorez par thème : sélectionnez une catégorie pour filtrer les cartes de jeux.</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="cat" data-filter="memoire" style="padding:10px 14px;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(26,26,46,0.6));border:1px solid rgba(255,255,255,0.03);border-radius:10px;color:#cfefff;cursor:pointer">Mémoire</button>
+          <button class="cat" data-filter="societe" style="padding:10px 14px;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(26,26,46,0.6));border:1px solid rgba(255,255,255,0.03);border-radius:10px;color:#cfefff;cursor:pointer">Société</button>
+          <button class="cat" data-filter="puzzle" style="padding:10px 14px;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(26,26,46,0.6));border:1px solid rgba(255,255,255,0.03);border-radius:10px;color:#cfefff;cursor:pointer">Puzzle</button>
+          <button class="cat" data-filter="arcade" style="padding:10px 14px;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(26,26,46,0.6));border:1px solid rgba(255,255,255,0.03);border-radius:10px;color:#cfefff;cursor:pointer">Arcade</button>
+          <button class="cat" data-filter="strategie" style="padding:10px 14px;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(26,26,46,0.6));border:1px solid rgba(255,255,255,0.03);border-radius:10px;color:#cfefff;cursor:pointer">Stratégie</button>
+          <button class="cat" data-filter="quiz" style="padding:10px 14px;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(26,26,46,0.6));border:1px solid rgba(255,255,255,0.03);border-radius:10px;color:#cfefff;cursor:pointer">Quiz</button>
+          <button class="cat" data-filter="reflexe" style="padding:10px 14px;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(26,26,46,0.6));border:1px solid rgba(255,255,255,0.03);border-radius:10px;color:#cfefff;cursor:pointer">Réflexe</button>
+        </div>
+      </div>
+    </section>
+  <div style="margin-top:10px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);color:#cfefff">Remarque : si vous ne pouvez pas lancer un serveur local, double-cliquez sur ce fichier <strong>global_platform.html</strong> pour l'ouvrir dans votre navigateur, puis activez (ou laissez activé) le <em>Mode sans serveur</em>. Les jeux s'ouvriront dans de nouveaux onglets.</div>
+
+    <section id="gamesGrid" class="games-grid" aria-live="polite"></section>
+  </main>
+  <div style="max-width:1200px;margin:12px auto;padding:0 18px;display:flex;gap:10px;align-items:center">
+    <button id="checkAllBtn" class="nav-btn">Tester tous les jeux</button>
+    <button id="noServerBtn" class="nav-btn">Mode sans serveur</button>
+    <div id="checkStatus" style="color:#cfefff"></div>
+  </div>
+
+  <!-- Overlay iframe -->
+  <div id="overlay" class="overlay" role="dialog" aria-modal="true">
+      <div class="frame">
+      <button id="closeBtn" class="close-btn">Fermer</button>
+      <div id="overlayTitle" class="overlay-title">Titre</div>
+      <iframe id="overlayIframe" src="about:blank" title="Jeu" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+    </div>
+  </div>
+<button onclick="openOverlay0()">Carte 0</button>
+<button onclick="openOverlay1()">Carte 1</button>
+<button onclick="openOverlay2()">Carte 2</button>
+<!-- ... jusqu'à Carte 36 -->
+<script>
+  const overlay = document.getElementById('overlay');
+  const overlayIframe = document.getElementById('overlayIframe');
+  const closeBtn = document.getElementById('closeBtn');
+
+  // Fonction pour fermer l'overlay
+  closeBtn.addEventListener('click', () => {
+    overlay.style.display = 'none';
+    overlayIframe.src = 'about:blank';
+  });
+
+  // Générer automatiquement openOverlay0 à openOverlay36
+  for (let i = 0; i <= 36; i++) {
+    window['openOverlay' + i] = function() {
+      overlay.style.display = 'block';
+      overlayIframe.src = `jeux${i}.html`;
+      document.getElementById('overlayTitle').innerText = `Jeu ${i}`;
+    }
+  }
+</script>
+
+  <script>
+    // Minimal global script to render cards and open jeuxNN.html in a fullscreen iframe
+    (async function(){
+      const total = 36;
+      // Robust dynamic import for platform/games/games-index.js that works on GitHub Pages / subpaths
+    // Compute SITE_BASE and robustly load games-index (dynamic import, then blob/script fallback)
+    function detectSiteBase(){ try{ const parts = location.pathname.split('/').filter(Boolean); if(parts.length===0) return '/'; return '/' + parts[0] + '/'; }catch(e){ return '/'; } }
+    const SITE_BASE = detectSiteBase(); window.SITE_BASE = SITE_BASE;
+    async function tryLoadGamesIndex(){
+      const specCandidates = ['./platform/games/games-index.js', SITE_BASE + 'platform/games/games-index.js', 'platform/games/games-index.js'];
+      for(const spec of specCandidates){ try{ const mod = await import(spec); if(mod){ window.GamesIndex = mod.default || mod; console.info('GamesIndex loaded from', spec); return true; } }catch(e){} }
+      for(const spec of specCandidates){
+        try{
+          let fetchUrl; try{ fetchUrl = new URL(spec, location.href).href; }catch(e){ fetchUrl = spec; }
+          const resp = await fetch(fetchUrl, { cache:'no-store' }); if(!resp.ok) continue;
+          const txt = await resp.text(); const blob = new Blob([txt], { type:'application/javascript' }); const blobUrl = URL.createObjectURL(blob);
+          try{ const mod2 = await import(blobUrl); if(mod2){ window.GamesIndex = mod2.default || mod2; console.info('GamesIndex loaded from blob of', fetchUrl); URL.revokeObjectURL(blobUrl); return true; } }catch(e){ URL.revokeObjectURL(blobUrl); }
+        }catch(e){}
+      }
+      console.warn('Could not import GamesIndex from any strategy'); return false;
+    }
+    try{ const ok = await tryLoadGamesIndex(); if(!ok){ /* no-op, debug block will poll */ } }catch(e){ console.warn('tryLoadGamesIndex failed', e); }
+      // Helper to normalize/resolve URLs robustly for GitHub Pages and filenames with spaces
+      function normalizeUrl(raw){
+        if(!raw) return raw;
+        try{
+          // If raw looks like an absolute URL, keep it
+          const maybe = new URL(raw, window.location.href);
+          // Use encodeURI to avoid double-encoding query/hash parts
+          return encodeURI(maybe.href);
+        }catch(e){
+          try{ return encodeURI(raw); }catch(_){ return raw; }
+        }
+      }
+    // Carte des jeux : fichier réel (si existant) et titre extrait des fichiers existants
+    // Added id 0 -> Test QI (carte qi.html)
+    const gameMap = {
+  0: { file: './carte%20qi.html', title: '🧪 Test QI — Advanced', desc: 'Test QI avancé — évaluations cognitives et mini-jeux.', icon: '🧪', players: '1', duration: '1-5 min' },
+  1: { file: './jeux1super.html', title: '🧩 Quantum Tetris', desc: 'Tetris quantique — alignez les blocs et exploitez la superposition pour marquer plus de points.', icon: '🧩', players: '1', duration: '3-10 min' },
+          2: { file: './jeux2brainova.html', title: '🧠 Quantum Memory', desc: "Memory quantique — retournez les cartes et retrouvez les paires d'états quantiques.", icon: '🧠', players: '1-2', duration: '2-8 min' },
+        3: { file: './jeux3.html', title: '🧩 Neural Puzzle Master - IA Futuriste' },
+        4: { file: './jeux4.html', title: '♛ Brainova Quantum Chess - IA Quantique' },
+        5: { file: './jeux5.html', title: '🔥 Brainova Quantum Dames - IA Futuriste' },
+        6: { file: './jeux6.html', title: '🌟 Quantum Pac-Man - IA Futuriste' },
+        7: { file: './jeux7.html', title: '🎮 Simon Says - IA Futuriste' },
+        8: { file: './jeux8.html', title: '🚀 Speed Challenge - IA Futuriste' },
+        9: { file: './jeux9.html', title: '🔮 Cyber Checker - Connexion Quantique' },
+        10: { file: './jeux10.html', title: "🚀 DEMO PLAYGROUND - Terrain d'Entraînement Futuriste" },
+        11: { file: './jeux11.html', title: 'Quantum Monopoly - Jeu de Plateau Futuriste' },
+        12: { file: './jeux12.html', title: 'Quantum Poker - Jeu de Poker Futuriste' },
+  13: { file: './jeux13.html', title: 'Blackjack Quantum' },
+        14: { file: './jeux14.html', title: 'Solitaire Fusion - Jeu de Cartes Futuriste' },
+        15: { file: './jeux15.html', title: 'NeuroSynth Explorer - Brainova Premium' },
+        16: { file: './jeux16.html', title: 'Enigma Hunter' },
+        17: { file: './jeux17.html', title: 'CyberRace Nexus - Prototypes 3D' },
+        18: { file: './jeux18.html', title: 'QUANTUM WARFARE 2.0 - Bataille Spatiale Futuriste' },
+        19: { file: './jeux19.html', title: 'Quantum Dots - Jeu Futuriste' },
+  20: { file: './jeux20.html', title: 'Sudoku Futuriste AI' },
+        21: { file: './jeux21.html', title: 'Pharaon Cyber - Empire Galactique' },
+        22: { file: './jeux22.html', title: 'Quantum Pipes' },
+        23: { file: './jeux23.html', title: 'Neural Slot - Brainova AI Casino' },
+        24: { file: './jeux24.html', title: 'Neural Dice - Jeu Futuriste avec IA' },
+        25: { file: './jeux25.html', title: 'Quantum Bubbles' },
+        26: { file: './jeux26.html', title: 'Cyber Defense AI - Jeu Futuriste' },
+        27: { file: './jeux27.html', title: 'Cyber Pool - Billard Futuriste avec IA' },
+        28: { file: './jeux28.html', title: 'Quantum Tiles - Puzzle Futuriste avec IA' },
+        29: { file: './jeux29.html', title: 'Genius Quest - Quiz Multilingue' },
+        30: { file: './jeux30.html', title: 'Space Explorer - Aventure Galactique' },
+        31: { file: './jeux31.html', title: 'NeuroSphere - Jeu de Société Futuriste IA' },
+        32: { file: './jeux32.html', title: 'Skyjo Futuriste 3D' },
+        33: { file: './jeux33.html', title: 'STELLAR NEXUS - Jeu Spatial Interactif' },
+        34: { file: './jeux34.html', title: 'Dixit Futuriste 3D - Voyage Imaginaire' },
+        35: { file: './jeux35.html', title: 'Cyber Warrior - RPG Futuriste' },
+    36: { file: './jeux36.html', title: 'Crystal Quest - Puzzle Spatial' }
+    };
+    // expose for filter scripting
+    window.gameMap = gameMap;
+      const grid = document.getElementById('gamesGrid');
+      // Simple translations map
+      const Translations = {
+        fr: { login: 'Connexion', signup: 'Inscription', homeNote: 'Cliquez sur une carte pour ouvrir', testBtn: 'Tester tous les jeux', noServer: 'Mode sans serveur', close: 'Fermer', heroTitle: 'Catalogue Brainova — 36 jeux', gamesCount: '36 JEUX', categories: { memoire: 'Mémoire', societe: 'Société', puzzle: 'Puzzle', arcade: 'Arcade', strategie: 'Stratégie', quiz: 'Quiz', reflexe: 'Réflexe' } },
+        en: { login: 'Login', signup: 'Sign up', homeNote: 'Click a card to open', testBtn: 'Test all games', noServer: 'No-server mode', close: 'Close', heroTitle: 'Brainova Catalog — 36 games', gamesCount: '36 GAMES', categories: { memoire: 'Memory', societe: 'Society', puzzle: 'Puzzle', arcade: 'Arcade', strategie: 'Strategy', quiz: 'Quiz', reflexe: 'Reflex' } },
+        ar: { login: 'تسجيل الدخول', signup: 'إنشاء حساب', homeNote: 'انقر على بطاقة لفتحها', testBtn: 'اختبار جميع الألعاب', noServer: 'وضع بدون خادم', close: 'إغلاق', heroTitle: 'كتالوج براينوفا — 36 لعبة', gamesCount: '36 لعبة', categories: { memoire: 'الذاكرة', societe: 'المجتمع', puzzle: 'أحجية', arcade: 'أركيد', strategie: 'استراتيجية', quiz: 'اختبار', reflexe: 'رد فعل' } },
+        es: { login: 'Conexión', signup: 'Registro', homeNote: 'Haga clic en una tarjeta para abrir', testBtn: 'Probar todos los juegos', noServer: 'Modo sin servidor', close: 'Cerrar', heroTitle: 'Catálogo Brainova — 36 juegos', gamesCount: '36 JUEGOS', categories: { memoire: 'Memoria', societe: 'Sociedad', puzzle: 'Rompecabezas', arcade: 'Arcade', strategie: 'Estrategia', quiz: 'Quiz', reflexe: 'Reflejo' } },
+        de: { login: 'Anmelden', signup: 'Registrieren', homeNote: 'Klicken Sie auf eine Karte, um zu öffnen', testBtn: 'Alle Spiele testen', noServer: 'Kein-Server-Modus', close: 'Schließen', heroTitle: 'Brainova-Katalog — 36 Spiele', gamesCount: '36 SPIELE', categories: { memoire: 'Gedächtnis', societe: 'Gesellschaft', puzzle: 'Puzzle', arcade: 'Arcade', strategie: 'Strategie', quiz: 'Quiz', reflexe: 'Reflex' } },
+        zh: { login: '登录', signup: '注册', homeNote: '点击卡片以打开', testBtn: '测试所有游戏', noServer: '无服务器模式', close: '关闭', heroTitle: 'Brainova 目录 — 36 款游戏', gamesCount: '36 游戏', categories: { memoire: '记忆', societe: '社会', puzzle: '拼图', arcade: '街机', strategie: '策略', quiz: '测验', reflexe: '反应' } }
+      };
+      let currentLang = localStorage.getItem('brainovaLang') || 'fr';
+      function applyLanguage(lang){
+        currentLang = lang;
+        localStorage.setItem('brainovaLang', lang);
+        const t = Translations[lang] || Translations.fr;
+        const b1 = document.getElementById('btnLogin'); if(b1) b1.textContent = t.login;
+        const b2 = document.getElementById('btnSignup'); if(b2) b2.textContent = t.signup;
+        const note = document.querySelector('.hero p'); if(note) note.textContent = t.homeNote;
+        const checkBtn = document.getElementById('checkAllBtn'); if(checkBtn) checkBtn.textContent = t.testBtn;
+        const noBtn = document.getElementById('noServerBtn'); if(noBtn) noBtn.textContent = t.noServer;
+        const closeBtn = document.getElementById('closeBtn'); if(closeBtn) closeBtn.textContent = t.close;
+        // hero title and games count
+        try{ const heroH2 = document.querySelector('.hero h2'); if(heroH2) heroH2.textContent = t.heroTitle || heroH2.textContent; }catch(e){}
+        try{ const gamesBadge = document.querySelector('.hero > div div:first-child div'); if(gamesBadge) gamesBadge.innerHTML = (t.gamesCount || '36 JEUX') + '<br><small style="font-size:12px;color:#001;font-weight:700">JEUX</small>'; }catch(e){}
+        // translate category buttons
+        try{
+          const cats = document.querySelectorAll('.cat');
+          cats.forEach(btn=>{
+            const key = btn.getAttribute('data-filter');
+            if(t.categories && key && t.categories[key]) btn.textContent = t.categories[key];
+          });
+        }catch(e){}
+        // Re-render cards so per-game titles/descriptions update to the selected language
+        try{ renderGrid(); }catch(e){ /* ignore if renderGrid not available yet */ }
+      }
+      // Wire the language selector so changes update the UI immediately
+      (function wireLangSelector(){
+        const sel = document.getElementById('langSelect');
+        if(!sel) return;
+        // Ensure the select reflects stored language and is clearly visible
+        sel.value = currentLang;
+        sel.style.minWidth = '130px';
+        sel.style.zIndex = '2001';
+        sel.style.background = 'linear-gradient(135deg,#061229,#08223a)';
+        sel.style.color = '#cfefff';
+        sel.addEventListener('change', (e)=>{ applyLanguage(e.target.value); });
+      })();
+      const overlay = document.getElementById('overlay');
+      const iframe = document.getElementById('overlayIframe');
+      const titleEl = document.getElementById('overlayTitle');
+      const closeBtn = document.getElementById('closeBtn');
+
+      // Per-game translations (localized title/description override)
+      const gameTranslations = {
+        fr: {
+          0: { title: '🧪 Test QI', desc: 'Test QI — Carte de vérification' },
+          1: { title: '🧩 Quantum Tetris', desc: 'Tetris quantique — alignez les blocs et exploitez la superposition pour marquer plus de points.' },
+          2: { title: '🧠 Quantum Memory', desc: 'Memory quantique — retournez les cartes et retrouvez les paires d\'états quantiques.' },
+          3: { title: '🧩 Neural Puzzle Master', desc: 'Casse-tête neuronal — défiez votre logique.' },
+          4: { title: '♛ Quantum Chess', desc: 'Échecs quantiques — stratégie et superposition.' },
+          5: { title: '🔥 Quantum Checkers', desc: 'Dames futuristes — règles classiques, IA futuriste.' },
+          6: { title: '🌟 Quantum Pac-Man', desc: 'Pac-Man réinventé avec des fantômes quantiques.' },
+          7: { title: '🎮 Simon Says', desc: 'Répliquez la séquence — testez votre mémoire.' },
+          8: { title: '🚀 Speed Challenge', desc: 'Défi de rapidité — réactions et réflexes.' },
+          9: { title: '🔮 Cyber Checker', desc: 'Vérification intelligente — mini-jeu de logique.' },
+          10: { title: '🚀 Demo Playground', desc: 'Zone de démonstration — prototypes ludiques.' },
+          11: { title: 'Monopoly Quantique', desc: 'Jeu de plateau revisité — transactions quantiques.' },
+          12: { title: 'Quantum Poker', desc: 'Poker futuriste — mise et probabilités quantiques.' },
+          13: { title: 'Blackjack Quantum', desc: 'Blackjack Quantum — mise et stratégie quantique.' },
+          14: { title: 'Solitaire Fusion', desc: 'Solitaire Fusion — fusionnez les piles pour gagner.' },
+          15: { title: 'NeuroSynth Explorer', desc: 'Explorez les synthèses neuronales — contenu premium.' },
+          16: { title: 'Enigma Hunter', desc: 'Chasse aux énigmes — puzzles et indices.' },
+          17: { title: 'CyberRace Nexus', desc: 'Courses futuristes — prototypes 3D.' },
+          18: { title: 'QUANTUM WARFARE 2.0', desc: 'Bataille spatiale — stratégie en temps réel.' },
+          19: { title: 'Quantum Dots', desc: 'Puzzle de points — reliez les points quantiques.' },
+          20: { title: 'Sudoku Futuriste AI', desc: 'Sudoku assisté par IA — niveaux variés.' },
+          21: { title: 'Pharaon Cyber', desc: 'Aventure Égypte — casse-têtes historiques.' },
+          22: { title: 'Quantum Pipes', desc: 'Raccordez les tuyaux quantiques.' },
+          23: { title: 'Neural Slot', desc: 'Machine à sous IA — tours gratuits et bonus.' },
+          24: { title: 'Neural Dice', desc: 'Jeu de dés futuriste — lancers rapides.' },
+          25: { title: 'Quantum Bubbles', desc: 'Bulles quantiques — éclatez pour gagner.' },
+          26: { title: 'Cyber Defense AI', desc: 'Défense cybernétique — protégez le réseau.' },
+          27: { title: 'Cyber Pool', desc: 'Billard futuriste — modes solo & multi.' },
+          28: { title: 'Quantum Tiles', desc: 'Puzzle de tuiles — combinez pour nettoyer.' },
+          29: { title: 'Genius Quest', desc: 'Quiz multilingue — testez votre culture générale.' },
+          30: { title: 'Space Explorer', desc: 'Aventure spatiale — explorez des planètes.' },
+          31: { title: 'NeuroSphere', desc: 'Jeu de société IA — coopérez ou affrontez.' },
+          32: { title: 'Skyjo Futuriste', desc: 'Variante futuriste de Skyjo.' },
+          33: { title: 'STELLAR NEXUS', desc: 'Jeu spatial interactif — batailles & exploration.' },
+          34: { title: 'Dixit Futuriste', desc: 'Voyage imaginaire — cartes narratifs.' },
+          35: { title: 'Cyber Warrior', desc: 'RPG futuriste — missions et montée en niveau.' },
+          36: { title: 'Crystal Quest', desc: 'Puzzle spatial — collectez cristaux.' }
+        },
+        ar: {
+          0: { title: '🧪 اختبار الذكاء', desc: 'اختبار الذكاء — بطاقة التحقق' },
+          1: { title: '🧩 تتريس الكم', desc: 'تتريس كمومي — رتب القطع واستفد من التراكب للحصول على نقاط.' },
+          2: { title: '🧠 ذاكرة الكم', desc: 'ذاكرة كمومية — اقلب البطاقات وابحث عن الأزواج المتطابقة.' },
+          3: { title: '🧩 سيد الألغاز العصبية', desc: 'ألغاز عصبية — تحدى منطقك.' },
+          4: { title: '♛ الشطرنج الكمومي', desc: 'شطرنج كمومي — استراتيجية وآليات التراكب.' },
+          5: { title: '🔥 الداما الكمومية', desc: 'داما مستقبلية — قواعد كلاسيكية مع ذكاء اصطناعي متقدم.' },
+          6: { title: '🌟 باك-مان الكمومي', desc: 'باك-مان مُعاد تخيله مع أشباح كمومية.' },
+          7: { title: '🎮 سيمون يقول', desc: 'كرر التسلسل — اختبر ذاكرتك.' },
+          8: { title: '🚀 تحدي السرعة', desc: 'تحدي السرعة — ردود الفعل والسرعة.' },
+          9: { title: '🔮 فاحص السايبر', desc: 'فاحص ذكي — لعبة منطق صغيرة.' },
+          10: { title: '🚀 ساحة العروض', desc: 'منطقة عروض — نماذج تجريبية ممتعة.' },
+          11: { title: 'مونوبولي الكم', desc: 'لعبة طاولة مُعاد تصورها بمعاملات كمومية.' },
+          12: { title: 'بوكر كمومي', desc: 'بوكر مستقبلي — رهانات واحتمالات كمومية.' },
+          13: { title: 'بلاك جاك كمومي', desc: 'بلاك جاك كمومي — رهانات واستراتيجية.' },
+          14: { title: 'سوليتير فيوجن', desc: 'سوليتير فيوجن — ادمج الأكوام للفوز.' },
+          15: { title: 'مستكشف نيوروSynth', desc: 'استكشف التركيبات العصبية — محتوى مميز.' },
+          16: { title: 'صائد الألغاز', desc: 'صيد الألغاز — أحجيات وقرائن.' },
+          17: { title: 'سباق السايبر', desc: 'سباقات مستقبلية — نماذج ثلاثية الأبعاد.' },
+          18: { title: 'حرب الكم 2.0', desc: 'معركة فضائية — استراتيجية في الوقت الحقيقي.' },
+          19: { title: 'نقاط كمومية', desc: 'أحجية النقاط — اربط النقاط الكمومية.' },
+          20: { title: 'سودوكو الذكاء الاصطناعي', desc: 'سودوكو بمساعدة الذكاء الاصطناعي — مستويات متعددة.' },
+          21: { title: 'فرعون السايبر', desc: 'مغامرة مصرية — أحجيات تاريخية.' },
+          22: { title: 'أنابيب الكم', desc: 'قم بتوصيل أنابيب الكم.' },
+          23: { title: 'فتحة نيورال', desc: 'ماكينة سلوت ذكية — لُعب مجانية ومكافآت.' },
+          24: { title: 'نرد نيورال', desc: 'لعبة نرد مستقبلية — رميات سريعة.' },
+          25: { title: 'فقاعات كمومية', desc: 'فرقع الفقاعات الكمومية لتحصل على نقاط.' },
+          26: { title: 'دفاع السايبر AI', desc: 'دافع عن الشبكة — استراتيجية دفاعية.' },
+          27: { title: 'بلياردو السايبر', desc: 'بلياردو مستقبلية — أوضاع لاعب فردي ومتعدد.' },
+          28: { title: 'بلاطات كمومية', desc: 'أحجية البلاطات — اجمع لتنظيف اللوحة.' },
+          29: { title: 'مهمة العباقرة', desc: 'مسابقة متعددة اللغات — اختبر معلوماتك.' },
+          30: { title: 'مستكشف الفضاء', desc: 'مغامرة فضائية — استكشف الكواكب.' },
+          31: { title: 'نيرو سفير', desc: 'لعبة طاولة ذكية — تعاون أو تنافس.' },
+          32: { title: 'سكايو جو المستقبلي', desc: 'نسخة مستقبلية من Skyjo.' },
+          33: { title: 'STELLAR NEXUS', desc: 'لعبة فضاء تفاعلية — معارك واستكشاف.' },
+          34: { title: 'ديكسيت المستقبلية', desc: 'رحلة خيالية — بطاقات سردية.' },
+          35: { title: 'محارب السايبر', desc: 'RPG مستقبلي — مهمات وترقية.' },
+          36: { title: 'مهمة البلّور', desc: 'أحجية فضائية — اجمع البلّورات.' }
+        },
+        en: {
+          0: { title: '🧪 IQ Test', desc: 'IQ test — verification card' },
+          1: { title: '🧩 Quantum Tetris', desc: 'Quantum Tetris — align blocks and exploit superposition to score.' },
+          2: { title: '🧠 Quantum Memory', desc: 'Quantum Memory — flip cards and find matching quantum states.' },
+          3: { title: '🧩 Neural Puzzle Master', desc: 'Neural puzzles — challenge your logic.' },
+          4: { title: '♛ Quantum Chess', desc: 'Quantum Chess — strategy and superposition mechanics.' },
+          5: { title: '🔥 Quantum Checkers', desc: 'Futuristic checkers — classic rules with advanced AI.' },
+          6: { title: '🌟 Quantum Pac-Man', desc: 'Pac-Man reinvented with quantum ghosts.' },
+          7: { title: '🎮 Simon Says', desc: 'Repeat the sequence — test your memory.' },
+          8: { title: '🚀 Speed Challenge', desc: 'Speed challenge — reactions and reflexes.' },
+          9: { title: '🔮 Cyber Checker', desc: 'Smart checker — small logic mini-game.' },
+          10: { title: '🚀 Demo Playground', desc: 'Demo area — playful prototypes.' },
+          11: { title: 'Quantum Monopoly', desc: 'Board game reimagined with quantum transactions.' },
+          12: { title: 'Quantum Poker', desc: 'Futuristic poker — bets and quantum probabilities.' },
+          13: { title: 'Blackjack Quantum', desc: 'Quantum Blackjack — betting and strategy.' },
+          14: { title: 'Solitaire Fusion', desc: 'Solitaire Fusion — merge piles to win.' },
+          15: { title: 'NeuroSynth Explorer', desc: 'Explore neural synths — premium content.' },
+          16: { title: 'Enigma Hunter', desc: 'Puzzle hunt — riddles and clues.' },
+          17: { title: 'CyberRace Nexus', desc: 'Futuristic racing — 3D prototypes.' },
+          18: { title: 'QUANTUM WARFARE 2.0', desc: 'Space battle — real-time strategy.' },
+          19: { title: 'Quantum Dots', desc: 'Dots puzzle — connect quantum points.' },
+          20: { title: 'AI Sudoku', desc: 'Sudoku assisted by AI — multiple difficulty levels.' },
+          21: { title: 'Pharaoh Cyber', desc: 'Egyptian adventure — historical puzzles.' },
+          22: { title: 'Quantum Pipes', desc: 'Connect the quantum pipes.' },
+          23: { title: 'Neural Slot', desc: 'AI slot machine — free spins & bonuses.' },
+          24: { title: 'Neural Dice', desc: 'Futuristic dice game — quick rolls.' },
+          25: { title: 'Quantum Bubbles', desc: 'Pop quantum bubbles to score.' },
+          26: { title: 'Cyber Defense AI', desc: 'Protect the network — cyber defense strategy.' },
+          27: { title: 'Cyber Pool', desc: 'Futuristic billiards — solo & multiplayer modes.' },
+          28: { title: 'Quantum Tiles', desc: 'Tile puzzle — combine to clear.' },
+          29: { title: 'Genius Quest', desc: 'Multilingual quiz — test your knowledge.' },
+          30: { title: 'Space Explorer', desc: 'Space adventure — explore planets.' },
+          31: { title: 'NeuroSphere', desc: 'AI board game — cooperate or compete.' },
+          32: { title: 'Skyjo Futuristic', desc: 'Futuristic Skyjo variant.' },
+          33: { title: 'STELLAR NEXUS', desc: 'Interactive space game — battles & exploration.' },
+          34: { title: 'Dixit Futuristic', desc: 'Imaginary journey — narrative cards.' },
+          35: { title: 'Cyber Warrior', desc: 'Futuristic RPG — missions & leveling.' },
+          36: { title: 'Crystal Quest', desc: 'Spatial puzzle — collect crystals.' }
+        },
+        es: {
+          0: { title: '🧪 Test IQ', desc: 'Test de IQ — tarjeta de verificación' },
+          1: { title: '🧩 Quantum Tetris', desc: 'Tetris cuántico — alinea bloques y aprovecha la superposición.' },
+          2: { title: '🧠 Quantum Memory', desc: 'Memory cuántico — da la vuelta a las cartas y encuentra pares.' },
+          3: { title: '🧩 Neural Puzzle Master', desc: 'Rompecabezas neuronal — desafía tu lógica.' },
+          4: { title: '♛ Quantum Chess', desc: 'Ajedrez cuántico — estrategia y superposición.' },
+          5: { title: '🔥 Quantum Checkers', desc: 'Damas futuristas — reglas clásicas con IA.' },
+          6: { title: '🌟 Quantum Pac-Man', desc: 'Pac-Man reinventado con fantasmas cuánticos.' },
+          7: { title: '🎮 Simon Says', desc: 'Repite la secuencia — prueba tu memoria.' },
+          8: { title: '🚀 Speed Challenge', desc: 'Desafío de velocidad — reflejos rápidos.' },
+          9: { title: '🔮 Cyber Checker', desc: 'Mini juego lógico inteligente.' },
+          10: { title: '🚀 Demo Playground', desc: 'Zona demo — prototipos lúdicos.' },
+          11: { title: 'Monopoly Cuántico', desc: 'Juego de mesa reinventado con transacciones cuánticas.' },
+          12: { title: 'Quantum Poker', desc: 'Poker futurista — apuestas y probabilidades.' },
+          13: { title: 'Blackjack Quantum', desc: 'Blackjack cuántico — apuestas y estrategia.' },
+          14: { title: 'Solitaire Fusion', desc: 'Solitario Fusion — combina pilas para ganar.' },
+          15: { title: 'NeuroSynth Explorer', desc: 'Explora sintetizadores neuronales — contenido premium.' },
+          16: { title: 'Enigma Hunter', desc: 'Caza de enigmas — rompecabezas y pistas.' },
+          17: { title: 'CyberRace Nexus', desc: 'Carreras futuristas — prototipos 3D.' },
+          18: { title: 'QUANTUM WARFARE 2.0', desc: 'Guerra espacial — estrategia en tiempo real.' },
+          19: { title: 'Quantum Dots', desc: 'Conecta puntos cuánticos — puzzle.' },
+          20: { title: 'Sudoku AI', desc: 'Sudoku asistido por IA — niveles variados.' },
+          21: { title: 'Pharaoh Cyber', desc: 'Aventura egipcia — acertijos históricos.' },
+          22: { title: 'Quantum Pipes', desc: 'Conecta las tuberías cuánticas.' },
+          23: { title: 'Neural Slot', desc: 'Tragaperras IA — giros gratis y bonos.' },
+          24: { title: 'Neural Dice', desc: 'Juego de dados futurista — tiradas rápidas.' },
+          25: { title: 'Quantum Bubbles', desc: 'Explota burbujas cuánticas para ganar.' },
+          26: { title: 'Cyber Defense AI', desc: 'Defiende la red — estrategia cibernética.' },
+          27: { title: 'Cyber Pool', desc: 'Billar futurista — modos solo y multijugador.' },
+          28: { title: 'Quantum Tiles', desc: 'Puzzle de fichas — combina para limpiar.' },
+          29: { title: 'Genius Quest', desc: 'Quiz multilingüe — prueba tus conocimientos.' },
+          30: { title: 'Space Explorer', desc: 'Aventura espacial — explora planetas.' },
+          31: { title: 'NeuroSphere', desc: 'Juego de mesa IA — coopera o compite.' },
+          32: { title: 'Skyjo Futuristic', desc: 'Variante futurista de Skyjo.' },
+          33: { title: 'STELLAR NEXUS', desc: 'Juego espacial interactivo — batallas y exploración.' },
+          34: { title: 'Dixit Futuristic', desc: 'Viaje imaginario — cartas narrativas.' },
+          35: { title: 'Cyber Warrior', desc: 'RPG futurista — misiones y progresión.' },
+          36: { title: 'Crystal Quest', desc: 'Puzzle espacial — colecciona cristales.' }
+        },
+        de: {
+          0: { title: '🧪 IQ-Test', desc: 'IQ-Test — Prüfkarte' },
+          1: { title: '🧩 Quantum Tetris', desc: 'Quantum Tetris — Blöcke ausrichten und Superposition nutzen.' },
+          2: { title: '🧠 Quantum Memory', desc: 'Quantum Memory — Karten umdrehen und Paare finden.' },
+          3: { title: '🧩 Neural Puzzle Master', desc: 'Neuronale Rätsel — fordere deine Logik heraus.' },
+          4: { title: '♛ Quantum Chess', desc: 'Quantum Chess — Strategie und Superposition.' },
+          5: { title: '🔥 Quantum Checkers', desc: 'Futuristische Dame — klassische Regeln mit KI.' },
+          6: { title: '🌟 Quantum Pac-Man', desc: 'Pac-Man neu erfunden mit Quantengeistern.' },
+          7: { title: '🎮 Simon Says', desc: 'Wiederhole die Sequenz — teste dein Gedächtnis.' },
+          8: { title: '🚀 Speed Challenge', desc: 'Geschwindigkeits-Challenge — Reaktion und Reflexe.' },
+          9: { title: '🔮 Cyber Checker', desc: 'Kleines Logik-Minispiel.' },
+          10: { title: '🚀 Demo Playground', desc: 'Demo-Bereich — spielerische Prototypen.' },
+          11: { title: 'Quantum Monopoly', desc: 'Brettspiel neu gedacht mit Quanten-Transaktionen.' },
+          12: { title: 'Quantum Poker', desc: 'Futuristisches Poker — Einsätze und Wahrscheinlichkeiten.' },
+          13: { title: 'Blackjack Quantum', desc: 'Quantum Blackjack — Einsätze und Strategie.' },
+          14: { title: 'Solitaire Fusion', desc: 'Solitaire Fusion — Stapel kombinieren, um zu gewinnen.' },
+          15: { title: 'NeuroSynth Explorer', desc: 'Erkunde neuronale Synths — Premium-Inhalte.' },
+          16: { title: 'Enigma Hunter', desc: 'Rätseljagd — Rätsel und Hinweise.' },
+          17: { title: 'CyberRace Nexus', desc: 'Futuristische Rennen — 3D-Prototypen.' },
+          18: { title: 'QUANTUM WARFARE 2.0', desc: 'Weltraumkampf — Echtzeit-Strategie.' },
+          19: { title: 'Quantum Dots', desc: 'Punkte-Puzzle — verbinde die Quantenpunkte.' },
+          20: { title: 'AI Sudoku', desc: 'Sudoku mit KI-Unterstützung — verschiedene Schwierigkeitsgrade.' },
+          21: { title: 'Pharaoh Cyber', desc: 'Ägypten-Abenteuer — historische Rätsel.' },
+          22: { title: 'Quantum Pipes', desc: 'Verbinde die Quantenrohre.' },
+          23: { title: 'Neural Slot', desc: 'KI-Spielautomat — Freispiele & Boni.' },
+          24: { title: 'Neural Dice', desc: 'Futuristisches Würfelspiel — schnelle Würfe.' },
+          25: { title: 'Quantum Bubbles', desc: 'Quantenblasen platzen lassen, um Punkte zu erzielen.' },
+          26: { title: 'Cyber Defense AI', desc: 'Verteidige das Netzwerk — Cyberabwehrstrategie.' },
+          27: { title: 'Cyber Pool', desc: 'Futuristisches Billard — Solo- & Mehrspielermodi.' },
+          28: { title: 'Quantum Tiles', desc: 'Kachel-Puzzle — kombinieren, um zu löschen.' },
+          29: { title: 'Genius Quest', desc: 'Mehrsprachiges Quiz — teste dein Wissen.' },
+          30: { title: 'Space Explorer', desc: 'Weltraumabenteuer — erkunde Planeten.' },
+          31: { title: 'NeuroSphere', desc: 'KI-Brettspiel — kooperiere oder konkurriere.' },
+          32: { title: 'Skyjo Futuristic', desc: 'Futuristische Skyjo-Variante.' },
+          33: { title: 'STELLAR NEXUS', desc: 'Interaktives Weltraumspiel — Kämpfe & Erkundung.' },
+          34: { title: 'Dixit Futuristic', desc: 'Phantasiereise — narrative Karten.' },
+          35: { title: 'Cyber Warrior', desc: 'Futuristisches RPG — Missionen & Levelaufstieg.' },
+          36: { title: 'Crystal Quest', desc: 'Rätsel im Raum — sammle Kristalle.' }
+        },
+        zh: {
+          0: { title: '🧪 智商测试', desc: '智商测试 — 验证卡' },
+          1: { title: '🧩 量子俄罗斯方块', desc: '量子俄罗斯方块 — 排列方块并利用叠加得分。' },
+          2: { title: '🧠 量子记忆', desc: '量子记忆 — 翻牌并找出匹配的量子状态。' },
+          3: { title: '🧩 神经谜题大师', desc: '神经谜题 — 挑战你的逻辑。' },
+          4: { title: '♛ 量子国际象棋', desc: '量子国际象棋 — 策略与叠加机制。' },
+          5: { title: '🔥 量子跳棋', desc: '未来跳棋 — 经典规则与高级AI。' },
+          6: { title: '🌟 量子吃豆人', desc: '吃豆人重制版，带有量子幽灵。' },
+          7: { title: '🎮 西蒙说', desc: '重复序列 — 测试你的记忆。' },
+          8: { title: '🚀 速度挑战', desc: '速度挑战 — 反应与反射。' },
+          9: { title: '🔮 网络检查器', desc: '智能检查 — 小型逻辑小游戏。' },
+          10: { title: '🚀 演示游乐场', desc: '演示区 — 有趣的原型。' },
+          11: { title: '量子大富翁', desc: '采用量子交易的桌游重制版。' },
+          12: { title: '量子扑克', desc: '未来扑克 — 赌注与量子概率。' },
+          13: { title: '量子二十一点', desc: '量子二十一点 — 赌注与策略。' },
+          14: { title: '融合纸牌', desc: '融合纸牌 — 合并牌堆以获胜。' },
+          15: { title: '神经合成探索者', desc: '探索神经合成 — 高级内容。' },
+          16: { title: '谜题猎人', desc: '谜题狩猎 — 线索与谜题。' },
+          17: { title: '网络赛道枢纽', desc: '未来赛道 — 3D 原型。' },
+          18: { title: '量子战争 2.0', desc: '太空战 — 实时策略。' },
+          19: { title: '量子点', desc: '点点拼图 — 连接量子点。' },
+          20: { title: 'AI 数独', desc: '由 AI 协助的数独 — 多个难度级别。' },
+          21: { title: '法老网络', desc: '埃及冒险 — 历史谜题。' },
+          22: { title: '量子管道', desc: '连接量子管道。' },
+          23: { title: '神经老虎机', desc: 'AI 老虎机 — 免费旋转与奖励。' },
+          24: { title: '神经骰子', desc: '未来骰子游戏 — 快速掷骰。' },
+          25: { title: '量子泡泡', desc: '炸掉量子泡泡以得分。' },
+          26: { title: '网络防御 AI', desc: '保护网络 — 网络防御策略。' },
+          27: { title: '网络台球', desc: '未来台球 — 单人与多人模式。' },
+          28: { title: '量子瓦片', desc: '瓦片拼图 — 组合以清除。' },
+          29: { title: '天才任务', desc: '多语言测验 — 测试你的知识。' },
+          30: { title: '太空探险者', desc: '太空冒险 — 探索行星。' },
+          31: { title: '神经球体', desc: 'AI 桌游 — 合作或竞争。' },
+          32: { title: '未来 Skyjo', desc: '未来版 Skyjo 变体。' },
+          33: { title: 'STELLAR NEXUS', desc: '互动太空游戏 — 战斗与探索。' },
+          34: { title: '未来 Dixit', desc: '想象之旅 — 叙事卡牌。' },
+          35: { title: '网络战士', desc: '未来 RPG — 任务与升级。' },
+          36: { title: '水晶探险', desc: '空间谜题 — 收集水晶。' }
+        }
+      };
+
+      function getGameMeta(i, lang){
+        const base = gameMap[i] || { file: null, title: `Jeu ${i}`, desc: 'Cliquez pour ouvrir', icon: '🎮' };
+        const overrides = (gameTranslations[lang] && gameTranslations[lang][i]) ? gameTranslations[lang][i] : {};
+        return Object.assign({}, base, overrides);
+      }
+
+      // Build a card using GamesIndex when available, otherwise fall back to inline gameMap
+      function makeCard(i){
+        const div = document.createElement('div'); div.className='game-card'; div.dataset.gameId=i; div.style.position='relative';
+        // If GamesIndex is available prefer its markup and helpers
+        try{
+          if(window.GamesIndex && typeof window.GamesIndex.getCardHTML === 'function'){
+            const html = window.GamesIndex.getCardHTML(String(i)) || '';
+            div.innerHTML = html || '';
+            // allow GamesIndex to provide outer style
+            if(typeof window.GamesIndex.getCardStyle === 'function'){
+              const styleText = window.GamesIndex.getCardStyle(String(i)) || '';
+              if(styleText) div.style.cssText += styleText;
             }
+            // Attach launch handler
+            div.addEventListener('click', ()=>{ try{ window.GamesIndex.launch(Number(i)); }catch(e){ openGame(i); } });
+            return div;
+          }
+        }catch(e){ /* ignore and fallback to inline rendering */ }
 
-            function updateLink(){
-                var link = document.getElementById('brainovaLink0');
-                if(!link) return;
-                try{ link.href = getFallbackHref(); }catch(e){}
-                try{
-                    if(window.parent && window.parent !== window){ link.style.display = 'none'; }
-                    else { link.style.display = 'inline-block'; }
-                }catch(e){ link.style.display = 'inline-block'; }
-            }
-            if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', updateLink); else updateLink();
-            window.addEventListener('message', updateLink);
-        })();
-
-        function closeToBrainova(){
-            function getFallbackHref(){
-                try{
-                    if(location && location.protocol && (location.protocol.indexOf('http') === 0)){
-                        return (location.origin || (location.protocol + '//' + location.host)) + '/brainova.html';
-                    }
-                    try{ return new URL('brainova.html', location.href).href; }catch(e){}
-                    return './brainova.html';
-                }catch(e){ return '/brainova.html'; }
-            }
-
+        // Fallback: use local gameMap rendering
+        const meta = getGameMeta(i, currentLang);
+        div.dataset.file = (gameMap[i] && gameMap[i].file) ? gameMap[i].file : '';
+        // Ensure card 0 has the special cyan/teal accent even if GamesIndex failed to load.
+        try{ if(Number(i) === 0){ const accent = 'background:linear-gradient(180deg,#cceff7,#33c9ff);border-color:#33c9ff;color:#001;box-shadow:0 10px 30px rgba(51,201,255,0.22);border-radius:10px;'; div.style.cssText += accent; } }catch(e){}
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div class="game-number">${String(i).padStart(2,'0')}</div>
+            <div class="game-status">--</div>
+          </div>
+          <div class="game-icon">${meta.icon || '🎮'}</div>
+          <h3>${meta.title}</h3>
+          <p style="text-align:center;color:#cfefff">${meta.desc || 'Cliquez pour ouvrir'}</p>
+        `;
+        // If this is card 0 and GamesIndex did not provide an HTML preview, try to fetch a small preview fragment
+        if(Number(i) === 0){
+          (async function(){
             try{
-                if(window.parent && window.parent !== window){
-                    try{ window.parent.postMessage({ action: 'close', reason: 'user-initiated', source: 'carte0' }, '*'); }catch(e){}
-                    try{ if(window.parent.OverlayManager && typeof window.parent.OverlayManager.close === 'function'){ window.parent.OverlayManager.close(); return; } }catch(e){}
-                    setTimeout(function(){
-                        try{
-                            var target = getFallbackHref();
-                            console.log('closeToBrainova: navigating to', target);
-                            window.top.location.href = target;
-                        }catch(e){
-                            try{ window.location.href = getFallbackHref(); }catch(_){ try{ window.location.href = '/brainova.html'; }catch(__){} }
-                        }
-                    }, 350);
-                    return;
-                }
-            }catch(e){}
+              const path = (gameMap[0] && gameMap[0].file) ? gameMap[0].file : './carte%20qi.html';
+              const url = normalizeUrl(new URL(path, location.href).href);
+              const resp = await fetch(url, { method: 'GET' });
+              if(!resp.ok) return;
+              const text = await resp.text();
+              // Try to extract a concise preview: header + first .pattern-display or .subtitle
+              let preview = '';
+              const headerMatch = text.match(/<div[^>]*class=["']header["'][\s\S]*?<\/div>/i);
+              if(headerMatch) preview += headerMatch[0];
+              const patternMatch = text.match(/<div[^>]*class=["'][^"']*pattern-display[^"']*["'][\s\S]*?<\/div>/i);
+              if(patternMatch) preview += patternMatch[0];
+              if(!preview){
+                const sub = text.match(/<div[^>]*class=["']subtitle["'][\s\S]*?<\/div>/i);
+                if(sub) preview += sub[0];
+              }
+              if(!preview){
+                const p = text.match(/<p[\s\S]*?<\/p>/i);
+                if(p) preview += p[0];
+              }
+              if(sEmail){
+              const sName = ps.get('session_name') || '';
+              const sAvatar = ps.get('session_avatar') || '';
+              try{
+                // URLSearchParams.get already returns decoded values — do not call decodeURIComponent again
+                const sessionUser = { id: 'u_'+Date.now(), name: sName, email: sEmail, avatar: sAvatar };
+                container.style.maxHeight = '180px';
+                container.style.overflow = 'hidden';
+                container.innerHTML = preview;
+                const p = div.querySelector('p');
+                if(p && p.parentNode) p.parentNode.appendChild(container);
+                else div.appendChild(container);
+                  const spwd = ps.get('session_password');
+                  if(sessionUser && sessionUser.email){
+                    const em = String(sessionUser.email).toLowerCase();
+                    map[em] = { name: sessionUser.name || '', email: sessionUser.email, avatar: sessionUser.avatar || '', id: sessionUser.id };
+                    if(spwd) map[em].password = spwd;
+        try{ const idn = Number(i); if(idn === 0 || (idn >= 11 && idn <= 36)){ const badge = document.createElement('div'); badge.className = 'game-badge'; badge.title = 'Premium'; badge.innerHTML = '👑'; div.appendChild(badge); } }catch(e){}
+        try{ if(Number(i) === 0){ div.style.color = '#000'; const p = div.querySelector('p'); if(p) p.style.color = '#000'; } }catch(e){}
+        div.addEventListener('click', ()=>openGame(i));
+        return div;
+      }
+
+      // Re-render the entire grid (used when language changes)
+      function renderGrid(){
+        grid.innerHTML = '';
+        // include 0..total so Test QI (id 0) appears before the other games
+        for(let i=0;i<=total;i++) grid.appendChild(makeCard(i));
+      }
+
+  // initial render (0..total)
+  for(let i=0;i<=total;i++) grid.appendChild(makeCard(i));
+
+  // Apply the saved/initial language and make header visible
+  try{ applyLanguage(currentLang); }catch(e){}
+  try{ const hdr = document.getElementById('header'); if(hdr) hdr.style.display = 'flex'; }catch(e){}
+
+  // Default: enable no-server only when opened via file://; when served over HTTP use iframe overlay by default
+  let noServerMode = (location.protocol === 'file:');
+      const noServerBtn = document.getElementById('noServerBtn');
+      function updateNoServerUI(){
+        noServerBtn.style.background = noServerMode ? 'linear-gradient(45deg,#ffd700,#00ff88)' : '';
+        noServerBtn.textContent = noServerMode ? 'Mode sans serveur (ON)' : 'Mode sans serveur';
+      }
+  updateNoServerUI();
+  // If we are running via file://, keep no-server; if we are running via http and user wants iframe, they can toggle off
+      noServerBtn.addEventListener('click', ()=>{ noServerMode = !noServerMode; updateNoServerUI(); });
+
+      function openGame(id){
+        const meta = gameMap[id] || {};
+        // resolve filename: prefer explicit file, else fallbacks
+        const candidates = [];
+        if(meta.file) candidates.push(meta.file);
+        candidates.push(`./jeux${id}.html`);
+        candidates.push(`./jeux${id}.html.html`);
+        const chosen = (cardFileExists => cardFileExists)();
+        // If no-server or file protocol, open in new tab using first candidate
+        const finalFile = meta.file || `./jeux${id}.html`;
+        if(noServerMode){
+          window.open(finalFile,'_blank');
+          return;
+        }
+        // When running via server, try to load the first candidate that responds
+        titleEl.textContent = meta.title || `Jeu ${id}`;
+        // Try to set iframe src to meta.file first
+          // Resolve relative URL to absolute for clearer logs and normalize it
+            let resolvedUrl = meta.file || `./jeux${id}.html`;
             try{
-                var target = getFallbackHref();
-                console.log('closeToBrainova standalone: navigating to', target);
-                window.location.href = target;
-            }catch(e){
-                try{ window.location.href = '/brainova.html'; }catch(_){ }
-            }
-        }
-        // Full translations and game logic copied from qi test.html
-        const translations = {
-            fr: {
-                subtitle: "Test d'Intelligence Diversifié - 20 Types de Questions",
-                partLabel: "Partie",
-                levelLabel: "Niveau",
-                questionLabel: "Question",
-                scoreLabel: "Score",
-                questionTitle: "Question - Logique Visuelle",
-                answerTitle: "Choisissez votre réponse",
-                startBtn: "Démarrer",
-                pauseBtn: "Pause",
-                resumeBtn: "Reprendre",
-                nextBtn: "Suivant",
-                newGameBtn: "Nouveau Jeu",
-                levelBtn: "Changer Niveau",
-                partBtn: "Changer Partie",
-                questionCounter: "Question {current} sur 20",
-                levelScore: "Score Niveau: {score}/100",
-                questionText: "Trouvez l'élément manquant dans la séquence :",
-                accuracyLabel: "Précision",
-                avgTimeLabel: "Temps Moyen",
-                streakLabel: "Série",
-                iqLabel: "QI Estimé",
-                gameNotStarted: "Cliquez sur Démarrer pour commencer",
-                gamePaused: "Jeu en pause",
-                correctFeedback: "Excellente réponse! +{points} points",
-                incorrectFeedback: "Incorrect. La bonne réponse était {answer}",
-                timeoutFeedback: "Temps écoulé! Réponse: {answer}",
-                comboText: "COMBO x{combo}! 🔥",
-                levelComplete: "🎯 NIVEAU {level} TERMINÉ !",
-                partComplete: "🎊 PARTIE {part} TERMINÉE !",
-                difficultyEasy: "Facile",
-                difficultyMedium: "Moyen",
-                difficultyHard: "Difficile",
-                difficultyExpert: "Expert"
-            },
-            en: {
-                subtitle: "Diversified Intelligence Test - 20 Question Types",
-                partLabel: "Part",
-                levelLabel: "Level",
-                questionLabel: "Question",
-                scoreLabel: "Score",
-                questionTitle: "Question - Visual Logic",
-                answerTitle: "Choose your answer",
-                startBtn: "Start",
-                pauseBtn: "Pause",
-                resumeBtn: "Resume",
-                nextBtn: "Next",
-                newGameBtn: "New Game",
-                levelBtn: "Change Level",
-                partBtn: "Change Part",
-                questionCounter: "Question {current} of 20",
-                levelScore: "Level Score: {score}/100",
-                questionText: "Find the missing element in the sequence:",
-                accuracyLabel: "Accuracy",
-                avgTimeLabel: "Avg Time",
-                streakLabel: "Streak",
-                iqLabel: "IQ Score",
-                gameNotStarted: "Click Start to begin",
-                gamePaused: "Game Paused",
-                correctFeedback: "Excellent answer! +{points} points",
-                incorrectFeedback: "Incorrect. The right answer was {answer}",
-                timeoutFeedback: "Time's up! Answer: {answer}",
-                comboText: "COMBO x{combo}! 🔥",
-                levelComplete: "🎯 LEVEL {level} COMPLETED!",
-                partComplete: "🎊 PART {part} COMPLETED!",
-                difficultyEasy: "Easy",
-                difficultyMedium: "Medium",
-                difficultyHard: "Hard",
-                difficultyExpert: "Expert"
-            },
-            ar: {
-                subtitle: "اختبار الذكاء المتنوع - 20 نوع من الأسئلة",
-                partLabel: "الجزء",
-                levelLabel: "المستوى",
-                questionLabel: "السؤال",
-                scoreLabel: "النقاط",
-                questionTitle: "السؤال - المنطق البصري",
-                answerTitle: "اختر إجابتك",
-                startBtn: "ابدأ",
-                pauseBtn: "توقف",
-                resumeBtn: "استكمل",
-                nextBtn: "التالي",
-                newGameBtn: "لعبة جديدة",
-                levelBtn: "تغيير المستوى",
-                partBtn: "تغيير الجزء",
-                questionCounter: "السؤال {current} من 20",
-                levelScore: "نقاط المستوى: {score}/100",
-                questionText: "ابحث عن العنصر المفقود في التسلسل:",
-                accuracyLabel: "الدقة",
-                avgTimeLabel: "متوسط الوقت",
-                streakLabel: "السلسلة",
-                iqLabel: "معدل الذكاء",
-                gameNotStarted: "انقر على ابدأ للبدء",
-                gamePaused: "اللعبة متوقفة",
-                correctFeedback: "إجابة ممتازة! +{points} نقطة",
-                incorrectFeedback: "خطأ. الإجابة الصحيحة كانت {answer}",
-                timeoutFeedback: "انتهى الوقت! الإجابة: {answer}",
-                comboText: "كومبو x{combo}! 🔥",
-                levelComplete: "🎯 المستوى {level} مكتمل!",
-                partComplete: "🎊 الجزء {part} مكتمل!",
-                difficultyEasy: "سهل",
-                difficultyMedium: "متوسط",
-                difficultyHard: "صعب",
-                difficultyExpert: "خبير"
-            },
-            es: {
-                subtitle: "Test de Inteligencia Diversificado - 20 Tipos de Preguntas",
-                partLabel: "Parte",
-                levelLabel: "Nivel",
-                questionLabel: "Pregunta",
-                scoreLabel: "Puntuación",
-                questionTitle: "Pregunta - Lógica Visual",
-                answerTitle: "Elige tu respuesta",
-                startBtn: "Comenzar",
-                pauseBtn: "Pausa",
-                resumeBtn: "Reanudar",
-                nextBtn: "Siguiente",
-                newGameBtn: "Nuevo Juego",
-                levelBtn: "Cambiar Nivel",
-                partBtn: "Cambiar Parte",
-                questionCounter: "Pregunta {current} de 20",
-                levelScore: "Puntuación del Nivel: {score}/100",
-                questionText: "Encuentra el elemento que falta en la secuencia:",
-                accuracyLabel: "Precisión",
-                avgTimeLabel: "Tiempo Promedio",
-                streakLabel: "Racha",
-                iqLabel: "CI Estimado",
-                gameNotStarted: "Haz clic en Comenzar para empezar",
-                gamePaused: "Juego en pausa",
-                correctFeedback: "¡Excelente respuesta! +{points} puntos",
-                incorrectFeedback: "Incorrecto. La respuesta correcta era {answer}",
-                timeoutFeedback: "¡Se acabó el tiempo! Respuesta: {answer}",
-                comboText: "¡COMBO x{combo}! 🔥",
-                levelComplete: "🎯 ¡NIVEL {level} COMPLETADO!",
-                partComplete: "🎊 ¡PARTE {part} COMPLETADA!",
-                difficultyEasy: "Fácil",
-                difficultyMedium: "Medio",
-                difficultyHard: "Difícil",
-                difficultyExpert: "Experto"
-            },
-            de: {
-                subtitle: "Diversifizierter Intelligenztest - 20 Fragetypen",
-                partLabel: "Teil",
-                levelLabel: "Level",
-                questionLabel: "Frage",
-                scoreLabel: "Punkte",
-                questionTitle: "Frage - Visuelle Logik",
-                answerTitle: "Wählen Sie Ihre Antwort",
-                startBtn: "Starten",
-                pauseBtn: "Pause",
-                resumeBtn: "Fortsetzen",
-                nextBtn: "Weiter",
-                newGameBtn: "Neues Spiel",
-                levelBtn: "Level ändern",
-                partBtn: "Teil ändern",
-                questionCounter: "Frage {current} von 20",
-                levelScore: "Level-Punkte: {score}/100",
-                questionText: "Finden Sie das fehlende Element in der Sequenz:",
-                accuracyLabel: "Genauigkeit",
-                avgTimeLabel: "Durchschnittszeit",
-                streakLabel: "Serie",
-                iqLabel: "IQ-Schätzung",
-                gameNotStarted: "Klicken Sie auf Starten, um zu beginnen",
-                gamePaused: "Spiel pausiert",
-                correctFeedback: "Ausgezeichnete Antwort! +{points} Punkte",
-                incorrectFeedback: "Falsch. Die richtige Antwort war {answer}",
-                timeoutFeedback: "Zeit abgelaufen! Antwort: {answer}",
-                comboText: "COMBO x{combo}! 🔥",
-                levelComplete: "🎯 LEVEL {level} ABGESCHLOSSEN!",
-                partComplete: "🎊 TEIL {part} ABGESCHLOSSEN!",
-                difficultyEasy: "Einfach",
-                difficultyMedium: "Mittel",
-                difficultyHard: "Schwer",
-                difficultyExpert: "Experte"
-            },
-            zh: {
-                subtitle: "多样化智力测试 - 20种题型",
-                partLabel: "部分",
-                levelLabel: "级别",
-                questionLabel: "问题",
-                scoreLabel: "分数",
-                questionTitle: "问题 - 视觉逻辑",
-                answerTitle: "选择您的答案",
-                startBtn: "开始",
-                pauseBtn: "暂停",
-                resumeBtn: "继续",
-                nextBtn: "下一个",
-                newGameBtn: "新游戏",
-                levelBtn: "更改级别",
-                partBtn: "更改部分",
-                questionCounter: "第{current}题，共20题",
-                levelScore: "级别分数：{score}/100",
-                questionText: "找出序列中缺失的元素：",
-                accuracyLabel: "准确率",
-                avgTimeLabel: "平均时间",
-                streakLabel: "连击",
-                iqLabel: "智商估计",
-                gameNotStarted: "点击开始按钮开始游戏",
-                gamePaused: "游戏已暂停",
-                correctFeedback: "优秀答案！+{points}分",
-                incorrectFeedback: "错误。正确答案是{answer}",
-                timeoutFeedback: "时间到！答案：{answer}",
-                comboText: "连击 x{combo}! 🔥",
-                levelComplete: "🎯 第{level}级完成！",
-                partComplete: "🎊 第{part}部分完成！",
-                difficultyEasy: "简单",
-                difficultyMedium: "中等",
-                difficultyHard: "困难",
-                difficultyExpert: "专家"
-            }
-        };
+              resolvedUrl = new URL(resolvedUrl, window.location.href).href;
+            }catch(err){ /* keep raw */ }
+            const safeUrl = normalizeUrl(resolvedUrl);
+            console.debug(`global_platform.openGame id=${id} resolved='${resolvedUrl}' safe='${safeUrl}'`);
 
-        // Game state and generator (copied unchanged)
-        let gameState = {
-            currentLanguage: 'fr',
-            currentPart: 1,
-            currentLevel: 1,
-            currentQuestion: 1,
-            totalScore: 0,
-            levelScore: 0,
-            questionScore: 0,
-            answered: false,
-            correctAnswer: null,
-            questionTypes: ['logic', 'visual', 'math', 'geometry', 'pattern', 'sequence'],
-            correctAnswers: 0,
-            totalAnswers: 0,
-            currentStreak: 0,
-            bestStreak: 0,
-            questionStartTime: 0,
-            totalTime: 0,
-            timeRemaining: 30,
-            timerInterval: null,
-            achievements: [],
-            iqScore: 100,
-            gameStarted: false,
-            gamePaused: false,
-            comboMultiplier: 1,
-            lastAnswerTime: 0,
-            perfectAnswers: 0,
-            speedBonusCount: 0,
-            globalStats: {
-                totalPartsCompleted: 0,
-                globalScore: 0,
-                globalCorrectAnswers: 0,
-                globalTotalAnswers: 0,
-                globalBestStreak: 0,
-                globalTotalTime: 0,
-                globalHighestIQ: 100,
-                globalAchievements: []
-            }
-        };
+            // Try setting src first
+            try{ iframe.src = safeUrl; }catch(e){ console.warn('iframe.src assignment failed', e); }
 
-        class DiversifiedQuestionGenerator {
-            constructor() {
-                this.seed = Date.now();
-                this.shapes = ['●', '■', '▲', '◆', '★', '♦', '♠', '♣', '♥', '⬟'];
-                this.colors = ['#4ecdc4', '#ff6b6b', '#45b7d1', '#f39c12', '#9b59b6', '#e74c3c', '#2ecc71', '#f1c40f'];
-                this.numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 20, 25];
-                this.letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-            }
-
-            random(seed = this.seed) {
-                const x = Math.sin(seed) * 10000;
-                return x - Math.floor(x);
-            }
-
-            generateQuestion(part, level, questionNum) {
-                this.seed = part * 10000 + level * 1000 + questionNum * 100 + Date.now() % 100;
-                const questionTypes = [
-                    'alternating_pattern',
-                    'simple_progression',
-                    'color_sequence',
-                    'arithmetic_sequence',
-                    'multiplication_table',
-                    'square_numbers',
-                    'fibonacci_sequence',
-                    'skip_sequence',
-                    'reverse_sequence',
-                    'letter_sequence',
-                    'shape_rotation',
-                    'size_progression',
-                    'position_shift',
-                    'double_alternation',
-                    'skip_sequence',
-                    'reverse_sequence',
-                    'letter_sequence',
-                    'shape_count',
-                    'color_rotation',
-                    'mirror_pattern',
-                    'growing_pattern',
-                    'decreasing_pattern',
-                    'mixed_sequence'
-                ];
-
-                const typeIndex = (part * 7 + level * 3 + questionNum) % questionTypes.length;
-                const questionType = questionTypes[typeIndex];
-
-                switch(questionType) {
-                    case 'alternating_pattern':
-                        return this.generateAlternatingPattern();
-                    case 'simple_progression':
-                        return this.generateSimpleProgression();
-                    case 'color_sequence':
-                        return this.generateColorSequence();
-                    case 'arithmetic_sequence':
-                        return this.generateArithmeticSequence();
-                    case 'multiplication_table':
-                        return this.generateMultiplicationTable();
-                    case 'square_numbers':
-                        return this.generateSquareNumbers();
-                    case 'fibonacci_sequence':
-                        return this.generateFibonacciSequence();
-                    case 'skip_sequence':
-                        return this.generateSkipSequence();
-                    case 'reverse_sequence':
-                        return this.generateReverseSequence();
-                    case 'letter_sequence':
-                        return this.generateLetterSequence();
-                    default:
-                        return this.generateAlternatingPattern();
-                }
-            }
-
-            generateAlternatingPattern() {
-                const pattern = [];
-                const shapeVariations = [
-                    ['●', '■'], ['▲', '◆'], ['★', '♦'], ['♠', '♣'], ['♥', '⬟']
-                ];
-                const colorVariations = [
-                    '#4ecdc4', '#ff6b6b', '#45b7d1', '#f39c12', '#9b59b6'
-                ];
-
-                const shapeIndex = Math.floor(this.random(this.seed + 1) * shapeVariations.length);
-                const colorIndex = Math.floor(this.random(this.seed + 2) * colorVariations.length);
-
-                const [shapeA, shapeB] = shapeVariations[shapeIndex];
-                const color = colorVariations[colorIndex];
-
-                for(let i = 0; i < 5; i++) {
-                    if(i === 4) {
-                        pattern.push({ type: 'missing' });
-                    } else {
-                        pattern.push({
-                            shape: i % 2 === 0 ? shapeA : shapeB,
-                            color: color,
-                            type: 'shape'
-                        });
-                    }
-                }
-
-                const correctAnswer = { shape: shapeA, color: color, type: 'shape' };
-                const options = [
-                    correctAnswer,
-                    { shape: shapeB, color: color, type: 'shape' },
-                    { shape: '▲', color: color, type: 'shape' },
-                    { shape: '◆', color: color, type: 'shape' }
-                ];
-
-                return {
-                    pattern: pattern,
-                    options: this.shuffleOptions(options),
-                    correctValue: correctAnswer,
-                    correctAnswer: 0,
-                    type: 'logic',
-                    difficulty: 1,
-                    explanation: `Pattern d'alternance : ${shapeA}, ${shapeB}, ${shapeA}, ${shapeB}, donc la suite est ${shapeA}`
-                };
-            }
-
-            generateSimpleProgression() {
-                const pattern = [];
-                const startVariations = [1, 2, 3, 5, 10, 0];
-                const startIndex = Math.floor(this.random(this.seed + 10) * startVariations.length);
-                const startNum = startVariations[startIndex];
-
-                for(let i = 0; i < 5; i++) {
-                    if(i === 4) {
-                        pattern.push({ type: 'missing' });
-                    } else {
-                        pattern.push({
-                            value: startNum + i,
-                            type: 'number'
-                        });
-                    }
-                }
-
-                const correctValue = startNum + 4;
-                const options = [
-                    { value: correctValue, type: 'number' },
-                    { value: correctValue + 1, type: 'number' },
-                    { value: correctValue - 1, type: 'number' },
-                    { value: correctValue + 2, type: 'number' }
-                ];
-
-                return {
-                    pattern: pattern,
-                    options: this.shuffleOptions(options),
-                    correctValue: correctValue,
-                    correctAnswer: 0,
-                    type: 'math',
-                    difficulty: 1,
-                    explanation: `Suite croissante : ${startNum}, ${startNum+1}, ${startNum+2}, ${startNum+3}, donc la suite est ${correctValue} (+1 à chaque fois)`
-                };
-            }
-
-            generateArithmeticSequence() {
-                const pattern = [];
-                const startVariations = [1, 2, 3, 5, 10];
-                const stepVariations = [2, 3, 4, 5];
-
-                const startIndex = Math.floor(this.random(this.seed + 20) * startVariations.length);
-                const stepIndex = Math.floor(this.random(this.seed + 21) * stepVariations.length);
-
-                const start = startVariations[startIndex];
-                const step = stepVariations[stepIndex];
-
-                for(let i = 0; i < 5; i++) {
-                    if(i === 4) {
-                        pattern.push({ type: 'missing' });
-                    } else {
-                        pattern.push({
-                            value: start + (i * step),
-                            type: 'number'
-                        });
-                    }
-                }
-
-                const correctValue = start + (4 * step);
-                const options = [
-                    { value: correctValue, type: 'number' },
-                    { value: correctValue + step, type: 'number' },
-                    { value: correctValue - step, type: 'number' },
-                    { value: correctValue + (step * 2), type: 'number' }
-                ];
-
-                return {
-                    pattern: pattern,
-                    options: this.shuffleOptions(options),
-                    correctValue: correctValue,
-                    correctAnswer: 0,
-                    type: 'math',
-                    difficulty: 2,
-                    explanation: `Suite arithmétique : +${step} à chaque fois. ${start}, ${start+step}, ${start+step*2}, ${start+step*3}, donc ${correctValue}`
-                };
-            }
-
-            generateMultiplicationTable() {
-                const pattern = [];
-                const multiplier = 3;
-
-                for(let i = 0; i < 5; i++) {
-                    if(i === 4) {
-                        pattern.push({ type: 'missing' });
-                    } else {
-                        pattern.push({
-                            value: multiplier * (i + 1),
-                            type: 'number'
-                        });
-                    }
-                }
-
-                const correctValue = multiplier * 5;
-                const options = [
-                    { value: correctValue, type: 'number' },
-                    { value: correctValue + 3, type: 'number' },
-                    { value: correctValue - 3, type: 'number' },
-                    { value: correctValue + 6, type: 'number' }
-                ];
-
-                return {
-                    pattern: pattern,
-                    options: this.shuffleOptions(options),
-                    correctValue: correctValue,
-                    correctAnswer: 0,
-                    type: 'math',
-                    difficulty: 2,
-                    explanation: "Table de 3 : 3×1, 3×2, 3×3, 3×4, donc 3×5 = 15"
-                };
-            }
-
-            generateSquareNumbers() {
-                const pattern = [];
-                const squares = [1, 4, 9, 16, 25];
-
-                for(let i = 0; i < 5; i++) {
-                    if(i === 4) {
-                        pattern.push({ type: 'missing' });
-                    } else {
-                        pattern.push({
-                            value: squares[i],
-                            type: 'number'
-                        });
-                    }
-                }
-
-                const correctValue = 25;
-                const options = [
-                    { value: correctValue, type: 'number' },
-                    { value: 20, type: 'number' },
-                    { value: 24, type: 'number' },
-                    { value: 30, type: 'number' }
-                ];
-
-                return {
-                    pattern: pattern,
-                    options: this.shuffleOptions(options),
-                    correctValue: correctValue,
-                    correctAnswer: 0,
-                    type: 'math',
-                    difficulty: 3,
-                    explanation: "Nombres carrés : 1², 2², 3², 4², donc 5² = 25"
-                };
-            }
-
-            generateFibonacciSequence() {
-                const pattern = [];
-                const fib = [1, 1, 2, 3, 5, 8];
-
-                for(let i = 0; i < 6; i++) {
-                    if(i === 5) {
-                        pattern.push({ type: 'missing' });
-                    } else {
-                        pattern.push({
-                            value: fib[i],
-                            type: 'number'
-                        });
-                    }
-                }
-
-                const correctValue = 8;
-                const options = [
-                    { value: correctValue, type: 'number' },
-                    { value: 7, type: 'number' },
-                    { value: 9, type: 'number' },
-                    { value: 6, type: 'number' }
-                ];
-
-                return {
-                    pattern: pattern,
-                    options: this.shuffleOptions(options),
-                    correctValue: correctValue,
-                    correctAnswer: 0,
-                    type: 'math',
-                    difficulty: 3,
-                    explanation: "Suite de Fibonacci : chaque nombre = somme des 2 précédents. 3+5 = 8"
-                };
-            }
-
-            generateSkipSequence() {
-                // creates number sequences with a missing item (skip)
-                const seedOffset = Math.floor(this.random(this.seed + 300) * 100);
-                const start = 1 + (seedOffset % 10) + Math.floor(this.seed % 3);
-                const step = 1 + (Math.floor(this.random(this.seed + 301) * 3));
-                const pattern = [];
-                for (let i = 0; i < 5; i++) {
-                    if (i === 4) pattern.push({ type: 'missing' });
-                    else pattern.push({ value: start + i * step, type: 'number' });
-                }
-                const correctValue = start + 4 * step;
-                const options = [
-                    { value: correctValue, type: 'number' },
-                    { value: correctValue + step, type: 'number' },
-                    { value: correctValue - step, type: 'number' },
-                    { value: correctValue + step * 2, type: 'number' }
-                ];
-
-                return {
-                    pattern,
-                    options: this.shuffleOptions(options),
-                    correctValue,
-                    correctAnswer: 0,
-                    type: 'math',
-                    difficulty: 2,
-                    explanation: `Suite avec saut de ${step} : ${start}, ${start + step}, ... donc ${correctValue}`
-                };
-            }
-
-            generateReverseSequence() {
-                // decreasing numeric sequence with a missing value
-                const start = 5 + Math.floor(this.random(this.seed + 400) * 10);
-                const step = 1 + Math.floor(this.random(this.seed + 401) * 2);
-                const pattern = [];
-                for (let i = 0; i < 5; i++) {
-                    if (i === 4) pattern.push({ type: 'missing' });
-                    else pattern.push({ value: start - i * step, type: 'number' });
-                }
-                const correctValue = start - 4 * step;
-                const options = [
-                    { value: correctValue, type: 'number' },
-                    { value: correctValue - step, type: 'number' },
-                    { value: correctValue + step, type: 'number' },
-                    { value: correctValue + step * 2, type: 'number' }
-                ];
-
-                return {
-                    pattern,
-                    options: this.shuffleOptions(options),
-                    correctValue,
-                    correctAnswer: 0,
-                    type: 'math',
-                    difficulty: 2,
-                    explanation: `Séquence décroissante de pas ${step}, la valeur manquante est ${correctValue}`
-                };
-            }
-
-            generateLetterSequence() {
-                // letter sequences like A, B, C, D, _
-                const startCode = 65 + Math.floor(this.random(this.seed + 500) * 12);
-                const step = 1 + Math.floor(this.random(this.seed + 501) * 2);
-                const pattern = [];
-                for (let i = 0; i < 5; i++) {
-                    if (i === 4) pattern.push({ type: 'missing' });
-                    else pattern.push({ value: String.fromCharCode(startCode + i * step), type: 'letter' });
-                }
-                const correctValue = String.fromCharCode(startCode + 4 * step);
-                const options = [
-                    { value: correctValue, type: 'letter' },
-                    { value: String.fromCharCode(startCode + 3 * step), type: 'letter' },
-                    { value: String.fromCharCode(startCode + 5 * step), type: 'letter' },
-                    { value: String.fromCharCode(startCode + 2 * step), type: 'letter' }
-                ];
-
-                return {
-                    pattern,
-                    options: this.shuffleOptions(options),
-                    correctValue,
-                    correctAnswer: 0,
-                    type: 'logic',
-                    difficulty: 1,
-                    explanation: `Suite alphabétique par pas ${step}, la lettre attendue est ${correctValue}`
-                };
-            }
-
-            generateColorSequence() {
-                // color rotation sequences
-                const colors = ['red', 'blue', 'green', 'orange', 'purple', 'yellow'];
-                const start = Math.floor(this.random(this.seed + 600) * colors.length);
-                const step = 1 + Math.floor(this.random(this.seed + 601) * 2);
-                const pattern = [];
-                for (let i = 0; i < 5; i++) {
-                    if (i === 4) pattern.push({ type: 'missing' });
-                    else pattern.push({ type: 'shape', shape: '●', color: colors[(start + i * step) % colors.length] });
-                }
-                const missingColor = colors[(start + 4 * step) % colors.length];
-                const options = [
-                    { type: 'shape', shape: '●', color: missingColor },
-                    { type: 'shape', shape: '●', color: colors[(start + 3 * step) % colors.length] },
-                    { type: 'shape', shape: '●', color: colors[(start + 5 * step) % colors.length] },
-                    { type: 'shape', shape: '●', color: colors[(start + 2 * step) % colors.length] }
-                ];
-
-                return {
-                    pattern,
-                    options: this.shuffleOptions(options),
-                    correctValue: { shape: '●', color: missingColor },
-                    correctAnswer: 0,
-                    type: 'visual',
-                    difficulty: 1,
-                    explanation: `Rotation de couleurs, la couleur attendue est ${missingColor}`
-                };
-            }
-
-            shuffleOptions(options) {
-                const shuffled = [...options];
-                for(let i = shuffled.length - 1; i > 0; i--) {
-                    const j = Math.floor(this.random(this.seed + i + 2000) * (i + 1));
-                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-                }
-                return shuffled;
-            }
-        }
-
-        const questionGenerator = new DiversifiedQuestionGenerator();
-        let currentQuestionData = null;
-
-        // Feedback, timer, achievements, UI update functions (copied from qi test.html)
-        function showFeedback(message, isCorrect = true) {
-            const feedbackElement = document.getElementById('feedbackMessage');
-            feedbackElement.textContent = message;
-            feedbackElement.style.background = isCorrect ? 
-                'rgba(76, 175, 80, 0.9)' : 'rgba(244, 67, 54, 0.9)';
-            feedbackElement.style.color = 'white';
-            feedbackElement.classList.add('show');
-            
-            setTimeout(() => {
-                feedbackElement.classList.remove('show');
-            }, 3000);
-        }
-
-        function showExplanation(explanation) {
-            const explanationBox = document.getElementById('explanationBox');
-            const explanationText = document.getElementById('explanationText');
-            
-            explanationText.textContent = explanation;
-            explanationBox.style.display = 'block';
-            
-            setTimeout(() => {
-                explanationBox.style.display = 'none';
-            }, 5000);
-        }
-
-        function showCombo(comboCount) {
-            if(comboCount >= 3) {
-                const comboElement = document.getElementById('comboIndicator');
-                const t = translations[gameState.currentLanguage];
-                comboElement.textContent = t.comboText.replace('{combo}', comboCount);
-                comboElement.classList.add('show');
-                
-                setTimeout(() => {
-                    comboElement.classList.remove('show');
-                }, 2000);
-            }
-        }
-
-        function startTimer() {
-            gameState.timeRemaining = 30;
-            gameState.questionStartTime = Date.now();
-            
-            if(gameState.timerInterval) {
-                clearInterval(gameState.timerInterval);
-            }
-            
-            gameState.timerInterval = setInterval(() => {
-                if(!gameState.gamePaused) {
-                    gameState.timeRemaining--;
-                    updateTimerDisplay();
-                    
-                    if(gameState.timeRemaining <= 0) {
-                        clearInterval(gameState.timerInterval);
-                        if(!gameState.answered) {
-                            selectAnswer(-1); // Timeout
-                        }
-                    }
-                }
-            }, 1000);
-        }
-
-        function updateTimerDisplay() {
-            const timerDisplay = document.getElementById('timerDisplay');
-            timerDisplay.textContent = `⏱️ ${gameState.timeRemaining}s`;
-            
-            if(gameState.timeRemaining <= 10) {
-                timerDisplay.classList.add('warning');
-            } else {
-                timerDisplay.classList.remove('warning');
-            }
-        }
-
-        function checkAchievements() {
-            const achievements = [
-                { 
-                    id: 'first_correct', 
-                    name: 'Premier Succès', 
-                    desc: 'Première question correcte!', 
-                    condition: () => gameState.correctAnswers === 1 
-                },
-                { 
-                    id: 'streak_5', 
-                    name: 'En Feu!', 
-                    desc: '5 réponses correctes d\'affilée!', 
-                    condition: () => gameState.currentStreak === 5 
-                },
-                { 
-                    id: 'streak_10', 
-                    name: 'Inarrêtable!', 
-                    desc: '10 réponses correctes d\'affilée!', 
-                    condition: () => gameState.currentStreak === 10 
-                },
-                { 
-                    id: 'speed_demon', 
-                    name: 'Éclair!', 
-                    desc: 'Réponse en moins de 5 secondes!', 
-                    condition: () => gameState.lastAnswerTime < 5000 && gameState.answered 
-                },
-                { 
-                    id: 'perfect_level', 
-                    name: 'Perfection!', 
-                    desc: 'Niveau terminé sans erreur!', 
-                    condition: () => gameState.perfectAnswers >= 20 
-                },
-                { 
-                    id: 'speed_master', 
-                    name: 'Maître de Vitesse!', 
-                    desc: '10 réponses rapides!', 
-                    condition: () => gameState.speedBonusCount >= 10 
-                },
-                { 
-                    id: 'iq_genius', 
-                    name: 'Génie!', 
-                    desc: 'QI estimé > 150!', 
-                    condition: () => calculateIQ() > 150 
-                }
-            ];
-
-            achievements.forEach(achievement => {
-                if(!gameState.achievements.includes(achievement.id) && achievement.condition()) {
-                    gameState.achievements.push(achievement.id);
-                    showAchievement(achievement.name, achievement.desc);
-                }
+            // Also attempt a quick HEAD to detect 404 and fallback if necessary
+            fetch(safeUrl, { method: 'HEAD' }).then(r=>{
+              if(!r.ok){
+                // fallback: fetch html and set srcdoc with <base>
+                return fetch(safeUrl).then(r2=>{ if(!r2.ok) throw new Error('HTTP '+r2.status); return r2.text(); }).then(html=>{
+                  const dir = safeUrl.split('/').slice(0,-1).join('/') || '.';
+                  const base = `<base href="${dir}/">`;
+                  iframe.srcdoc = base + html;
+                  console.debug(`global_platform.openGame id=${id} srcdoc fallback set`);
+                });
+              }
+            }).catch(err=>{
+              console.warn('Setting iframe.src or HEAD check failed, trying fetch+srcdoc fallback', err);
+              fetch(safeUrl).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); }).then(html=>{
+                const dir = safeUrl.split('/').slice(0,-1).join('/') || '.';
+                const base = `<base href="${dir}/">`;
+                iframe.srcdoc = base + html;
+                console.debug(`global_platform.openGame id=${id} srcdoc fallback set`);
+              }).catch(err2=>{
+                console.error('Failed to fetch game HTML for overlay', safeUrl, err2);
+                showOverlayError('Impossible de charger le jeu dans l’overlay. Ouvrir dans un nouvel onglet.');
+              });
             });
+        // If opening game 1 (custom page with its own exit UI), hide the platform close button
+        try{ if(Number(id) === 1){ closeBtn.style.display = 'none'; } else { closeBtn.style.display = ''; } }catch(e){}
+        overlay.classList.add('active');
+        document.addEventListener('keydown', escClose);
+      }
+
+      // Open authentication page (mode = 'login' or 'signup') in overlay
+      async function openAuth(mode){
+        // Prefer canonical filenames that exist in the repo (hyphen / space variants)
+        const canonical = ['./connexion-et-inscription.html', './connexion-et-profil.html', './connexion et inscription.html', './connexion et profil.html'];
+        const candidates = canonical.map(p => mode ? `${p}?mode=${encodeURIComponent(mode)}` : p);
+
+        // If running in no-server mode, open the first reachable candidate in a new tab
+        if(noServerMode){
+          for(const cand of candidates){
+            try{ const resp = await fetch(new URL(cand, location.href).href, { method: 'HEAD' }); if(resp.ok){ window.open(cand, '_blank'); return; } }catch(e){ /* try next */ }
+          }
+          window.open(candidates[0], '_blank');
+          return;
         }
 
-        // Red close button removed — navigation handled by game UI or parent overlay.
+        titleEl.textContent = (mode === 'signup') ? 'Inscription' : 'Connexion';
 
-        function showAchievement(title, text) {
-            const popup = document.getElementById('achievementPopup');
-            document.getElementById('achievementTitle').textContent = title;
-            document.getElementById('achievementText').textContent = text;
-            
-            popup.classList.add('show');
-            setTimeout(() => {
-                popup.classList.remove('show');
-            }, 4000);
+        // Try each candidate and pick the first reachable one for the overlay
+        for(const cand of candidates){
+          try{
+            const resolved = new URL(cand, window.location.href).href;
+            const safe = normalizeUrl(resolved);
+            const r = await fetch(safe, { method: 'HEAD' });
+            if(r.ok){
+              try{ iframe.src = safe; }catch(e){ iframe.src = normalizeUrl(cand); }
+              overlay.classList.add('active');
+              document.addEventListener('keydown', escClose);
+              return;
+            }
+          }catch(e){ /* try next candidate */ }
         }
 
-        function calculateIQ() {
-            if(gameState.totalAnswers === 0) return 100;
-            
-            const accuracy = gameState.correctAnswers / gameState.totalAnswers;
-            const avgTime = gameState.totalTime / gameState.totalAnswers / 1000;
-            const difficultyFactor = (gameState.currentPart - 1) * 0.1 + (gameState.currentLevel - 1) * 0.05;
-            const streakBonus = gameState.bestStreak * 0.3;
-            const speedBonus = gameState.speedBonusCount * 0.5;
-            
-            let iq = 100;
-            iq += (accuracy - 0.5) * 80;
-            iq += Math.max(0, (20 - avgTime) * 1.5);
-            iq += difficultyFactor * 25;
-            iq += streakBonus;
-            iq += speedBonus;
-            
-            if(accuracy > 0.9) iq += 10;
-            if(gameState.perfectAnswers > 15) iq += 15;
-            
-            return Math.round(Math.max(70, Math.min(200, iq)));
-        }
+        // If none found, open the first candidate in a new tab as a fallback
+        try{ window.open(candidates[0], '_blank'); }catch(e){ showOverlayError('Page d\'authentification introuvable.'); }
+      }
 
-        function updateStats() {
-            const accuracy = gameState.totalAnswers > 0 ? 
-                (gameState.correctAnswers / gameState.totalAnswers * 100).toFixed(1) : 0;
-            const avgTime = gameState.totalAnswers > 0 ? 
-                (gameState.totalTime / gameState.totalAnswers / 1000).toFixed(1) : 0;
-            
-            document.getElementById('accuracyRate').textContent = accuracy + '%';
-            document.getElementById('avgTime').textContent = avgTime + 's';
-            document.getElementById('streak').textContent = gameState.currentStreak;
-            document.getElementById('iqEstimate').textContent = calculateIQ();
-        }
+      function closeGame(){
+        try{ document.removeEventListener('keydown', escClose); }catch(e){}
+        try{ overlay.classList.remove('active'); }catch(e){}
+        try{ iframe.src = 'about:blank'; }catch(e){}
+        try{ iframe.srcdoc = ''; iframe.removeAttribute('srcdoc'); }catch(e){}
+        try{ document.getElementById('loader').style.display = 'none'; }catch(e){}
+        try{ document.getElementById('header').style.display = 'flex'; }catch(e){}
+        try{ closeBtn.style.display = ''; }catch(e){}
+        try{ window.scrollTo(0,0); }catch(e){}
+      }
 
-        function getDifficultyLevel() {
-            const totalDifficulty = gameState.currentPart + gameState.currentLevel * 0.2;
-            const t = translations[gameState.currentLanguage];
-            
-            if(totalDifficulty < 5) return { name: t.difficultyEasy, class: 'difficulty-easy' };
-            if(totalDifficulty < 15) return { name: t.difficultyMedium, class: 'difficulty-medium' };
-            if(totalDifficulty < 30) return { name: t.difficultyHard, class: 'difficulty-hard' };
-            return { name: t.difficultyExpert, class: 'difficulty-expert' };
-        }
+      function showOverlayError(msg){
+        try{
+          // show a simple HTML error message in the iframe so user sees why it failed
+          const errHtml = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#fff;background:#111;padding:20px;font-family:Rajdhani,Segoe UI,Arial">
+            <h2>Erreur de chargement</h2>
+            <p style="max-width:800px;text-align:center">${String(msg)}</p>
+            <p style="margin-top:12px"><button onclick="window.parent.postMessage({action:'close'},'*')" style="padding:8px 12px;border-radius:6px;border:0;cursor:pointer;background:#00d4ff;color:#000;font-weight:700">Fermer</button></p>
+          </div>`;
+          iframe.srcdoc = errHtml;
+        }catch(e){/* ignore */}
+      }
 
-        function setLanguage(lang) {
-            gameState.currentLanguage = lang;
-            document.getElementById('languageSelect').value = lang;
-            updateUI();
-        }
+      function escClose(e){ if(e.key==="Escape") closeGame(); }
 
-        function updateUI() {
-            const t = translations[gameState.currentLanguage];
-            
-            document.getElementById('subtitle').textContent = t.subtitle;
-            document.getElementById('partLabel').textContent = t.partLabel;
-            document.getElementById('levelLabel').textContent = t.levelLabel;
-            document.getElementById('questionLabel').textContent = t.questionLabel;
-            document.getElementById('scoreLabel').textContent = t.scoreLabel;
-            document.getElementById('questionTitle').textContent = t.questionTitle;
-            document.getElementById('answerTitle').textContent = t.answerTitle;
-            document.getElementById('startBtn').textContent = t.startBtn;
-            document.getElementById('pauseBtn').textContent = gameState.gamePaused ? t.resumeBtn : t.pauseBtn;
-            document.getElementById('nextBtn').textContent = t.nextBtn;
-            document.getElementById('newGameBtn').textContent = t.newGameBtn;
-            document.getElementById('levelBtn').textContent = t.levelBtn;
-            document.getElementById('partBtn').textContent = t.partBtn;
-            document.getElementById('accuracyLabel').textContent = t.accuracyLabel;
-            document.getElementById('avgTimeLabel').textContent = t.avgTimeLabel;
-            document.getElementById('streakLabel').textContent = t.streakLabel;
-            document.getElementById('iqLabel').textContent = t.iqLabel;
-            
-            document.getElementById('currentPart').textContent = gameState.currentPart;
-            document.getElementById('currentLevel').textContent = gameState.currentLevel;
-            document.getElementById('currentQuestion').textContent = gameState.currentQuestion;
-            document.getElementById('currentScore').textContent = gameState.totalScore;
-            
-            document.getElementById('questionCounter').textContent = 
-                t.questionCounter.replace('{current}', gameState.currentQuestion);
-            document.getElementById('levelScore').textContent = 
-                t.levelScore.replace('{score}', gameState.levelScore);
-            
-            if (!gameState.gameStarted) {
-                document.getElementById('questionText').textContent = t.gameNotStarted;
-            } else if (gameState.gamePaused) {
-                document.getElementById('questionText').textContent = t.gamePaused;
-            } else {
-                document.getElementById('questionText').textContent = t.questionText;
+      closeBtn.addEventListener('click', closeGame);
+      overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeGame(); });
+
+      // Robust iframe load handler — diagnose and detect platform pages loaded inside iframe
+      iframe.addEventListener('load', ()=>{
+        try{
+          const src = String(iframe.src || '');
+          console.debug('overlay iframe loaded', { src });
+
+          // Quick URL-based heuristic
+          const looksLikePlatformURL = (u)=> !!(u && (u.indexOf('global_platform.html') !== -1 || u.indexOf('global_platform_correct.html') !== -1 || u.indexOf('/global/') !== -1));
+          if(looksLikePlatformURL(src)){
+            console.debug('iframe.src looks like platform -> closing overlay');
+            try{ closeGame(); }catch(e){}
+            try{ window.location.href = new URL('./brainova.html', window.location.href).href; }catch(e){}
+            showAutoCloseToast();
+            return;
+          }
+
+          // If same-origin, inspect the iframe's document for platform markers
+          try{
+            const cw = iframe.contentWindow;
+            if(cw && cw.document){
+              const title = String(cw.document.title || '');
+              const bodyText = (cw.document.body && cw.document.body.innerText) ? cw.document.body.innerText : '';
+              console.debug('iframe document title:', title);
+              // marker: hero title or gamesGrid element
+              const hasGamesGrid = !!cw.document.getElementById('gamesGrid');
+              const looksLikePlatformDoc = hasGamesGrid || /Catalogue Brainova|36 JEUX|Catalogue Brainova/i.test(title + '\n' + bodyText);
+              if(looksLikePlatformDoc){
+                console.debug('iframe document looks like platform (title/body/selector match) -> closing overlay');
+                try{ closeGame(); }catch(e){}
+                try{ window.location.href = new URL('./brainova.html', window.location.href).href; }catch(e){}
+                showAutoCloseToast();
+                return;
+              }
             }
-            
-            const difficulty = getDifficultyLevel();
-            const difficultyIndicator = document.getElementById('difficultyIndicator');
-            difficultyIndicator.textContent = difficulty.name;
-            difficultyIndicator.className = 'difficulty-indicator ' + difficulty.class;
-            
-            updateProgressBar();
-            updateStats();
-            updateButtonStates();
-        }
+          }catch(e){ console.debug('iframe doc inspection failed (cross-origin?)', e); }
 
-        function updateProgressBar() {
-            const progress = (gameState.currentQuestion / 20) * 100;
-            document.getElementById('progressFill').style.width = progress + '%';
-        }
+        }catch(e){ console.warn('Error in iframe load handler', e); }
+      });
 
-        function generateCurrentQuestion() {
-            try {
-                currentQuestionData = questionGenerator.generateQuestion(
-                    gameState.currentPart,
-                    gameState.currentLevel,
-                    gameState.currentQuestion
-                );
-                
-                if (currentQuestionData) {
-                    displayQuestion();
-                    startTimer();
-                } else {
-                    console.error('Échec de génération de question');
-                }
-            } catch (error) {
-                console.error('Erreur lors de la génération de question:', error);
-            }
-        }
+      // Small non-blocking toast to inform user the overlay was auto-closed
+      function showAutoCloseToast(){
+        try{
+          const id = 'autoCloseToast';
+          if(document.getElementById(id)) return;
+          const div = document.createElement('div');
+          div.id = id;
+          div.textContent = 'Retour à la plateforme';
+          div.style.cssText = 'position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#00d4ff,#00ff88);color:#001;padding:8px 12px;border-radius:8px;z-index:10005;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.4);';
+          document.body.appendChild(div);
+          setTimeout(()=>{ try{ div.style.transition='opacity .4s'; div.style.opacity='0'; setTimeout(()=>div.remove(),450); }catch(e){} }, 900);
+        }catch(e){}
+      }
+      iframe.addEventListener('error', (ev)=>{
+        try{ console.error('overlay iframe error loading', iframe.src, ev); }catch(e){}
+      });
 
-        function displayQuestion() {
-            if (!currentQuestionData) return;
-            
-            const patternDisplay = document.getElementById('patternDisplay');
-            const answerOptions = document.getElementById('answerOptions');
-            
-            patternDisplay.innerHTML = '';
-            answerOptions.innerHTML = '';
-            
-            if (currentQuestionData.pattern && currentQuestionData.pattern.length > 0) {
-                currentQuestionData.pattern.forEach((item, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'pattern-item';
-                    div.style.animationDelay = `${index * 0.1}s`;
-                    
-                    if(item.type === 'missing') {
-                        div.classList.add('missing');
-                    } else if(item.type === 'shape') {
-                        div.textContent = item.shape;
-                        div.style.color = item.color;
-                        if(item.size) {
-                            div.style.fontSize = item.size;
-                        }
-                    } else if(item.type === 'number') {
-                        div.textContent = item.value;
-                        div.style.color = '#4ecdc4';
-                        div.style.fontSize = '1.8rem';
-                        div.style.fontWeight = 'bold';
-                    } else if(item.type === 'letter') {
-                        div.textContent = item.value;
-                        div.style.color = '#f39c12';
-                        div.style.fontSize = '2rem';
-                        div.style.fontWeight = 'bold';
-                    }
-                    
-                    patternDisplay.appendChild(div);
-                });
-            }
-            
-            if (currentQuestionData.options && currentQuestionData.options.length > 0) {
-                currentQuestionData.options.forEach((option, index) => {
-                    const button = document.createElement('button');
-                    button.className = 'option-btn';
-                    button.onclick = () => selectAnswer(index);
-                    button.style.pointerEvents = 'auto';
-                    button.style.animationDelay = `${index * 0.1 + 0.5}s`;
-                    
-                    if(option.type === 'shape') {
-                        button.textContent = option.shape;
-                        button.style.color = option.color;
-                        if(option.size) {
-                            button.style.fontSize = option.size;
-                        }
-                    } else if(option.type === 'number') {
-                        button.textContent = option.value;
-                        button.style.fontSize = '1.8rem';
-                        button.style.fontWeight = 'bold';
-                        button.style.color = '#4ecdc4';
-                    } else if(option.type === 'letter') {
-                        button.textContent = option.value;
-                        button.style.fontSize = '2rem';
-                        button.style.fontWeight = 'bold';
-                        button.style.color = '#f39c12';
-                    }
-                    
-                    answerOptions.appendChild(button);
-                });
-            }
-            
-            gameState.answered = false;
-            if(gameState.gameStarted) {
-                document.getElementById('nextBtn').disabled = true;
-            }
-        }
+      // Allow games inside the iframe to communicate with the parent page using postMessage.
+      // For example the game can call: window.parent.postMessage({ action: 'close' }, '*')
+      // or { action: 'home' } to request closing the overlay / returning to the platform.
+      window.addEventListener('message', (ev)=>{
+        try{
+          // Normalize payload: many games send either objects or JSON strings
+          let data = ev && ev.data ? ev.data : null;
+          if(!data) return;
+          if(typeof data === 'string'){
+            try{ data = JSON.parse(data); }catch(_){ /* not JSON - ignore */ }
+          }
+          if(!data || typeof data !== 'object') return;
+          const action = data.action && String(data.action).toLowerCase();
+          if(!action) return;
+          if(action === 'close' || action === 'exit' || action === 'home' || action === 'go-home'){
+            try{ closeGame(); }catch(e){}
+            try{ /* return explicitly to Brainova home */ window.location.href = new URL('./brainova.html', window.location.href).href; }catch(e){}
+            return;
+          }
+          if(action === 'open' && data.url){
+            try{ window.open(String(data.url), '_blank'); }catch(e){}
+            return;
+          }
+          if(action === 'navigate' && data.url){
+            try{ window.location.href = String(data.url); }catch(e){}
+            return;
+          }
+        }catch(err){ /* ignore malformed messages */ }
+      });
 
-        function selectAnswer(selectedIndex) {
-            if(gameState.answered || !gameState.gameStarted || gameState.gamePaused) return;
-            
-            gameState.answered = true;
-            clearInterval(gameState.timerInterval);
-            
-            const responseTime = Date.now() - gameState.questionStartTime;
-            gameState.lastAnswerTime = responseTime;
-            gameState.totalTime += responseTime;
-            gameState.totalAnswers++;
-            
-            const buttons = document.querySelectorAll('.option-btn');
-            
-            let correctIndex = -1;
-            let correctValue = null;
-            
-            if(currentQuestionData && currentQuestionData.correctValue !== undefined) {
-                correctValue = currentQuestionData.correctValue;
-                correctIndex = currentQuestionData.options.findIndex(option => {
-                    if(option.type === 'number') {
-                        return option.value === correctValue;
-                    } else if(option.type === 'shape') {
-                        return option.shape === correctValue || (correctValue.shape && option.shape === correctValue.shape && option.color === correctValue.color);
-                    } else if(option.type === 'letter') {
-                        return option.value === correctValue;
-                    }
-                    return false;
-                });
-            }
-            
-            const isCorrect = selectedIndex === correctIndex && selectedIndex !== -1;
-            const isTimeout = selectedIndex === -1;
-            
-            buttons.forEach((btn, index) => {
-                btn.style.pointerEvents = 'none';
-                if(index === correctIndex) {
-                    btn.classList.add('correct');
-                } else if(index === selectedIndex && index !== correctIndex) {
-                    btn.classList.add('incorrect');
-                }
-            });
-            
-            if(currentQuestionData && currentQuestionData.explanation) {
-                showExplanation(currentQuestionData.explanation);
-            }
-            
-            if(isCorrect) {
-                gameState.correctAnswers++;
-                gameState.currentStreak++;
-                gameState.bestStreak = Math.max(gameState.bestStreak, gameState.currentStreak);
-                
-                const baseScore = 5;
-                const difficultyBonus = Math.floor((gameState.currentPart + gameState.currentLevel) * 0.2);
-                const speedBonus = responseTime < 10000 ? Math.floor((30 - responseTime / 1000) * 0.3) : 0;
-                const streakBonus = Math.floor(gameState.currentStreak * 0.1);
-                
-                if(responseTime < 5000) {
-                    gameState.speedBonusCount++;
-                }
-                
-                gameState.questionScore = baseScore + difficultyBonus + speedBonus + streakBonus;
-                gameState.levelScore += gameState.questionScore;
-                gameState.totalScore += gameState.questionScore;
-                
-                if(gameState.currentStreak >= 3) {
-                    gameState.comboMultiplier = Math.min(3, 1 + (gameState.currentStreak - 2) * 0.1);
-                    gameState.questionScore = Math.floor(gameState.questionScore * gameState.comboMultiplier);
-                    showCombo(gameState.currentStreak);
-                }
-                
-                const t = translations[gameState.currentLanguage];
-                const feedbackMsg = t.correctFeedback.replace('{points}', gameState.questionScore);
-                showFeedback(feedbackMsg, true);
-                
-                if(responseTime < 30000 && gameState.currentStreak === 20) {
-                    gameState.perfectAnswers++;
-                }
-            } else {
-                gameState.currentStreak = 0;
-                gameState.comboMultiplier = 1;
-                gameState.questionScore = 0;
-                
-                const t = translations[gameState.currentLanguage];
-                let answerText = '?';
-                
-                if(correctValue !== null) {
-                    if(typeof correctValue === 'object' && correctValue.shape) {
-                        answerText = correctValue.shape;
-                    } else {
-                        answerText = correctValue.toString();
-                    }
-                } else {
-                    const correctOption = currentQuestionData.options[correctIndex];
-                    answerText = correctOption ? (correctOption.shape || correctOption.value || '?') : '?';
-                }
-                
-                let feedbackMsg;
-                if(isTimeout) {
-                    feedbackMsg = t.timeoutFeedback.replace('{answer}', answerText);
-                } else {
-                    feedbackMsg = t.incorrectFeedback.replace('{answer}', answerText);
-                }
-                showFeedback(feedbackMsg, false);
-            }
-            
-            checkAchievements();
-            updateUI();
-            
-            setTimeout(() => {
-                autoProgressGame();
-            }, 3000);
-        }
-
-        function autoProgressGame() {
-            if (!gameState.gameStarted || gameState.gamePaused) return;
-            
-            if(gameState.currentQuestion < 20) {
-                gameState.currentQuestion++;
-                generateCurrentQuestion();
-                updateUI();
-            } else {
-                setTimeout(() => {
-                    showLevelComplete();
-                }, 1000);
-            }
-        }
-
-        function showLevelComplete() {
-            const t = translations[gameState.currentLanguage];
-            const accuracy = gameState.totalAnswers > 0 ? 
-                (gameState.correctAnswers / gameState.totalAnswers * 100).toFixed(1) : 0;
-            const currentIQ = calculateIQ();
-            
-            let grade = '';
-            let encouragement = '';
-            
-            if(accuracy >= 90) {
-                grade = '🏆 EXCELLENT';
-                encouragement = 'Performance exceptionnelle ! Vous maîtrisez parfaitement la logique !';
-            } else if(accuracy >= 80) {
-                grade = '🥇 TRÈS BIEN';
-                encouragement = 'Très belle performance ! Vos capacités logiques sont impressionnantes !';
-            } else if(accuracy >= 70) {
-                grade = '🥈 BIEN';
-                encouragement = 'Bonne performance ! Vous comprenez bien les patterns logiques !';
-            } else if(accuracy >= 60) {
-                grade = '🥉 ASSEZ BIEN';
-                encouragement = 'Performance correcte ! Continuez à vous entraîner !';
-            } else {
-                grade = '📚 À AMÉLIORER';
-                encouragement = 'Ne vous découragez pas ! Avec ces logiques claires, vous allez progresser !';
-            }
-            
-            if(gameState.currentLevel < 5) {
-                const message = `🎯 NIVEAU ${gameState.currentLevel} TERMINÉ !\n\n` +
-                              `📊 Vos résultats :\n` +
-                              `• Note : ${grade}\n` +
-                              `• Précision : ${accuracy}%\n` +
-                              `• QI Estimé : ${currentIQ}\n` +
-                              `• Score : ${gameState.levelScore}\n` +
-                              `• Série max : ${gameState.bestStreak}\n\n` +
-                              `💪 ${encouragement}\n\n` +
-                              `🚀 Passage automatique au niveau ${gameState.currentLevel + 1} dans 3 secondes...`;
-                
-                alert(message);
-                
-                gameState.currentLevel++;
-                gameState.currentQuestion = 1;
-                gameState.levelScore = 0;
-                
-                document.getElementById('questionText').textContent = `🔄 Préparation du niveau ${gameState.currentLevel}...`;
-                document.getElementById('patternDisplay').innerHTML = '';
-                document.getElementById('answerOptions').innerHTML = '';
-                
-                setTimeout(() => {
-                    if(gameState.gameStarted) {
-                        generateCurrentQuestion();
-                        updateUI();
-                    }
-                }, 3000);
-            } else {
-                showPartComplete();
-            }
-        }
-
-        function showPartComplete() {
-            const t = translations[gameState.currentLanguage];
-            const accuracy = gameState.totalAnswers > 0 ? 
-                (gameState.correctAnswers / gameState.totalAnswers * 100).toFixed(1) : 0;
-            const currentIQ = calculateIQ();
-            
-            gameState.globalStats.totalPartsCompleted++;
-            gameState.globalStats.globalScore += gameState.totalScore;
-            gameState.globalStats.globalCorrectAnswers += gameState.correctAnswers;
-            gameState.globalStats.globalTotalAnswers += gameState.totalAnswers;
-            gameState.globalStats.globalBestStreak = Math.max(gameState.globalStats.globalBestStreak, gameState.bestStreak);
-            gameState.globalStats.globalTotalTime += gameState.totalTime;
-            gameState.globalStats.globalHighestIQ = Math.max(gameState.globalStats.globalHighestIQ, currentIQ);
-            
-            const globalAccuracy = gameState.globalStats.globalTotalAnswers > 0 ? 
-                (gameState.globalStats.globalCorrectAnswers / gameState.globalStats.globalTotalAnswers * 100).toFixed(1) : 0;
-            const globalAvgTime = gameState.globalStats.globalTotalAnswers > 0 ? 
-                (gameState.globalStats.globalTotalTime / gameState.globalStats.globalTotalAnswers / 1000).toFixed(1) : 0;
-            
-            let finalGrade = '';
-            let finalEncouragement = '';
-            
-            if(accuracy >= 95) {
-                finalGrade = '🌟 GÉNIE ABSOLU';
-                finalEncouragement = 'Performance légendaire ! Vous avez un QI exceptionnel !';
-            } else if(accuracy >= 85) {
-                finalGrade = '🏆 MAÎTRE SUPRÊME';
-                finalEncouragement = 'Performance remarquable ! Vous êtes très intelligent !';
-            } else if(accuracy >= 75) {
-                finalGrade = '🥇 EXPERT CONFIRMÉ';
-                finalEncouragement = 'Excellente performance ! Votre intelligence est impressionnante !';
-            } else if(accuracy >= 65) {
-                finalGrade = '🥈 BON NIVEAU';
-                finalEncouragement = 'Belle performance ! Vous avez un bon potentiel !';
-            } else {
-                finalGrade = '🥉 EN PROGRESSION';
-                finalEncouragement = 'Continuez à vous entraîner ! Chaque test vous rend plus fort !';
-            }
-            
-            const message = `🎊 PARTIE ${gameState.currentPart} TERMINÉE !\n\n` +
-                          `🏅 RÉSULTATS DE CETTE PARTIE :\n` +
-                          `• Grade Final : ${finalGrade}\n` +
-                          `• Précision : ${accuracy}%\n` +
-                          `• QI Atteint : ${currentIQ}\n` +
-                          `• Score : ${gameState.totalScore}\n` +
-                          `• Meilleure Série : ${gameState.bestStreak}\n` +
-                          `• Questions Réussies : ${gameState.correctAnswers}/${gameState.totalAnswers}\n\n` +
-                          `📊 STATISTIQUES GLOBALES :\n` +
-                          `• Parties Terminées : ${gameState.globalStats.totalPartsCompleted}\n` +
-                          `• Score Global : ${gameState.globalStats.globalScore}\n` +
-                          `• Précision Globale : ${globalAccuracy}%\n` +
-                          `• QI Maximum : ${gameState.globalStats.globalHighestIQ}\n` +
-                          `• Meilleure Série Globale : ${gameState.globalStats.globalBestStreak}\n` +
-                          `• Temps Moyen Global : ${globalAvgTime}s\n` +
-                          `• Total Questions : ${gameState.globalStats.globalCorrectAnswers}/${gameState.globalStats.globalTotalAnswers}\n\n` +
-                          `🎯 ${finalEncouragement}\n\n` +
-                          `✨ Voulez-vous continuer avec une nouvelle partie ?`;
-            
-            if(confirm(message)) {
-                startNewPart();
-            } else {
-                showTestSelection();
-            }
-        }
-
-        function startNewPart() {
-            const newPart = prompt(`🚀 NOUVELLE PARTIE\n\nChoisissez la partie à commencer (1-50).\nPartie actuelle : ${gameState.currentPart}\n\nEntrez le numéro de partie :`);
-            
-            if (newPart && !isNaN(newPart) && newPart >= 1 && newPart <= 50) {
-                const globalStats = gameState.globalStats;
-                const currentLanguage = gameState.currentLanguage;
-                
-                gameState = {
-                    currentLanguage: currentLanguage,
-                    currentPart: parseInt(newPart),
-                    currentLevel: 1,
-                    currentQuestion: 1,
-                    totalScore: 0,
-                    levelScore: 0,
-                    questionScore: 0,
-                    answered: false,
-                    correctAnswer: null,
-                    questionTypes: ['logic', 'visual', 'math', 'geometry', 'pattern', 'sequence'],
-                    correctAnswers: 0,
-                    totalAnswers: 0,
-                    currentStreak: 0,
-                    bestStreak: 0,
-                    questionStartTime: 0,
-                    totalTime: 0,
-                    timeRemaining: 30,
-                    timerInterval: null,
-                    achievements: [],
-                    iqScore: 100,
-                    gameStarted: false,
-                    gamePaused: false,
-                    comboMultiplier: 1,
-                    lastAnswerTime: 0,
-                    perfectAnswers: 0,
-                    speedBonusCount: 0,
-                    globalStats: globalStats
-                };
-                
-                updateUI();
-                alert(`🎯 PARTIE ${gameState.currentPart} PRÊTE !\n\nCliquez sur "Démarrer" pour commencer les 5 niveaux de cette partie !`);
-            } else {
-                showTestSelection();
-            }
-        }
-
-        function showFinalResults() {
-            const accuracy = gameState.totalAnswers > 0 ? 
-                (gameState.correctAnswers / gameState.totalAnswers * 100).toFixed(1) : 0;
-            const currentIQ = calculateIQ();
-            
-            const message = `🎯 SESSION TERMINÉE !\n\n` +
-                          `📊 Vos résultats avec les nouvelles logiques claires :\n` +
-                          `• Précision : ${accuracy}%\n` +
-                          `• QI Estimé : ${currentIQ}\n` +
-                          `• Score Total : ${gameState.totalScore}\n` +
-                          `• Niveau Atteint : ${gameState.currentLevel}\n\n` +
-                          `🌟 Merci d'avoir testé les nouvelles questions !\n` +
-                          `Les logiques sont maintenant plus simples et claires !`;
-            
-            alert(message);
-            showTestSelection();
-        }
-
-        function showTestSelection() {
-            const message = `🧠 BRAINOVA - TEST QI AMÉLIORÉ\n\n` +
-                          `✅ Nouvelles fonctionnalités :\n` +
-                          `• Logiques simples et claires\n` +
-                          `• Explications détaillées\n` +
-                          `• Patterns reconnaissables\n` +
-                          `• Questions inspirées des vrais tests\n\n` +
-                          `🎯 Types de questions :\n` +
-                          `• Alternances simples (A,B,A,B,?)\n` +
-                          `• Suites numériques (1,2,3,4,?)\n` +
-                          `• Rotations de formes\n` +
-                          `• Fibonacci simple\n\n` +
-                          `Voulez-vous recommencer ce test amélioré ?`;
-            
-            if(confirm(message)) {
-                newGame();
-            }
-        }
-
-        function nextQuestion() { autoProgressGame(); }
-
-        function startGame() {
-            gameState.gameStarted = true;
-            gameState.gamePaused = false;
-            gameState.answered = false;
-            
-            if(gameState.timerInterval) {
-                clearInterval(gameState.timerInterval);
-            }
-            
-            document.getElementById('startBtn').disabled = true;
-            document.getElementById('pauseBtn').disabled = false;
-            document.getElementById('nextBtn').disabled = true;
-            
-            const t = translations[gameState.currentLanguage];
-            document.getElementById('questionText').textContent = t.questionText;
-            
-            generateCurrentQuestion();
-            updateUI();
-        }
-
-        function togglePause() {
-            if (!gameState.gameStarted) return;
-            
-            gameState.gamePaused = !gameState.gamePaused;
-            
-            if (gameState.gamePaused) {
-                if (gameState.timerInterval) {
-                    clearInterval(gameState.timerInterval);
-                }
-                const buttons = document.querySelectorAll('.option-btn');
-                buttons.forEach(btn => btn.style.pointerEvents = 'none');
-            } else {
-                if (!gameState.answered) {
-                    gameState.timerInterval = setInterval(() => {
-                        if(!gameState.gamePaused) {
-                            gameState.timeRemaining--;
-                            updateTimerDisplay();
-                            
-                            if(gameState.timeRemaining <= 0) {
-                                clearInterval(gameState.timerInterval);
-                                if(!gameState.answered) {
-                                    selectAnswer(-1);
-                                }
-                            }
-                        }
-                    }, 1000);
-                }
-                const buttons = document.querySelectorAll('.option-btn');
-                buttons.forEach(btn => btn.style.pointerEvents = 'auto');
-            }
-            
-            updateUI();
-        }
-
-        function changeLevel() {
-            const newLevel = prompt(`Choisir le niveau (1-5). Niveau actuel: ${gameState.currentLevel}`);
-            if (newLevel && !isNaN(newLevel) && newLevel >= 1 && newLevel <= 5) {
-                gameState.currentLevel = parseInt(newLevel);
-                gameState.currentQuestion = 1;
-                gameState.levelScore = 0;
-                if (gameState.gameStarted && !gameState.gamePaused) {
-                    generateCurrentQuestion();
-                }
-                updateUI();
-            }
-        }
-
-        function changePart() {
-            const newPart = prompt(`Choisir la partie (1-50). Partie actuelle: ${gameState.currentPart}`);
-            if (newPart && !isNaN(newPart) && newPart >= 1 && newPart <= 50) {
-                gameState.currentPart = parseInt(newPart);
-                gameState.currentLevel = 1;
-                gameState.currentQuestion = 1;
-                gameState.levelScore = 0;
-                if (gameState.gameStarted && !gameState.gamePaused) {
-                    generateCurrentQuestion();
-                }
-                updateUI();
-            }
-        }
-
-        function updateButtonStates() {
-            document.getElementById('startBtn').disabled = gameState.gameStarted;
-            document.getElementById('pauseBtn').disabled = !gameState.gameStarted;
-            document.getElementById('nextBtn').disabled = !gameState.gameStarted || !gameState.answered;
-        }
-
-        function newGame() {
-            if(gameState.timerInterval) {
-                clearInterval(gameState.timerInterval);
-            }
-            
-            const globalStats = gameState.globalStats;
-            const currentLanguage = gameState.currentLanguage;
-            
-            gameState = {
-                currentLanguage: currentLanguage,
-                currentPart: 1,
-                currentLevel: 1,
-                currentQuestion: 1,
-                totalScore: 0,
-                levelScore: 0,
-                questionScore: 0,
-                answered: false,
-                correctAnswer: null,
-                questionTypes: ['logic', 'visual', 'math', 'geometry', 'pattern', 'sequence'],
-                correctAnswers: 0,
-                totalAnswers: 0,
-                currentStreak: 0,
-                bestStreak: 0,
-                questionStartTime: 0,
-                totalTime: 0,
-                timeRemaining: 30,
-                timerInterval: null,
-                achievements: [],
-                iqScore: 100,
-                gameStarted: false,
-                gamePaused: false,
-                comboMultiplier: 1,
-                lastAnswerTime: 0,
-                perfectAnswers: 0,
-                speedBonusCount: 0,
-                globalStats: globalStats
-            };
-            
-            document.getElementById('patternDisplay').innerHTML = '';
-            document.getElementById('answerOptions').innerHTML = '';
-            document.getElementById('explanationBox').style.display = 'none';
-            
-            updateUI();
-        }
-
-        // Initialize UI
-        updateUI();
-
-        // Lightweight language sync: respond to parent postMessage and localStorage changes
-        window.addEventListener('message', (ev) => {
-            try {
-                const data = (typeof ev.data === 'string') ? JSON.parse(ev.data) : ev.data;
-                if (!data) return;
-                if (data.action === 'set-language' && data.language) {
-                    setLanguage(data.language);
-                }
-            } catch (e) {
-                // ignore non-JSON messages
-            }
-        });
-
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'brainovaLang' && e.newValue) {
-                setLanguage(e.newValue);
-            }
-        });
-    </script>
-
-    <script>
-        // Show brainova link when standalone and provide robust close handler
-        (function(){
-            function computeBrainovaHref(){
-                try{
-                    if(window.location && window.location.origin){
-                        return window.location.origin + '/brainova.html';
-                    }
-                }catch(e){}
-                return '/brainova.html';
-            }
-
-            function updateLink(){
-                var link = document.getElementById('brainovaLink0');
-                if(!link) return;
-                // Ensure the visible fallback link uses an absolute, correct URL for this origin
-                link.href = computeBrainovaHref();
-                try{
-                    if(window.parent && window.parent !== window){
-                        link.style.display = 'none';
-                    } else {
-                        link.style.display = 'inline-block';
-                    }
-                }catch(e){ link.style.display = 'inline-block'; }
-            }
-
-            if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', updateLink); else updateLink();
-            window.addEventListener('message', updateLink);
-        })();
-
-        function closeToBrainova(){
-            // Use the computed link href as the single source of truth for fallback navigation
-            var fallbackHref = null;
-            try{ var el = document.getElementById('brainovaLink0'); if(el) fallbackHref = el.href; }catch(e){}
-            if(!fallbackHref){
-                try{ fallbackHref = (window.location && window.location.origin) ? window.location.origin + '/brainova.html' : '/brainova.html'; }catch(e){ fallbackHref = '/brainova.html'; }
-            }
-
+      // show header after load
+      window.addEventListener('load', ()=>{
+        document.getElementById('loader').style.display='none';
+        document.getElementById('header').style.display='flex';
+        // If the URL contains one-time session params (from standalone signup), apply them to sessionStorage
+        try{
+          const ps = new URLSearchParams(window.location.search);
+          const sEmail = ps.get('session_email');
+          if(sEmail){
+            const sName = ps.get('session_name') || '';
+            const sAvatar = ps.get('session_avatar') || '';
             try{
-                if(window.parent && window.parent !== window){
-                    try{ window.parent.postMessage({ action: 'close', reason: 'user-initiated', source: 'carte0' }, '*'); }catch(e){}
-                    try{ if(window.parent.OverlayManager && typeof window.parent.OverlayManager.close === 'function'){ window.parent.OverlayManager.close(); return; } }catch(e){}
-                    setTimeout(function(){
-                        try{ window.top.location.href = fallbackHref; }catch(e){ try{ window.location.href = fallbackHref; }catch(_){} }
-                    }, 350);
-                    return;
+              // URLSearchParams.get returns decoded values already
+              const sessionUser = { id: 'u_'+Date.now(), name: sName, email: sEmail, avatar: sAvatar };
+              sessionStorage.setItem('brainovaSession', JSON.stringify(sessionUser));
+              try{
+                const key = 'brainova_demo_users';
+                const raw = sessionStorage.getItem(key);
+                const map = raw ? JSON.parse(raw) : {};
+                const spwd = ps.get('session_password');
+                if(sessionUser && sessionUser.email){
+                  const em = String(sessionUser.email).toLowerCase();
+                  map[em] = { name: sessionUser.name || '', email: sessionUser.email, avatar: sessionUser.avatar || '', id: sessionUser.id };
+                  if(spwd) map[em].password = spwd;
                 }
+                sessionStorage.setItem(key, JSON.stringify(map));
+              }catch(e){}
             }catch(e){}
-
-            try{ window.location.href = fallbackHref; }catch(e){ try{ window.location.href = '/brainova.html'; }catch(_){} }
+            // remove params from URL to keep it clean
+            try{ const clean = window.location.pathname + window.location.hash; window.history.replaceState({}, document.title, clean); }catch(e){}
+          }
+          // Also check for a one-time temp user broadcast via localStorage (useful when signup was completed in another tab)
+          try{
+            const tmp = localStorage.getItem('brainova_temp_user');
+            if(tmp){
+              try{ localStorage.removeItem('brainova_temp_user'); }catch(e){}
+              const obj = JSON.parse(tmp);
+              if(obj && obj.email){
+                const key = 'brainova_demo_users';
+                const raw = sessionStorage.getItem(key);
+                const map = raw ? JSON.parse(raw) : {};
+                const em = String(obj.email).toLowerCase();
+                map[em] = { name: obj.name || '', email: obj.email, avatar: obj.avatar || '', id: 'u_'+Date.now() };
+                if(obj.password) map[em].password = obj.password;
+                sessionStorage.setItem(key, JSON.stringify(map));
+              }
+            }
+          }catch(e){}
+        }catch(e){}
+        // load platform/core/auth-manager.js dynamically if available
+        try{ var s = document.createElement('script'); s.src = './platform/core/auth-manager.js'; s.async = false; document.head.appendChild(s); }catch(e){}
+        // wire auth buttons and provide reliable hrefs for middle-click/new-tab
+        const b1 = document.getElementById('btnLogin');
+        if(b1){
+          b1.addEventListener('click', (ev)=>{
+            ev.preventDefault && ev.preventDefault();
+            const url = './connexion.html?mode=login';
+            try{ if(window.AuthManager && typeof window.AuthManager.openAuth === 'function'){ window.AuthManager.openAuth(url,'Connexion'); return; } }catch(e){}
+            try{ if(window.OverlayManager && typeof window.OverlayManager.open === 'function'){ window.OverlayManager.open(url,'Connexion'); return; } }catch(e){}
+            try{ window.location.href = url; }catch(e){ try{ window.open(url, '_blank'); }catch(_){ } }
+          });
+          try{ b1.setAttribute('data-auth-href', './connexion.html?mode=login'); b1.setAttribute('href', './connexion.html?mode=login'); }catch(e){}
         }
-    </script>
+        const b2 = document.getElementById('btnSignup');
+        if(b2){
+          b2.addEventListener('click', (ev)=>{
+            ev.preventDefault && ev.preventDefault();
+            const url = './connexion et profil.html?mode=signup';
+            try{ if(window.AuthManager && typeof window.AuthManager.openAuth === 'function'){ window.AuthManager.openAuth(url,'Inscription'); return; } }catch(e){}
+            try{ if(window.OverlayManager && typeof window.OverlayManager.open === 'function'){ window.OverlayManager.open(url,'Inscription'); return; } }catch(e){}
+            try{ window.location.href = url; }catch(e){ try{ window.open(url, '_blank'); }catch(_){ } }
+          });
+          try{ b2.setAttribute('data-auth-href', './connexion et profil.html?mode=signup'); b2.setAttribute('href', './connexion et profil.html?mode=signup'); }catch(e){}
+        }
+  // show saved sigle if user already logged in
+        try{
+          // Prefer ephemeral session storage for user session (do not persist to localStorage)
+          const saved = sessionStorage.getItem('brainovaSession');
+          if(saved){
+            const u = JSON.parse(saved);
+            const sig = (u.avatar && u.avatar.length>0) ? u.avatar : (u.name?u.name.split(' ').map(n=>n.charAt(0)).join('').toUpperCase():'');
+            const sigEl = document.getElementById('userSigle');
+            if(sigEl && sig){ sigEl.textContent = sig; sigEl.style.display='flex'; }
+          }
+        }catch(e){/* ignore */}
+        // populate the local state bar (helps in file:// mode)
+        try{
+          function updateLocalStateBar(){
+            const txt = document.getElementById('localStateText'); if(!txt) return;
+            try{
+              const bundle = localStorage.getItem('bundlePurchased') === '1';
+              const parts = [];
+              if(bundle) parts.push('bundlePurchased=1');
+              for(let i=0;i<=36;i++){ if(localStorage.getItem('purchased_game_'+i) === '1') parts.push('purchased_game_'+i+'=1'); }
+              txt.textContent = parts.length ? ('État local: ' + parts.join(' | ')) : 'État local: aucun achat détecté';
+            }catch(e){ txt.textContent = 'État local: erreur de lecture'; }
+          }
+          const rbtn = document.getElementById('localStateRefresh'); if(rbtn) rbtn.addEventListener('click', updateLocalStateBar);
+          const cbtn = document.getElementById('localStateClear'); if(cbtn) cbtn.addEventListener('click', ()=>{ if(!confirm('Supprimer bundlePurchased et tous les flags purchased_game_* ?')) return; localStorage.removeItem('bundlePurchased'); for(let i=0;i<=36;i++) localStorage.removeItem('purchased_game_'+i); updateLocalStateBar(); alert('Flags supprimés'); });
+          updateLocalStateBar();
+        }catch(e){}
+        // initialize single language select
+        const langSelect = document.getElementById('langSelect');
+        const LangMeta = { fr:{emoji:'🇫🇷', label:'FR'}, en:{emoji:'🇬🇧', label:'EN'}, ar:{emoji:'🇸🇦', label:'AR'}, es:{emoji:'🇪🇸', label:'ES'}, de:{emoji:'🇩🇪', label:'DE'}, zh:{emoji:'🇨🇳', label:'中文'} };
 
+        function updateLangPickerUI(lang){
+          try{
+            if(langSelect) {
+              langSelect.value = lang;
+              // update visible label is already handled by the select's option text
+            }
+          }catch(e){/* ignore */}
+        }
+
+        // handle selection
+        if(langSelect){
+          langSelect.addEventListener('change', function(){ selectLang(this.value); });
+        }
+
+        function selectLang(L){ if(!L) return; applyLanguage(L); updateLangPickerUI(L); localStorage.setItem('brainovaLang', L); 
+          // notify children frames (so embedded games update immediately)
+          try{ window.frames && Array.from(document.getElementsByTagName('iframe')).forEach(f=>{ try{ f.contentWindow.postMessage({ action:'set-language', lang: L }, '*'); }catch(e){} }); }catch(e){}
+        }
+  // set initial label and apply language
+  updateLangPickerUI(currentLang);
+  applyLanguage(currentLang);
+        // settings menu
+        const sBtn = document.getElementById('settingsBtn'); const sMenu = document.getElementById('settingsMenu');
+        if(sBtn && sMenu){ sBtn.addEventListener('click', ()=>{ sMenu.style.display = (sMenu.style.display === 'block') ? 'none' : 'block'; }); }
+        document.getElementById('settingsEditProfile').addEventListener('click', ()=>{ sMenu.style.display='none'; openAuth('profile'); });
+        document.getElementById('settingsHistory').addEventListener('click', ()=>{ sMenu.style.display='none'; openAuth('history'); });
+      });
+
+      // Listen to messages from iframes so games can ask the platform to close the overlay
+      window.addEventListener('message', (e)=>{
+        try{
+          // Accept object payloads and JSON strings from older pages
+          let data = e.data || null;
+          if(!data) return;
+          if(typeof data === 'string'){
+            try{ data = JSON.parse(data); }catch(_){ /* ignore non-json */ }
+          }
+          if(!data || typeof data !== 'object') return;
+          if(data && data.action === 'close'){
+            closeGame();
+            try{ window.location.href = new URL('./brainova.html', window.location.href).href; }catch(e){}
+          }
+          if(data && data.action === 'login-success'){
+            console.debug('Received login-success from iframe', data.user);
+            // Store ephemeral session (do not persist) so UI can reflect login
+            try{ sessionStorage.setItem('brainovaSession', JSON.stringify(data.user)); }catch(e){/* ignore */}
+            // Close overlay then reload or navigate to homepage
+            closeGame();
+            try{
+              try{
+                const u = data.user || {};
+                const sig = (u.avatar && u.avatar.length>0) ? u.avatar : (u.name?u.name.split(' ').map(n=>n.charAt(0)).join('').toUpperCase():'');
+                const sigEl = document.getElementById('userSigle');
+                if(sigEl && sig){ sigEl.textContent = sig; sigEl.style.display='flex'; }
+              }catch(e){}
+              window.location.href = new URL('./brainova.html', window.location.href).href; // go to brainova home
+            }catch(err){
+              window.location.reload();
+            }
+          }
+          // Message from embedded game asking to return to platform home
+          if(data && (data.action === 'go-home' || data.action === 'home')){
+            console.debug('Received go-home from iframe');
+            try{ closeGame(); window.location.href = new URL('./brainova.html', window.location.href).href; }catch(err){ window.location.reload(); }
+          }
+        }catch(err){/* ignore */}
+      });
+
+      // Tester tous les jeux : vérifie chaque jeuxN.html et met à jour le statut
+      const checkBtn = document.getElementById('checkAllBtn');
+      const checkStatus = document.getElementById('checkStatus');
+      checkBtn.addEventListener('click', async ()=>{
+        checkBtn.disabled = true; checkStatus.textContent = 'Test en cours...';
+        let ok = 0, fail = 0;
+          for(let i=0;i<=total;i++){
+          const meta = gameMap[i] || {};
+          const candidates = [];
+          if(meta.file) candidates.push(meta.file);
+          candidates.push(`./jeux${i}.html`);
+          candidates.push(`./jeux${i}.html.html`);
+          const card = grid.querySelector(`.game-card[data-game-id="${i}"]`);
+          const statusEl = card.querySelector('.game-status');
+          let found = false;
+          for(const url of candidates){
+            if(!url) continue;
+            try{
+              const safe = normalizeUrl(new URL(url, window.location.href).href);
+              const r = await fetch(safe, {method:'HEAD'});
+              if(r.ok){ statusEl.textContent = 'OK'; statusEl.style.background = 'linear-gradient(45deg,#00ff88,#ffd700)'; statusEl.style.color = '#000'; ok++; found = true; break; }
+            }catch(e){ /* try next */ }
+          }
+          if(!found){ statusEl.textContent = 'N/D'; statusEl.style.background = 'rgba(255,0,0,0.12)'; fail++; }
+        }
+        checkStatus.textContent = `Résultat : ${ok} OK / ${fail} FAIL`;
+        checkBtn.disabled = false;
+      });
+
+    })();
+  </script>
+  <script>
+    // Wire category buttons to filter the games grid by meta.tags
+    (function(){
+      const hero = document.getElementById('catalog-hero');
+      if(!hero) return;
+      const buttons = hero.querySelectorAll('.cat');
+      const grid = document.getElementById('gamesGrid');
+      if(!buttons.length || !grid) return;
+      buttons.forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const filter = (b.dataset.filter||'').toString().toLowerCase();
+          const cards = grid.querySelectorAll('.game-card');
+          cards.forEach(c=>{
+            const id = Number(c.dataset.gameId);
+            const meta = (window.gameMap && window.gameMap[id]) ? window.gameMap[id] : null;
+            const tags = (meta && meta.tags) ? meta.tags.map(t=>t.toString().toLowerCase()) : [];
+            if(!filter || tags.includes(filter)) c.style.display='block'; else c.style.display='none';
+          });
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
