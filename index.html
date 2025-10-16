@@ -1279,6 +1279,26 @@ document.getElementById('closeBtn').addEventListener('click', function() {
     document.getElementById('overlayIframe').src = 'about:blank';
 });
 </script>
+<script>
+  const overlay = document.getElementById('overlay');
+  const overlayIframe = document.getElementById('overlayIframe');
+  const closeBtn = document.getElementById('closeBtn');
+
+  // Fonction pour fermer l'overlay
+  closeBtn.addEventListener('click', () => {
+    overlay.style.display = 'none';
+    overlayIframe.src = 'about:blank';
+  });
+
+  // Générer automatiquement openOverlay0 à openOverlay36
+  for (let i = 0; i <= 36; i++) {
+    window['openOverlay' + i] = function() {
+      overlay.style.display = 'block';
+      overlayIframe.src = `jeux${i}.html`;
+      document.getElementById('overlayTitle').innerText = `Jeu ${i}`;
+    }
+  }
+</script>
 
 </body>
 </html>
@@ -1296,4 +1316,5 @@ document.getElementById('closeBtn').addEventListener('click', function() {
 
 </html>
 >>>>>>> 4e834959 (Sauvegarde avant passage sur gh-pages)
+
 
